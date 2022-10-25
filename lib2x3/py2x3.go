@@ -314,7 +314,7 @@ func ph_GraphStream_Print(self py.Object, args py.Tuple, kwargs py.StringDict) (
 	
 	py.LoadAttr(kwargs, "traces", &opts.NumTraces)
 	py.LoadAttr(kwargs, "cycles", &opts.CycleSpec)
-	py.LoadAttr(kwargs, "codes", &opts.TriCodes)
+	py.LoadAttr(kwargs, "codes", &opts.Tricodes)
 	py.LoadAttr(kwargs, "matrix", &opts.Matrix)
 	py.LoadAttr(kwargs, "graph", &opts.Graph)
 	py.LoadAttr(kwargs, "file", &pathname)
