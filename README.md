@@ -1,16 +1,19 @@
-# go2x3
+# _go2x3_
+### Official SDK for [2x3 Particle Theory](https://github.com/2x3systems/prime-materials), a [Standard Model](https://en.wikipedia.org/wiki/Standard_Model) consolidation theory.
 
-### Official Go toolkit for [2x3 Particle Theory](https://github.com/2x3systems/prime-materials), a [Standard Model](https://en.wikipedia.org/wiki/Standard_Model) consolidation theory.
+------------------------------
+
+
 
 ## Quick Start
 
-First, with [Go](https://go.dev/doc/install) installed, build the `go2x3` binary:
+With [Go](https://go.dev/doc/install) installed, build the `go2x3` binary:
 ```bash
 % make build
 % cd cmd/go2x3 && ls learn
 ```
 
-Then explore or run any of the tutorial scripts:
+Explore or run any of the tutorial scripts:
 ```bash
 % ./go2x3 learn/01-foundations.py
 % ./go2x3 learn/02-techniques.py
@@ -20,8 +23,11 @@ Then explore or run any of the tutorial scripts:
 % ./go2x3 learn/06-lepton-non-universality.py
 ```
 
-You can also skip the above and go directly to the [learn](https://github.com/2x3systems/go2x3/tree/main/cmd/go2x3/learn) scripts and their "[gold](https://github.com/2x3systems/go2x3/tree/main/cmd/go2x3/learn/gold)" output.
+Or skip the above and go directly to the [learn](https://github.com/2x3systems/go2x3/tree/main/cmd/go2x3/learn) scripts and their "[gold](https://github.com/2x3systems/go2x3/tree/main/cmd/go2x3/learn/gold)" output.
 
+## Getting Started
+
+This project is a library & demonstration toolkit for [3x2 Particle Theory](https://github.com/2x3systems/prime-materials).  Although [lib2x3](http://https://github.com/2x3systems/go2x3/tree/main/lib2x3) is a pure Go library, [`gpython`](http://github.com/go-python/gpython) is used to embed and expose it.  This means scripting is easy  — see for yourself in the [first tutorial](https://github.com/2x3systems/go2x3/blob/main/cmd/go2x3/learn/01-foundations.py) as you follow along in its [output](https://github.com/2x3systems/go2x3/blob/main/cmd/go2x3/learn/gold/01-foundations.txt).
 
 
 ## Releases
