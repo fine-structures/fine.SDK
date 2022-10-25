@@ -1,6 +1,6 @@
 
 =================================================================
-|                       go2x3 (v1.2022.1)                       |
+|                       go2x3 (v1.2022.2)                       |
 |                      https://2x3.systems                      |
 |                                                               |
 |    WHERE WERE YOU WHEN I LAID THE FOUNDATION OF THE EARTH?    |
@@ -13,11 +13,11 @@
 Beta Decay:
 
 Our friend the neutron:
-n0   p=1,v=4,"1-2-3-1-4",4,14,34,98,
+n0   p=1,v=4,BBCAB*A**121+++++++++,"1-2-3-1-4",4,14,34,98,
 
 Commonly known n0 beta decay products (note equal n0 Traces):
-~π +  p:   p=2,v=4,"1^^ 2-3-4",4,14,34,98,
- e + qdq:  p=2,v=4,"1 2^-3-4^",4,14,34,98,
+~π +  p:   p=2,v=4,***CC*B**112+--++++++,"1^^ 2-3-4",4,14,34,98,
+ e + qdq:  p=2,v=4,B**AA****211++-++++++,"1 2^-3-4^",4,14,34,98,
 
 Let's verify that the Traces all add up as expected:
 sum(~π + p):    [4, 14, 34, 98]
@@ -26,46 +26,46 @@ sum( e + qdq):  [4, 14, 34, 98]
 So, does a neutron only have 2 decay modes??
 We can use PrimeModes() to analyze a given Traces set and performs a "particle prime" factorization, 
 yielding ALL possible sets of primes that produce the given "target" Traces:
-n0 prime mode,000001,p=2,v=4,"1^^ 2-3-4",4,14,34,98,
-n0 prime mode,000002,p=2,v=4,"1 2^-3-4^",4,14,34,98,
+n0 prime mode,000001,p=2,v=4,***CC*B**112+--++++++,"1^^ 2-3-4",4,14,34,98,
+n0 prime mode,000002,p=2,v=4,A|BAA****211+-+++++++,"1 2-3-~4-2",4,14,34,98,
 ...sure enough, there are only 2 decay modes!
 
 What if a photon interacts with a neutron??
-n0 + γ : p=2,v=6,"1-2-3-1-4 5---6",4,32,34,260,274,2252,
+n0 + γ : p=2,v=6,CCDB||AC*A**1221++++++++++++,"1-2-3-1-4 5---6",4,32,34,260,274,2252,
 
 Let's use PrimeModes() to see what this v=6 system now factors into!
 We know we should see at least the above 2 (with an additional e ~e pair from the gamma)...
-n0 + γ prime mode,000001,p=4,v=6,"1^^ 2^^^ 3 4-5-6",4,32,34,260,274,2252,
-n0 + γ prime mode,000002,p=4,v=6,"1^^ 2 3 4^-5~~6-4",4,32,34,260,274,2252,
-n0 + γ prime mode,000003,p=4,v=6,"1^^^ 2 3 4^-5-6^",4,32,34,260,274,2252,
+n0 + γ prime mode,000001,p=4,v=6,******DD*C*****11121---+--+++++++++,"1^^ 2^^^ 3 4-5-6",4,32,34,260,274,2252,
+n0 + γ prime mode,000002,p=4,v=6,***CC*C|B***1122+--++---++++,"1^^ 2 3 4^-5~~6-4",4,32,34,260,274,2252,
+n0 + γ prime mode,000003,p=4,v=6,***B|CBB****1212---+-+++++++,"1^^^ 2 3 4-5-~6-4",4,32,34,260,274,2252,
 
 Behold, there is a THIRD prime factorization!
 It turns out this particle prime is of the few v=3 primes that only has forms with one or more negative edges.
 We can verify this by adding all the Traces up in any order...
-e + e + ~π + y~dy:  p=4,v=6,"1 2 3^^ 4^-5=6~4",4,32,34,260,274,2252,
-y~dy + e + ~π + e:  p=4,v=6,"4 5^^ 6 1^-2=3~1",4,32,34,260,274,2252,
-~π + e + y~dy + e:  p=4,v=6,"1^^ 2 6 3^-4=5~3",4,32,34,260,274,2252,
+e + e + ~π + y~dy:  p=4,v=6,***CC*C|BC|B***11112+--+--++-++++++,"1 2 3^^ 4^-5=6~4",4,32,34,260,274,2252,
+y~dy + e + ~π + e:  p=4,v=6,***CC*C|BC|B***11112+--+--++-++++++,"4 5^^ 6 1^-2=3~1",4,32,34,260,274,2252,
+~π + e + y~dy + e:  p=4,v=6,***CC*C|BC|B***11112+--+--++-++++++,"1^^ 2 6 3^-4=5~3",4,32,34,260,274,2252,
 
 Note how ~π and e together form the antineutreno, implying that a gamma is required for conventionally understood neutron decay to occur:
-~ve ,000001,p=1,v=2,"1^^-2^^",-4,10,-28,82,-244,730,-2188,6562,-19684,59050,
-~π+e,000001,p=2,v=2,"1^^ 2^^^",-4,10,-28,82,-244,730,-2188,6562,-19684,59050,
+~ve ,000001,p=1,v=2,A**2+--,"1^^-2^^",-4,10,-28,82,-244,730,-2188,6562,-19684,59050,
+~π+e,000001,p=2,v=2,******11---+--,"1^^ 2^^^",-4,10,-28,82,-244,730,-2188,6562,-19684,59050,
 
 So how often (what relative ratios) can we expect to see for a n0 + gamma interaction?
 We use PhaseModes() to calculate the number of equivalent forms of a given particle:
-y~dy phase mode,000001,p=1,v=3,"1^-2~~3-1",-1,13,-19,
-y~dy phase mode,000002,p=1,v=3,"1^~2=3-1",-1,13,-19,
-y~dy phase mode,000003,p=1,v=3,"1^~2~~3~1",-1,13,-19,
+y~dy phase mode,000001,p=1,v=3,BB*B|A12++---+,"1^-2~~3-1",-1,13,-19,
+y~dy phase mode,000002,p=1,v=3,BB*B|A12------,"1^~2~~3~1",-1,13,-19,
+y~dy phase mode,000003,p=1,v=3,BB*B|AB|A111+--++-+++,"1^~2=3-1",-1,13,-19,
 
-qdq phase mode,000001,p=1,v=3,"1^-2-3^",1,5,7,
-qdq phase mode,000002,p=1,v=3,"1^~2~3^",1,5,7,
-qdq phase mode,000003,p=1,v=3,"1-2-~3-1",1,5,7,
-qdq phase mode,000004,p=1,v=3,"1~2-~3~1",1,5,7,
-qdq phase mode,000005,p=1,v=3,"1^~2-3^",1,5,7,
-qdq phase mode,000006,p=1,v=3,"1~2-~3-1",1,5,7,
+qdq phase mode,000001,p=1,v=3,A|BAA*21+-++++,"1-2-~3-1",1,5,7,
+qdq phase mode,000002,p=1,v=3,A|BAA*21+----+,"1~2-~3~1",1,5,7,
+qdq phase mode,000003,p=1,v=3,A|BA|BAA*111+--+-++-+,"1~2-~3-1",1,5,7,
+qdq phase mode,000004,p=1,v=3,B**AA*21++-+++,"1^-2-3^",1,5,7,
+qdq phase mode,000005,p=1,v=3,B**AA*21-+---+,"1^~2~3^",1,5,7,
+qdq phase mode,000006,p=1,v=3,B**B**AA*111-+-++-+-+,"1^~2-3^",1,5,7,
 
-proton phase mode,000001,p=1,v=3,"1-2-3",5,13,35,
-proton phase mode,000002,p=1,v=3,"1~2-3",5,13,35,
-proton phase mode,000003,p=1,v=3,"1~2~3",5,13,35,
+proton phase mode,000001,p=1,v=3,BB*A**12++++++,"1-2-3",5,13,35,
+proton phase mode,000002,p=1,v=3,BB*A**12--+-++,"1~2~3",5,13,35,
+proton phase mode,000003,p=1,v=3,BB*A**A**111+-+-+++++,"1~2-3",5,13,35,
 
 Number of phase modes for each possible n0+γ product:
     y~dy:   3
