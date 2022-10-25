@@ -1,6 +1,5 @@
 
-Welcome to the 2x3 Workspace tutorial series!
-2x3 Workspace facilitates calculations for 2x3 Particle Theory =.
+Welcome to the go2x3 tutorial series!
 
 =================================================================
 |                       go2x3 (v1.2022.2)                       |
