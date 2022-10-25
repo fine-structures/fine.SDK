@@ -6,113 +6,86 @@ import (
 	"fmt"
 	"io"
 	"sort"
-	"strings"
 )
 
-// EdgeCode is a code spans 1.. that encodes the edge sign, source group ID (if non-loop) or loop sign (if loop)
-type EdgeCode byte
+type EdgeGrouping byte
 
 const (
-	//NilEdge    EdgeCode = 0
-	PosLoop EdgeCode = 1
-	NegLoop EdgeCode = 2
+	Grouping_111      EdgeGrouping = 0 // All 3 edges go to the same vertex
+	Grouping_112      EdgeGrouping = 1 // First 2 edges share the same vertex
+	Grouping_Disjoint EdgeGrouping = 2 // Edges connect to different vertices
 )
 
+// El Shaddai's Grace abounds
+type triVtx struct {
+	vtxID    byte         // initial vertex ID (zero-based index)
+	groupID  byte         // Cycle group one-based index (known after cycle spectrum is computed)
+	count    byte         // Instances of this vtx type
+	grouping EdgeGrouping // Which edges are double or triple
+	edges    [3]graphEdge
+}
+
+/*
+func (v triVtx) Adjacency() Adjacency {
+	switch {
+	case edges[0]. == GroupLoop && tri.Src2 == GroupLoop && tri.Src3 == GroupLoop:
+		return Adjacent_None
+	case tri.Src1 >= GroupA && tri.Src2 >= GroupA && tri.Src3 >= GroupA:
+		return Adjacent_Three
+	}
+}
+*/
+
 type graphEdge struct {
-	srcVtx   byte     // index of source vertex
-	isLoop   bool     // true if this edge is a loop
-	edgeSign int8     // +1 or -1
-	edgeCode EdgeCode // Canonic edge info specifying edge sign and src groupID (group 0 denotes loop)
+	srcVtx   byte // initial source vertex index
+	srcGroup byte // source vertex group index (known after cycle spectrum sort performed, 0 denotes loop)
+	siblings byte // number of other edges also attached to srcVtx [0,1,2]
+	isLoop   bool // true if this edge is a loop
+	edgeSign int8 // +1 or -1
 }
 
-func (ord EdgeCode) IsNegEdge() bool {
-	return (ord & 1) == 0
-}
+func (e *graphEdge) edgeOrd() int32 {
 
-func (ord EdgeCode) SignAndGroup() (edgeSign int8, srcGroup byte) {
-	edgeSign = int8(1)
-	if (ord & 1) == 0 {
-		edgeSign = -1
-	}
-	srcGroup = byte(ord-1) >> 1
-	return
-}
-
-func (ord EdgeCode) WriteStr(io []byte) []byte {
-	var str [4]byte
-	i := 2
-
-	// May the Lord have mercy on us for we know not what we do.
-	sign, srcGroup := ord.SignAndGroup()
-	if sign < 0 {
-		str[0] = '-'
-	} else {
-		str[0] = '+'
-	}
-	if srcGroup == 0 {
-		str[1] = 'o' // fancy symbol for fancy zero that straddles true zero.  Emmanuel!
-	} else {
-		if srcGroup >= 10 {
-			str[1] = '0' + (srcGroup / 10)
-			i++
-		}
-		str[i-1] = '0' + (srcGroup % 10)
-	}
-
-	return append(io, str[:i]...)
-}
-
-// Pre: srcGroup > 0
-func (e *graphEdge) EncodeSrcGroup(srcGroup byte) {
-
+	// Loops are last
 	if e.isLoop {
-		srcGroup = 0
+		return 0xFF
 	}
 
-	// Make positive edges to appear lexicographically before negative edges, so make positive negative
-	// in:    +0   -0   +1   -1   +2   -2
-	// ord:    1    2    3    4    5    6
-	ord := (srcGroup << 1) + 1
-	if e.edgeSign < 0 {
-		ord += 1
-	}
-
-	e.edgeCode = EdgeCode(ord)
-}
-
-func (e graphEdge) WriteStr(io []byte) []byte {
-	return e.edgeCode.WriteStr(io)
+	// Ensure that edges to the same vertex are ordered consecutively -- place higher sibling counts first
+	return int32(e.srcGroup) - (int32(e.siblings) << 8)
 }
 
 type graphVtx struct {
-	groupID byte // cycle group one-based index (known after cycle spectrum is computed)
-	runLen  byte // vertex run len for this groupID
-	edges   [3]graphEdge
-	traces  []traceStep // for traces cycle fingerprint for cycles ci
+	triVtx
+	cycles []int64 // for traces cycle fingerprint for cycles ci
+	Ci0    []int64 // matrix row of X^i for this vtx -- by initial vertex ID
+	Ci1    []int64 // matrix row of X^(i+1) for this vtx,
 }
 
-func (v *graphVtx) VtxType() VtxType {
-	numNegLoops := byte(0)
-	numEdges := byte(3)
-	for _, e := range v.edges {
-		switch e.edgeCode {
-		case PosLoop:
-			numEdges--
-		case NegLoop:
-			numNegLoops++
-			numEdges--
+// pre: v.edges[].srcGroup has been determined and set
+func (v *graphVtx) canonizeVtx() {
+
+	// Canonically order edges by edge type then by edge sign & groupID
+	sort.Slice(v.edges[:], func(i, j int) bool {
+		d := v.edges[i].edgeOrd() - v.edges[j].edgeOrd()
+		if d != 0 {
+			return d < 0
 		}
+		return v.edges[i].edgeSign > v.edges[j].edgeSign
+	})
+
+	// With edge order now canonic, determine the grouping.
+	// Since we sort by edgeOrd, edges going to the same vertex are always consecutive and appear first
+	// This means we only need to check a small number of cases
+	if !v.edges[0].isLoop && v.edges[0].srcVtx == v.edges[1].srcVtx {
+		if v.edges[1].srcVtx == v.edges[2].srcVtx {
+			v.grouping = Grouping_111
+		} else {
+			v.grouping = Grouping_112
+		}
+	} else {
+		v.grouping = Grouping_Disjoint
 	}
-	return GetVtxType(numNegLoops, numEdges)
-}
-
-func (v *graphVtx) EncodeTo(in []byte) []byte {
-	return append(in,
-		0xFF-v.runLen, // make largest group run lens rank first
-		byte(v.edges[0].edgeCode),
-		byte(v.edges[1].edgeCode),
-		byte(v.edges[2].edgeCode))
-
 }
 
 func (v *graphVtx) AddLoop(from int32, edgeSign int8) {
@@ -120,7 +93,6 @@ func (v *graphVtx) AddLoop(from int32, edgeSign int8) {
 }
 
 func (v *graphVtx) AddEdge(from int32, edgeSign int8, isLoop bool) {
-
 	var ei int
 	for ei = range v.edges {
 		if v.edges[ei].edgeSign == 0 {
@@ -136,20 +108,14 @@ func (v *graphVtx) AddEdge(from int32, edgeSign int8, isLoop bool) {
 	if ei >= 3 {
 		panic("tried to add more than 3 edges")
 	}
-
 }
 
-func (v *graphVtx) Clear() {
-	v.runLen = 1
+func (v *graphVtx) Init(vtxID byte) {
+	v.count = 1
+	v.vtxID = vtxID
 	v.edges[0].edgeSign = 0
 	v.edges[1].edgeSign = 0
 	v.edges[2].edgeSign = 0
-}
-
-type traceStep struct {
-	cycles int64    // vtx cycle count
-	extSum int64    // vtx cycle sum from non-adjacent vertices
-	input  [3]int64 // vtx cycle count incoming from edges
 }
 
 const Graph3IDSz = 16
@@ -178,21 +144,22 @@ const (
 	newlyReset vtxStatus = iota + 1
 	calculating
 	canonized
+	tricoded
 )
 
 type graphState struct {
 	vtxCount       int32
 	vtxDimSz       int32
-	vtx            []*graphVtx
-	numCycleGroups byte
-	numVtxGroups   byte
+	vtx            []*graphVtx // maps initial vertex index to cycle group vtx
+	vtxGroups      []*graphVtx // ordered list of vtx groups
+	numCycleGroups byte        // number of unique cycle vectors present
+	numVtxGroups   byte        // number of unique vertex groups present
 
 	curCi  int32
-	Ci0    []int64
-	Ci1    []int64
 	traces Traces
 	triID  []byte
 	status vtxStatus
+	store  [256]byte
 }
 
 func (X *graphState) reset(numVerts byte) {
@@ -214,67 +181,56 @@ func (X *graphState) reset(numVerts byte) {
 	}
 	X.vtxDimSz = Nv
 
-	const numTraces = 16
-	VxV := Nv * Nv
-	X.vtx = make([]*graphVtx, Nv)
-	X.triID = make([]byte, 0, 20+4*Nv)
-	for i := range X.vtx {
-		X.vtx[i] = &graphVtx{}
+	X.vtx = make([]*graphVtx, Nv, 2*Nv)
+	X.vtxGroups = X.vtx[Nv : 2*Nv]
+	if cap(X.triID) == 0 {
+		X.triID = X.store[:0]
 	}
 
-	// Place cycle buf on each vtx
-	cycleInfo := make([]traceStep, VxV) //+numTraces)
+	// Place cycle bufs on each vtx
+	buf := make([]int64, MaxVtxID+3*Nv*Nv)
+	X.traces, buf = chopBuf(buf, MaxVtxID)
+
 	for i := int32(0); i < Nv; i++ {
-		X.vtx[i] = &graphVtx{
-			traces: cycleInfo[i*Nv : (i+1)*Nv],
-		}
+		v := &graphVtx{}
+		X.vtx[i] = v
+		X.vtxGroups[i] = v
+		v.Ci0, buf = chopBuf(buf, Nv)
+		v.Ci1, buf = chopBuf(buf, Nv)
+		v.cycles, buf = chopBuf(buf, Nv)
 	}
 
-	buf := make([]int64, 2*VxV+numTraces)
-
-	// The number of total int64 needed are two Nv x Nv (triangular) matrices (Ci0 amd Ci1)
-	// TODO: no need to alloc lower triangle
-	X.Ci0, buf = chopBuf(buf, VxV)
-	X.Ci1, buf = chopBuf(buf, VxV)
-
-	X.traces = buf
 }
 
-func (X *graphState) Validate() error {
-	Ne := int32(0)
-	Nv := X.vtxCount
-	for _, vi := range X.VtxGroups() {
-		for _, e := range vi.edges {
-			if e.edgeSign != 0 {
-				Ne += int32(vi.runLen)
-			}
-		}
-	}
-	if Ne != 3*Nv {
-		return errors.New("incomplete graph")
-	}
+var (
+	ErrNilGraph = errors.New("nil graph")
+	ErrBadEdges = errors.New("edge count does not correspond to vertex count")
+)
 
-	return nil
-}
-
-func (X *graphState) AssignGraph(Xsrc *Graph) {
+func (X *graphState) AssignGraph(Xsrc *Graph) error {
 	if Xsrc == nil {
 		X.reset(0)
-		return
+		return ErrNilGraph
 	}
 
 	Nv := Xsrc.NumVerts()
 	X.reset(Nv)
 
-	// First, add sedges that connect to the same vertex (loops and arrows)
-	for i, vi := range Xsrc.Vtx() {
-		vtx := X.vtx[i]
-		vtx.Clear()
-		for j := vi.NumLoops(); j > 0; j-- {
-			vtx.AddLoop(int32(i), +1)
+	// Init vtx lookup map so we can find the group for a given initial vertex idx
+	Xv := X.Vtx()
+	for i := byte(0); i < Nv; i++ {
+		Xv[i].Init(i)
+		X.vtxGroups[i] = Xv[i]
+	}
+
+	// First, add edges that connect to the same vertex (loops and arrows)
+	for i, vi := range Xv {
+		vtype := Xsrc.vtx[i]
+		for j := vtype.NumLoops(); j > 0; j-- {
+			vi.AddLoop(int32(i), +1)
 		}
-		for j := vi.NumArrows(); j > 0; j-- {
-			vtx.AddLoop(int32(i), -1)
+		for j := vtype.NumArrows(); j > 0; j-- {
+			vi.AddLoop(int32(i), -1)
 		}
 	}
 
@@ -283,45 +239,74 @@ func (X *graphState) AssignGraph(Xsrc *Graph) {
 		ai, bi := edge.VtxIdx()
 		pos, neg := edge.EdgeType().NumPosNeg()
 		for j := pos; j > 0; j-- {
-			X.vtx[ai].AddEdge(bi, +1, false)
-			X.vtx[bi].AddEdge(ai, +1, false)
+			Xv[ai].AddEdge(bi, +1, false)
+			Xv[bi].AddEdge(ai, +1, false)
 		}
 		for j := neg; j > 0; j-- {
-			X.vtx[ai].AddEdge(bi, -1, false)
-			X.vtx[bi].AddEdge(ai, -1, false)
+			Xv[ai].AddEdge(bi, -1, false)
+			Xv[bi].AddEdge(ai, -1, false)
 		}
 	}
 
-	if err := X.Validate(); err != nil {
-		panic(err)
+	// Count edges to see if we have a valid graph
+	Ne := byte(0)
+
+	// Calculate and assign siblings for every edge
+	// This ensures we can sort (group) edges first by co-connectedness
+	for _, v := range Xv {
+		for i, ei := range v.edges {
+			v.edges[i].siblings = 0
+			if ei.edgeSign != 0 {
+				Ne += v.count
+			}
+			for j, ej := range v.edges {
+				if i != j && ei.srcVtx == ej.srcVtx {
+					v.edges[i].siblings++
+				}
+			}
+		}
 	}
+
+	if Ne != 3*Nv {
+		return ErrBadEdges
+	}
+
+	return nil
 }
 
 func (X *graphState) VtxGroups() []*graphVtx {
-	return X.vtx[:X.numVtxGroups]
+	return X.vtxGroups[:X.numVtxGroups]
+}
+
+func (X *graphState) Vtx() []*graphVtx {
+	return X.vtx[:X.vtxCount]
 }
 
 func (X *graphState) resortVtxGroups() {
-	Xvtx := X.VtxGroups()
+	Xg := X.VtxGroups()
 
 	// With edges on vertices now canonic order, we now re-order to assert canonic order within each group.
-	sort.Slice(Xvtx, func(i, j int) bool {
-		vi := Xvtx[i]
-		vj := Xvtx[j]
+	sort.Slice(Xg, func(i, j int) bool {
+		vi := Xg[i]
+		vj := Xg[j]
 
+		// Sort first by groupID
 		d := int32(vi.groupID) - int32(vj.groupID)
 		if d != 0 {
 			return d < 0
 		}
 
-		d = int32(vi.runLen) - int32(vj.runLen)
-		if d != 0 {
-			return d > 0
+		// Then sort by tricode (for equal groupIDs)
+		for ei := range vi.edges {
+			d := vi.edges[ei].edgeOrd() - vj.edges[ei].edgeOrd()
+			if d != 0 {
+				return d < 0
+			}
 		}
 
-		// If we're here, we're ordering within a given groupID.
+		// Then sort by tri-sign
 		for ei := range vi.edges {
-			d := int(vi.edges[ei].edgeCode) - int(vj.edges[ei].edgeCode)
+			d := int32(vi.edges[ei].edgeSign) - int32(vj.edges[ei].edgeSign)
 			if d != 0 {
 				return d < 0
 			}
@@ -339,101 +324,60 @@ func (X *graphState) calcUpTo(numTraces int32) {
 		numTraces = Nv
 	}
 
-	Ci0 := X.Ci0
-	Ci1 := X.Ci1
-
-	Xvtx := X.vtx[:Nv]
+	Xv := X.Vtx()
+	Xg := X.VtxGroups()
 
 	// Init C0
 	if X.status == newlyReset {
 		X.status = calculating
-		for vi := int32(0); vi < Nv; vi++ {
-			for vj := int32(0); vj < Nv; vj++ {
+
+		for i, vi := range Xv {
+			for j := 0; int32(j) < Nv; j++ {
 				c0 := int64(0)
-				if vj == vi {
+				if i == j {
 					c0 = 1
 				}
-				Ci0[vi*Nv+vj] = c0
+				vi.Ci0[j] = c0
 			}
 		}
-	} else if (X.curCi & 1) != 0 { // Resume from the proper state
-		Ci0, Ci1 = Ci1, Ci0
 	}
 
 	// This loop effectively calculates each successive graph matrix power.
 	for ; X.curCi < numTraces; X.curCi++ {
 
+		ci := X.curCi
+		odd := (ci & 1) != 0
+		traces_ci := int64(0)
+
 		// Calculate Ci+1 by "flowing" the current state (Ci) through X's edges.
-		// We only need to calculate upper triangle since a graph adjacency matrix is always triangular-symmetric.
-		for vi := int32(0); vi < Nv; vi++ {
-			for vj := int32(0); vj < Nv; vj++ { // vj := vi; vj < Nv; vj++ {
+		for _, vi := range Xg {
+
+			// Alternate which is the prev / next state store
+			Ci0, Ci1 := vi.Ci0, vi.Ci1
+			if odd {
+				Ci0, Ci1 = Ci1, Ci0
+			}
+
+			for j := int32(0); j < Nv; j++ {
 				dot := int64(0)
-				for _, e := range Xvtx[vj].edges {
-					src_v := int32(e.srcVtx)
-					input := Ci0[vi*Nv+src_v]
+				vj := Xv[j]
+				for _, e := range vj.edges {
+					input := Ci0[e.srcVtx]
 					if e.edgeSign < 0 {
 						input = -input
 					}
 					dot += input
 				}
-				Ci1[vi*Nv+vj] = dot
+				Ci1[j] = dot
 			}
-		}
 
-		// With Ci+1 now calculated, store the Traces for the current cycle level (ci)
-		ci := X.curCi
-		traces_ci := int64(0)
-		calcCycles := ci < Nv
-
-		for vi := int32(0); vi < Nv; vi++ {
-			vi_vtx := Xvtx[vi]
-
-			// Total completed cycles of length ci is the sum of the diagonal.
-			vi_cycles := Ci1[vi*Nv+vi]
-			traces_ci += vi_cycles
-
-			if calcCycles {
-				e0 := Ci1[vi*Nv+int32(vi_vtx.edges[0].srcVtx)]
-				e1 := Ci1[vi*Nv+int32(vi_vtx.edges[1].srcVtx)]
-				e2 := Ci1[vi*Nv+int32(vi_vtx.edges[2].srcVtx)]
-
-				// Sort 3 items (ascending)
-				if e0 > e1 {
-					e0, e1 = e1, e0
-				}
-				if e0 > e2 {
-					e0, e2 = e2, e0
-				}
-				if e1 > e2 {
-					e1, e2 = e2, e1
-				}
-				if !(e0 <= e1 && e1 <= e2) {
-					panic("bad sort")
-				}
-
-				Tci := &vi_vtx.traces[ci]
-				Tci.cycles = vi_cycles
-				Tci.extSum = 0
-				Tci.input[0] = e0
-				Tci.input[1] = e1
-				Tci.input[2] = e2
-
-				for vj := int32(0); vj < Nv; vj++ {
-					switch {
-					case vi == vj:
-					case vj == int32(vi_vtx.edges[0].srcVtx):
-					case vj == int32(vi_vtx.edges[1].srcVtx):
-					case vj == int32(vi_vtx.edges[2].srcVtx):
-					default:
-						Tci.extSum += Ci1[vi*Nv+vj]
-					}
-				}
+			vi_cycles_ci := Ci1[vi.vtxID]
+			if ci < Nv {
+				vi.cycles[ci] = vi_cycles_ci
 			}
+			traces_ci += int64(vi.count) * vi_cycles_ci
 		}
 		X.traces[ci] = traces_ci
-
-		// On iteration, the "next" cycle state becomes the current state
-		Ci0, Ci1 = Ci1, Ci0
 	}
 
 }
@@ -445,23 +389,20 @@ func (X *graphState) canonize() {
 
 	Nv := X.vtxCount
 	X.calcUpTo(Nv)
-	vtxOrder := make([]byte, Nv)
-	for i := range vtxOrder {
-		vtxOrder[i] = byte(i)
-	}
 
-	Xvtx := X.VtxGroups()
+	Xv := X.Vtx()
+	Xg := X.VtxGroups()
 
 	// Sort vertices by vertex's innate characteristics & cycle signature
 	{
-		sort.Slice(vtxOrder, func(i, j int) bool {
-			vi := Xvtx[vtxOrder[i]]
-			vj := Xvtx[vtxOrder[j]]
+		sort.Slice(Xg, func(i, j int) bool {
+			vi := Xg[i]
+			vj := Xg[j]
 
 			// Sort by cycle count first and foremost
 			// The cycle count vector (an integer sequence of size Nv) is what characterizes a vertex.
 			for ci := int32(0); ci < Nv; ci++ {
-				d := vi.traces[ci].cycles - vj.traces[ci].cycles
+				d := vi.cycles[ci] - vj.cycles[ci]
 				if d != 0 {
 					return d < 0
 				}
@@ -471,17 +412,16 @@ func (X *graphState) canonize() {
 		})
 	}
 
-	// Now that vertices are sorted by cycle vector,  assign each vertex the groupID now associated with its vertex index.
+	// Now that vertices are sorted by cycle vector, assign each vertex the groupID now associated with its vertex index.
 	// With vertices in cycle-spectrum-canonic order we can now assign a groupID to each vertex.
 	// The groupID starts with 1 and group 0 is reserved for denote a loop (either positive or negative based on edgeSign).
 	{
 		X.numCycleGroups = 1
 		var v_prev *graphVtx
-		for _, vi_idx := range vtxOrder[:Nv] {
-			vi := Xvtx[vi_idx]
+		for _, vi := range Xg {
 			if v_prev != nil {
 				for ci := int32(0); ci < Nv; ci++ {
-					if vi.traces[ci].cycles != v_prev.traces[ci].cycles {
+					if vi.cycles[ci] != v_prev.cycles[ci] {
 						X.numCycleGroups++
 						break
 					}
@@ -493,34 +433,31 @@ func (X *graphState) canonize() {
 	}
 
 	// With groupIDs assigned to each vertex, assign srcGroup to all edges and order them edges on each vertex canonically
-	// Sort via vtxOrder so that .srcVtx still has the correct vtx index
-	for _, vi := range Xvtx {
-		for ei := range vi.edges {
-			srcGroup := Xvtx[vi.edges[ei].srcVtx].groupID
-			vi.edges[ei].EncodeSrcGroup(srcGroup)
+	for _, vi := range Xg {
+		for ei, e := range vi.edges {
+			src_vi := Xv[e.srcVtx]
+			vi.edges[ei].srcGroup = src_vi.groupID
 		}
 
-		// Canonically order edges by edge type then by edge sign & groupID
-		sort.Slice(vi.edges[:], func(i, j int) bool {
-			return vi.edges[i].edgeCode < vi.edges[j].edgeCode
-		})
+		// With each edge srcGroup now assigned, we can order the edges canonically
+		vi.canonizeVtx()
 	}
 
 	X.resortVtxGroups()
 
-	// Last but not least, we can do an RLE-style compression of the now-canonic vertex series.
+	// Last but not least, we do an RLE-style compression of the now-canonic vertex series.
 	// Note that doing so invalidates edge.srvVtx values, so lets zero them out for safety.
 	// Work right to left
 	{
 		L := byte(0)
 		for R := int32(1); R < Nv; R++ {
-			Lvtx := Xvtx[L]
-			Rvtx := Xvtx[R]
+			XgL := Xg[L]
+			XgR := Xg[R]
 			identical := false
-			if Lvtx.groupID == Rvtx.groupID {
+			if XgL.groupID == XgR.groupID && XgL.grouping == XgR.grouping {
 				identical = true
-				for ei := range Lvtx.edges {
-					if Lvtx.edges[ei].edgeCode != Rvtx.edges[ei].edgeCode {
+				for ei := range XgL.edges {
+					if XgL.edges[ei].srcGroup != XgR.edges[ei].srcGroup || XgL.edges[ei].edgeSign != XgR.edges[ei].edgeSign {
 						identical = false
 						break
 					}
@@ -529,26 +466,13 @@ func (X *graphState) canonize() {
 
 			// If exact match, absorb R into L, otherwise advance L (old R becomes new L)
 			if identical {
-				Lvtx.runLen += Rvtx.runLen
+				XgL.count += XgR.count
 			} else {
 				L++
-				Xvtx[L], Xvtx[R] = Xvtx[R], Xvtx[L]
+				Xg[L], Xg[R] = Xg[R], Xg[L]
 			}
 		}
 		X.numVtxGroups = L + 1
-	}
-
-	{
-		Nv := byte(X.vtxCount)
-		triID := append(X.triID[:0], Nv)
-		for _, gi := range X.VtxGroups() {
-			Nv -= gi.runLen
-			triID = gi.EncodeTo(triID)
-		}
-		if Nv != 0 {
-			panic("final compaction chk failed")
-		}
-		X.triID = triID
 	}
 
 	// Now that we have consolidated identical vertices, do final resort to move vtx groups with highest runLen first
@@ -557,29 +481,114 @@ func (X *graphState) canonize() {
 	X.status = canonized
 }
 
+func TriIDBinLen(Nv int32) int {
+	return int(Nv) * 5
+}
+
+func TriIDStrLen(Nv byte) int32 {
+	return int32(Nv) * 7
+}
+
 // GraphTriID is a 2x3 cycle spectrum encoding
 type GraphTriID []byte
 
 func (triID GraphTriID) String() string {
-	out := &strings.Builder{}
-	fmt.Fprintf(out, "v=%d ", triID[0])
-	for i := 1; i < len(triID); i += 4 {
-		fmt.Fprintf(out, "%d[%d:%d:%d] ", triID[i], triID[i+1], triID[i+2], triID[i+3])
+	var buf [256]byte
+	Nv := byte(len(triID) / 5)
+	if int(Nv)*5 != len(triID) {
+		panic("invalid triID")
 	}
-	return out.String()
+
+	// 3 tricodes + 1 count + 3 signs
+	str := buf[:TriIDStrLen(Nv)]
+
+	// Copy tricode and count (e.g. ABCABC11)
+	copy(str[:4*Nv], triID)
+
+	// Decode sign bits
+	{
+		octs := triID[4*Nv:]
+		sgns := str[4*Nv:]
+		for vi := byte(0); vi < Nv; vi++ {
+			oct := octs[vi]
+			for ei := byte(0); ei < 3; ei++ {
+				c := byte('+')
+				if oct&1 != 0 {
+					c = '-'
+				}
+				sgns[3*vi+2-ei] = c
+				oct >>= 1
+			}
+		}
+	}
+
+	return string(str)
+}
+
+func hexChar(v byte) byte {
+	if v < 10 {
+		return '0' + v
+	} else {
+		return 'a' + v - 10
+	}
 }
 
 func (X *graphState) GraphTriID() GraphTriID {
-	X.canonize()
+	if X.status < tricoded {
+		X.canonize()
+
+		{
+			//Nv := byte(X.vtxCount)
+			triSz := TriIDBinLen(X.vtxCount)
+			triID := X.triID[:0]
+			if cap(triID) < triSz {
+				triID = make([]byte, 0, triSz+63)
+			}
+			//triID := append(X.triID[:0], hexChar(Nv)) // ??? not needed ???
+
+			Xvtx := X.VtxGroups()
+
+			// **1** Tricode vales
+			for _, v := range Xvtx {
+				for ei, e := range v.edges {
+					c := 'A' - 1 + byte(e.srcGroup)
+					switch {
+					case e.isLoop:
+						c = '*'
+					case ei > 0 && v.grouping == Grouping_111:
+						c = '|'
+					case ei == 1 && v.grouping == Grouping_112:
+						c = '|'
+					}
+					triID = append(triID, c)
+				}
+			}
+
+			// **2** Tricode counts
+			for _, vi := range Xvtx {
+				triID = append(triID, hexChar(vi.count))
+			}
+
+			// **3** Tricode signs
+			// TODO: encode two sets per byte? -- saves 1 byte per two groups
+			for _, v := range Xvtx {
+				sgn := byte(0)
+				for _, e := range v.edges {
+					sgn <<= 1
+					if e.edgeSign < 0 {
+						sgn |= 1
+					}
+				}
+				triID = append(triID, sgn)
+			}
+			X.triID = triID
+		}
+
+		X.status = tricoded
+	}
+
 	return X.triID
 }
-
-// func (X *graphState) AppendCycleSpectrumTriID(io []byte) ([]byte) {
-// 	X.canonize()
-// 	io = append(io, byte(X.vtxCount))
-// 	io = append(io, X.triID...)
-// 	return io
-// }
 
 /*
 func (X *graphState) computeUID() {
@@ -620,41 +629,111 @@ func (X *graphState) computeUID() {
 }
 */
 
+var labels = []string{
+	"GROUP",
+	"EDGES",
+	"COUNT",
+	"SIGNS",
+}
+
+func (X *graphState) PrintTriCodes(out io.Writer) {
+	X.canonize()
+
+	Xvtx := X.VtxGroups()
+
+	var buf [256]byte
+
+	// Vertex type str
+	for line := 0; line < 4; line++ {
+		fmt.Fprintf(out, "\n   %s          ", labels[line])
+
+		for vi := 0; vi < len(Xvtx); {
+
+			// Calc col width based on grouping
+			groupCols := 1
+			for gi := vi + 1; gi < len(Xvtx); gi++ {
+				if Xvtx[vi].groupID != Xvtx[gi].groupID {
+					break
+				}
+				groupCols++
+			}
+			col_ := buf[:3*groupCols+5*groupCols]
+			col := col_[:len(col_)-5]
+			for i := range col_ {
+				col_[i] = ' '
+			}
+
+			v := Xvtx[vi]
+			c := byte('?')
+
+			switch line {
+			case 0: // GROUP
+				c = 'A' + v.groupID - 1
+				for i := range col {
+					col[i] = c
+				}
+			case 1: // EDGES
+				for i := range col {
+					col[i] = ':'
+				}
+				center := (len(col) - 3) / 2
+				for ei, e := range v.edges {
+					if e.isLoop {
+						c = '*'
+					} else {
+						c = 'A' + e.srcGroup - 1
+					}
+					switch {
+					case ei > 0 && v.grouping == Grouping_111:
+						c = '|'
+					case ei == 1 && v.grouping == Grouping_112:
+						c = '|'
+					}
+					col[center+ei] = c
+				}
+			case 2: // COUNT
+				for gi := 0; gi < groupCols; gi++ {
+					v := Xvtx[vi+gi]
+
+					NNN := v.count
+					for j := 2; j >= 0; j-- {
+						col[gi*8+j] = '0' + byte(NNN%10)
+						NNN /= 10
+					}
+				}
+			case 3: // SIGNS
+				for gi := 0; gi < groupCols; gi++ {
+					v := Xvtx[vi+gi]
+
+					for ei, e := range v.edges {
+						if e.edgeSign < 0 {
+							c = '-'
+						} else {
+							c = '+'
+						}
+						col[gi*8+ei] = c
+					}
+				}
+			}
+			out.Write(col_)
+			vi += groupCols
+		}
+	}
+
+}
+
 func (X *graphState) PrintCycleSpectrum(out io.Writer) {
 	X.canonize()
 
 	Nv := X.vtxCount
-
 	Xvtx := X.VtxGroups()
-	var buf [16]byte
-
-	// Cycle Group info
-	fmt.Fprintf(out, "\n                  ")
-	for _, vi := range Xvtx {
-		fmt.Fprintf(out, " %2dx @%-2d  ", vi.runLen, vi.groupID)
-	}
-
-	// Vertex type str
-	fmt.Fprintf(out, "\n                  ")
-	for _, vi := range Xvtx {
-		desc := buf[:0]
-		for _, e := range vi.edges {
-			desc = e.WriteStr(desc)
-		}
-		fmt.Fprintf(out, "  %s  ", desc)
-	}
 
 	for ci := int32(0); ci < Nv; ci++ {
-		traces_ci := int64(0)
+		fmt.Fprintf(out, "\n   T%d:%-7d", ci+1, X.traces[ci])
 		for _, vi := range Xvtx {
-			traces_ci += int64(vi.runLen) * vi.traces[ci].cycles
-		}
-		fmt.Fprintf(out, "\n   C%d:%8d| ", ci+1, traces_ci)
-		for _, vi := range Xvtx {
-			fmt.Fprintf(out, "%8d  ", vi.traces[ci].cycles)
+			fmt.Fprintf(out, "%8d", vi.cycles[ci])
 		}
 	}
-
 }
 
 func (X *graphState) Traces(numTraces int) Traces {
