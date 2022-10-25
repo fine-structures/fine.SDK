@@ -1,6 +1,6 @@
 # go2x3
 
-### Official Go toolkit for [2x3 Particle Theory](https://github.com/2x3systems/prime-materials), a [Standard Model](https://en.wikipedia.org/wiki/Standard_Model) consolidation theory 
+### Official Go toolkit for [2x3 Particle Theory](https://github.com/2x3systems/prime-materials), a [Standard Model](https://en.wikipedia.org/wiki/Standard_Model) consolidation theory.
 
 ## Quick Start
 
@@ -23,13 +23,10 @@ Then explore or run any of the tutorial scripts:
 You can also skip the above and go directly to the [learn](https://github.com/2x3systems/go2x3/tree/main/cmd/go2x3/learn) scripts and their "[gold](https://github.com/2x3systems/go2x3/tree/main/cmd/go2x3/learn/gold)" output.
 
 
-## Upcoming
-- Reimplement `GraphWalker` so that graph construction steps map to deterministic vertex and edge placement (graph visualization)
-- Replace particle `Traces` catalog indexing with a `TriID` characteristic extraction operator
-
 
 ## Releases
 
 | Version   | Description                                                                               |
 |:---------:|:-------------------------------------------------------------------------------------------------|
 | v1.2022.1 | - traces-based particle catalog index  <br/> - conventional (non-canonic) vertex-based graph encoding  <br/> - introducing early tricodes   |
+| v1.2022.2 | - refactor graph canonicalization  <br/> - refactor tricode console output |
