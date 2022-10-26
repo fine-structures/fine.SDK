@@ -1,0 +1,20 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "cmd/go2x3",
+            "type": "go",
+            "request": "launch",
+            "mode": "auto",
+            "program": "${workspaceFolder}/cmd/go2x3",
+            "cwd": "${workspaceFolder}/go2x3",
+            "args": [
+                "learn/01-foundations.py"
+                //"learn/02-techniques.py"
+                //"learn/04-neutron-decay.py"
+                //"learn/05-lepton-non-universality.py"
+                //"learn/06-traces-deep-dive.py"
+            ],
+        }
+    ]
+}
