@@ -1,8 +1,7 @@
 print('''
-Welcome to the 2x3 Workspace tutorial series!
-2x3 Workspace facilitates calculations for 2x3 Particle Theory =.''')
+Welcome to the go2x3 tutorial series!''')
 
-# First we must import the 2x3 module.  Consider opening and exploring lib/py2x3.py
+# First we import the 2x3 module. Sometime open and explore lib/py2x3.py
 from py2x3 import *
 
 # To express particle graphs, we make a new Graph from a vertex and edge initialization string. 

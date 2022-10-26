@@ -406,7 +406,7 @@ type PrintOpts struct {
 	Graph     bool   // If set, prints graph construction expr
 	Matrix    bool   // if set, prints matrix representation of graph
 	NumTraces int    // Num of Traces to print (-1 denotes natural length, 0 denotes no traces)
-	TriCodes  bool   // If set, the canonic tricode sequence is printed
+	Tricodes  bool   // If set, the canonic tricode sequence is printed
 	CycleSpec bool   // If set, the cycles spectrum is printed -- i.e. a canonic column of "cycles" vectors
 }
 
@@ -417,7 +417,7 @@ var DefaultPrintOpts = PrintOpts{
 }
 
 func (X *Graph) WriteAsString(out io.Writer, opts PrintOpts) {
-	fmt.Fprintf(out, "p=%d,v=%d,", X.NumParticles(), X.NumVerts())
+	fmt.Fprintf(out, "p=%d,v=%d,%s,", X.NumParticles(), X.NumVerts(), X.GraphTriID().String())
 
 	if opts.Graph {
 		X.WriteAsGraphExprStr(out)
@@ -427,6 +427,9 @@ func (X *Graph) WriteAsString(out io.Writer, opts PrintOpts) {
 	}
 	if opts.NumTraces != 0 {
 		X.WriteTracesAsCSV(out, opts.NumTraces)
+	}
+	if opts.Tricodes {
+		X.xstate.PrintTriCodes(out)
 	}
 	if opts.CycleSpec {
 		X.xstate.PrintCycleSpectrum(out)

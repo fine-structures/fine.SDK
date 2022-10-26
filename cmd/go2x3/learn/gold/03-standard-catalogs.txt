@@ -1,6 +1,6 @@
 
 =================================================================
-|                       go2x3 (v1.2022.1)                       |
+|                       go2x3 (v1.2022.2)                       |
 |                      https://2x3.systems                      |
 |                                                               |
 |    WHERE WERE YOU WHEN I LAID THE FOUNDATION OF THE EARTH?    |
