@@ -66,7 +66,14 @@ p.PhaseModes().Print("τ  (tau)     ", **basic).Go()
 print("\n")
 
 K4 = Graph("1-2-3^-4-1, 2-4")
-K4.PhaseModes().Print("K4", **basic).Go()
+K4.PhaseModes().Print("K4", **verbose).Go()
+
+print("\n")
+Graph("1^=2-3-~4").PhaseModes().Print("tricky1", **verbose).Go()
+
+print("\n")
+Graph("1^-~2-3-~4").PhaseModes().Print("tricky2", **verbose).Go()
+
 
 print("\n")
 
