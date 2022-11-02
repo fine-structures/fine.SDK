@@ -6,65 +6,404 @@ import (
 	"github.com/alecthomas/participle/v2"
 )
 
-type (
-	GroupID   byte
-	Adjacency byte
-)
+// GGroup labels the senior-most group lexicography.
+// Here, a GColor is a one-based index representing a vertex "G" group.
+type GroupID byte
+
+// GroupCode is an ASCII character in the range [A-Z], '|', and '* denoting a human readable
+
+// GroupEdge expresses a partnered group one-based index
+type GroupEdge byte
+
+// Returns:
+//    0 if loop
+//    1 if edge (non-loop)
+func (e GroupEdge) LoopBit() int32 {
+	return int32((^uint8(e)) >> 7)
+}
+
+// func (e GroupEdge) LoopBit() int32 {
+// 	return int32((^uint8(e)) >> 7)
+// }
+
+
+func (e GroupEdge) CycleGroupID() int {
+	return int(uint8(e) & 0x3F)
+}
+
+func FormGroupEdge(i GroupID, isLoop bool) GroupEdge {
+	e := GroupEdge(i)
+	if isLoop {
+		e |= kIsLoop
+	}
+	return GroupEdge(e)
+}
 
 const (
-	GroupLoop GroupID = '*'
-	GroupDupe GroupID = '|'
-	GroupA    GroupID = 'A'
+	GroupID_nil GroupID = 0
 
-	Adjacent_0_3L Adjacency = 0 // loop,   loop    loop         v=1 (e, ~e, π, ~π)
-	Adjacent_1_2L Adjacency = 1 // single  loop    loop         v=2 (single edge)
-	Adjacent_1_1L Adjacency = 2 // double  loop    ---          v=2 (double edge)
-	Adjacent_1_0L Adjacency = 3 // triple  ---     ---          v=2 (tri gamma)
-	Adjacent_2_1L Adjacency = 4 // single  single  loop         v=3+
-	Adjacent_2_0L Adjacency = 5 // single  double  ---          v=3+ (1-2 gamma)
-	Adjacent_3_0L Adjacency = 6 // single  single  single       v=3+ (disjoint gamma)
+	GroupID_Bits = 6
+
+	kIsLoop     GroupEdge = 0x80
+	kIsNegative GroupEdge = 0x40
+	//kNegate    GroupEdge = 0x40
+
+	// GroupLoop GroupCode = '*'
+	// GroupDupe GroupCode = '|'
+	// GroupA    GroupCode = 'A'
+
+	// Adjacent_0_3L Adjacency = 0 // loop,   loop    loop         v=1 (e, ~e, π, ~π)
+	// Adjacent_1_2L Adjacency = 1 // single  loop    loop         v=2 (single edge)
+	// Adjacent_1_1L Adjacency = 2 // double  loop    ---          v=2 (double edge)
+	// Adjacent_1_0L Adjacency = 3 // triple  ---     ---          v=2 (tri gamma)
+	// Adjacent_2_1L Adjacency = 4 // single  single  loop         v=3+
+	// Adjacent_2_0L Adjacency = 5 // single  double  ---          v=3+ (1-2 gamma)
+	// Adjacent_3_0L Adjacency = 6 // single  single  single       v=3+ (disjoint gamma)
 )
 
-type SignGroup struct {
-	Signs OctSign
-	Count byte
+const NumTriSigns = 8
+
+var TriSignStr = [NumTriSigns]string{
+	"+++", "++-", "+-+", "+--",
+	"-++", "-+-", "--+", "---",
 }
 
-type Tricode struct {
-	Src1       GroupID
-	Src2       GroupID
-	Src3       GroupID
-	SignGroups []SignGroup // Subs?  Parts?
+type TriSign byte
+
+// type TriEdge struct {
+// 	ToGroup byte // one-based index of the source group
+// 	IsLoop  bool
+// 	//Sign    int8 // -1 ot +1
+// 	//Code   GroupCode  // ASCII representation of the tricode (may contain * and |)
+// }
+// type EdgesType uint8
+// type EdgesColor [3]uint8
+
+// Lexograhically
+// {LoopOct}{MaskedTricode}{Tricode}{SignTri}
+// |** B** |AA 03 +++1
+// |** B** |CC 02 +++4
+
+type TriGroup struct {
+	FamilyID GroupID           // which vtx family group this is
+	CyclesID GroupID           // which cycles group this is
+	Edges    [3]GroupEdge      // cycle group connections
+	Counts   [NumTriSigns]int8 // instance counts
+	
+
+	Grouping EdgeGrouping // Which edges are double or triple (needed???)
 }
 
-type TriID struct {
-	NumGroups byte
-	Tricodes  []Tricode
+/*
+// Returns sortable ordinal expressing the 3 bits in i={0,1,2} order:
+//    Edges[0..2].IsLoop ? 0 : 1
+func (g *TriGroup) EdgesType() VtxEdgesType {
+	edges := int32(3)
+	for _, ei := range g.Edges {
+		edges -= ei.LoopBit()
+	}
+	return VtxEdgesType(edges)
+}
+*/
+
+func (g *TriGroup) EdgesCycleOrd() int {
+	ord := int(0)
+	for _, ei := range g.Edges {
+		ord = (ord << GroupID_Bits) | ei.CycleGroupID()
+	}
+	return ord
 }
 
-func (triID TriID) PrintString(maxV byte) {
+func (g *TriGroup) SubGroupingOrd() int {
+	 return 0 /// ???
+	// switch {
+	// case g.Edges[0]. == GroupLoop && tri.Src2 == GroupLoop && tri.Src3 == GroupLoop:
+	// 	return Adjacent_None
+	// case tri.Src1 >= GroupA && tri.Src2 >= GroupA && tri.Src3 >= GroupA:
+	// 	return Adjacent_Three
+	// }
+	
+	// loops := g.Edges[0].LoopBit() + g.Edges[1].LoopBit() + g.Edges[2].LoopBit()
+	// switch {
+	// case loops == 3:
+	// 	return Adjacent_None
+	// case loops == 2:
+	// 	return Adjacent_One
+	// case loops == 1:
+	// 	if g.Edges[0].
+	// 	return Adjacent_Two
+	// case loops == 0:
+	// 	return Adjacent_None
+		
+	
+	// if !g.Edges[0].isLoop && v.edges[0].srcVtx == v.edges[1].srcVtx {
+	// 	if v.edges[1].srcVtx == v.edges[2].srcVtx {
+	// 		v.grouping = Grouping_111
+	// 	} else {
+	// 		v.grouping = Grouping_112
+	// 	}
+	// } else {
+	// 	v.grouping = Grouping_Disjoint
+	// }
+	
+	// return Grouping_Disjoint;
+	
+	
+	// TODO: does grouping even matter??
+}
+
+
+func (g *TriGroup) VtxCount() int8 {
+	var total int8
+	for _, ci := range g.Counts {
+		total += ci
+	}
+	return total
+}
+
+func (g *TriGroup) SignCardinality() int {
+	numSigns := 0
+	for _, ci := range g.Counts {
+		if ci > 0 {
+			numSigns++
+		}
+	}
+	return numSigns
+}
+
+/*
+func (g *TriGroup) Compare(src *TriGroup) int {
+	if d := int(g.FamilyID) - int(src.FamilyID); d != 0 {
+		return d
+	}
+	if d := int(g.EdgesType()) - int(src.EdgesType()); d != 0 {
+		return d
+	}
+	if d := g.EdgesCycleOrd() - src.EdgesCycleOrd(); d != 0 {
+		return d
+	}
+	if d := int(g.CyclesID) - int(src.CyclesID); d != 0 {
+		return d
+	}
+	if d := g.SubGroupingOrd() - src.SubGroupingOrd(); d != 0 {
+		return d
+	}
+	return 0
+}
+
+
+
+func (g *TriGroup) Consolidate(src *TriGroup) bool {
+	if g.Compare(src) != 0 {
+		return false
+	}
+	for i, ni := range src.Counts {
+		g.Counts[i] += ni
+	}
+	return true
+}
+
+
+func (v* TriVtx) TriSign() TriSign {
+	sign := byte(0)
+	for i, ei := range v.edges {
+		sign <<= 1
+		if ei.edgeSign < 0 {
+			sign |= 1
+		}
+	}
+	return TriSign(sign)
+}
+
+*/
+/*
+type TriGroup struct {
+	//This     GroupID
+
+	Tricode [3]GroupID
+	Triflag [3]
+	Counts  [NumTriSigns]int32 // Run-length of each TriSign
+}
+
+
+func (tri *TriGroup) Ordinal() int32 {
+	S1 := byte(tri.Src1)
+	ord := int32(S1) << 16
+
+	S2 := byte(tri.Src2)
+	if tri.Src2 == GroupDupe {
+		S2 = S1
+		groupBits = 0x40
+	}
+	io = append(io, S2)
+
+	S3 := byte(gi.Src3)
+	if gi.Src3 == GroupDupe {
+		S3 = S2
+		groupBits = 0x0
+	}
+	io = append(io, S3)
+}*/
+
+
+func (g *TriGroup) AppendEdgesLabel(io []byte) []byte {
+	for _, ei := range g.Edges {
+		io = append(io, 'a' + byte(ei.CycleGroupID()) - 1)
+	}
+	// for i, ei := range g.Edges {
+	// 	c := byte('?')
+	// 	// sign := g.
+	// 	// if showTypes {
+	// 	// 	switch {
+	// 	// 		case ei.IsLoop && ei.Sign > 0:
+	// 	// 			c = '*'
+	// 	// 		case ei.IsLoop && ei.Sign < 0:
+	// 	// 			c = 'o'
+	// 	// 		case ei.Sign > 0:
+	// 	// 			c = '+'
+	// 	// 		case ei.Sign < 0:
+	// 	// 			c = '-'
+	// 	// 	}
+	// 	// 	io = append(io, c)
+	// 	// }
+	// 	if ei.LoopBit() != 0 {
+	// 		c = '*'
+	// 	} else {
+	// 		c = 'A' + ei.ToGroup - 1
+	// 	}
+	// 	switch {
+	// 	case i > 0 && g.Grouping == Grouping_111:
+	// 		c = '|'
+	// 	case i == 1 && g.Grouping == Grouping_112:
+	// 		c = '|'
+	// 	}
+	// 	io = append(io, c)
+
+	return io
+}
+
+
+
+type TriGraph struct {
+	//	This PhaseID // *trailing* byte lexicographically in encodings  (matter vs anti-matter)
+	CGE    string // UTF-8 Conventional 2x3 Graph Encoding string expression
+	Groups []TriGroup
+}
+
+func (X *TriGraph) Clear(numGroups int) {
+	X.CGE = ""
+
+	if cap(X.Groups) < numGroups {
+		X.Groups = make([]TriGroup, numGroups)
+	} else {
+		X.Groups = X.Groups[:numGroups]
+	}
+	for i := range X.Groups {
+		X.Groups[i] = TriGroup{
+			//This: GroupA + GroupID(i),
+		}
+	}
+}
+
+func (X *TriGraph) VtxCount() int32 {
+	Nv := int32(0)
+	for _, gi := range X.Groups {
+		for _, ci := range gi.Counts {
+			Nv += int32(ci)
+		}
+	}
+	return Nv
+}
+
+/*
+func (X *TriGraph) Canonize() {
+	sort.Slice(X.Groups, func(i, j int) bool {
+		diff := X.Groups[i].Compare(&X.Groups[j])
+		return diff < 0
+	})
+	X.Consolidate()
+}
+
+func (X *TriGraph) Consolidate() {
+
+	// At this point, vertices are sorted via tricode (using group numbering via canonic ranking of cycle vectors)
+	// Here we collapse consecutive vertices with the same tricode into a "super" group
+	// As we collapse tricodes, we must reassign new groupIDs
+	{ //for running := true; running; {
+		Xg := X.Groups
+		Ng := len(Xg)
+		L := byte(0)
+		for R := 1; R < Ng; R++ {
+			XgL := &Xg[L]
+			XgR := &Xg[R]
+			if !XgL.Consolidate(XgR) {
+				L++
+				Xg[L] = *XgR
+			}
+		}
+		X.Groups = X.Groups[:L+1]
+	}
+}
+*/
+
+
+
+// Note that all Encodings have an implied "anti-matter" phase, which just flips all the TriSigns.
+type TriGraphEncoderOpts int
+
+const (
+	IncludeSignModes TriGraphEncoderOpts = 1 << iota
+
+	//TracesAndModesAndCGE
+)
+
+func (X *TriGraph) ExportGraphDesc(io []byte) []byte {
+	//b := strings.Builder{}
+
+	//var scrap [32]byte
+
+	// Gn - Group count
+	//fmt.Fprintf(&buf, "%d:", len(X.Groups))
+	//io = append(io, byte('0' + len(X.Groups)))
+
 	//
+	for i, gi := range X.Groups {
+		//b.Reset()
+		if i > 0 {
+			io = append(io, ',')
+		}
+		numSigns := gi.SignCardinality()
+		if numSigns > 1 {
+			io = append(io, '(')
+		}
+		first := true
+		for i, ci := range gi.Counts {
+			if ci > 0 {
+				if !first {
+					first = false
+					io = append(io, ' ')
+				}
+				{
+					if ci >= 10 {
+						io = append(io, '0'+byte(ci/10))
+					}
+					io = append(io, '0'+byte(ci%10))
+				}
+				io = append(io, TriSignStr[i]...)
+			}
+		}
+		if numSigns > 1 {
+			io = append(io, ')')
+		}
+		
+		io = gi.AppendEdgesLabel(io)
+
+		//io = append(io, b.String()...)
+	}
+
+	return io
 }
 
-var OctSignStr = [1 + 8]string{
-	" . ",
-	"---", "--+", "-+-", "-++",
-	"+--", "+-+", "++-", "+++",
-}
-
-type OctSign byte
-
-const (
-	OctSign_nil OctSign = 0x0
-	OctSign_000 OctSign = 0x1
-	OctSign_001 OctSign = 0x2
-	OctSign_010 OctSign = 0x3
-	OctSign_011 OctSign = 0x4
-	OctSign_100 OctSign = 0x5
-	OctSign_101 OctSign = 0x6
-	OctSign_110 OctSign = 0x7
-	OctSign_111 OctSign = 0x8
-)
 
 type TriGraphExpr struct {
 	//Parts []*Part `(@@ (";" @@)*)?`

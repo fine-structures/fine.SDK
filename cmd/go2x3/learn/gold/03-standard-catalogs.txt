@@ -3,18 +3,16 @@
 |                       go2x3 (v1.2022.2)                       |
 |                      https://2x3.systems                      |
 |                                                               |
-|    WHERE WERE YOU WHEN I LAID THE FOUNDATION OF THE EARTH?    |
-|               TELL ME, IF YOU HAVE UNDERSTANDING.             |
-|               TELL ME, IF YOU KNOW ALL THIS.                  |
+|       "OH LET ME BEHOLD YOUR PRESENCE”  EXODUS 33:2x3x3       |
 =================================================================
 
 ########################################################################
 ##        On-Demand Prime Particle Catalog Generation to v=6          ##
 ##____________________________________________________________________##
 ##  v= 1:            4 graphs           4 traces           4 primes   ##
-##  v= 2:           25 graphs          11 traces           3 primes   ##
-##  v= 3:          116 graphs          36 traces          30 primes   ##
-##  v= 4:          823 graphs         103 traces          42 primes   ##
-##  v= 5:         6066 graphs         470 traces         356 primes   ##
-##  v= 6:        52384 graphs        1737 traces        1117 primes   ##
+##  v= 2:           23 graphs          11 traces           3 primes   ##
+##  v= 3:          110 graphs          36 traces          30 primes   ##
+##  v= 4:          766 graphs         103 traces          42 primes   ##
+##  v= 5:         5878 graphs         470 traces         356 primes   ##
+##  v= 6:        50664 graphs        1737 traces        1117 primes   ##
 ########################################################################

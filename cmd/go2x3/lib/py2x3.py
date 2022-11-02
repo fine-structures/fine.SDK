@@ -3,15 +3,17 @@ import _py2x3
 # Global variables
 MAX_VTX = _py2x3.MAX_VTX
 
-
+'''
+|    WHERE WERE YOU WHEN I LAID THE FOUNDATION OF THE EARTH?    |
+|               TELL ME, IF YOU HAVE UNDERSTANDING.             |
+|               TELL ME, IF YOU KNOW ALL THIS.                  |
+'''
 print('''
 =================================================================
 |                       go2x3 (%s)                       |
 |                      https://2x3.systems                      |
 |                                                               |
-|    WHERE WERE YOU WHEN I LAID THE FOUNDATION OF THE EARTH?    |
-|               TELL ME, IF YOU HAVE UNDERSTANDING.             |
-|               TELL ME, IF YOU KNOW ALL THIS.                  |
+|       "OH LET ME BEHOLD YOUR PRESENCE”  EXODUS 33:2x3x3       |
 =================================================================
 ''' % (_py2x3.LIB2x3_VERSION))
 

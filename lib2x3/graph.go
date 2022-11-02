@@ -417,7 +417,7 @@ var DefaultPrintOpts = PrintOpts{
 }
 
 func (X *Graph) WriteAsString(out io.Writer, opts PrintOpts) {
-	fmt.Fprintf(out, "p=%d,v=%d,%s,", X.NumParticles(), X.NumVerts(), X.GraphTriID().String())
+	fmt.Fprintf(out, "p=%d,v=%d,%q,", X.NumParticles(), X.NumVerts(), X.TriGraphExprStr())
 
 	if opts.Graph {
 		X.WriteAsGraphExprStr(out)
@@ -752,6 +752,13 @@ func (X *Graph) GraphTriID() GraphTriID {
 	X.Traces(0)
 	return X.xstate.GraphTriID()
 }
+
+func (X *Graph) TriGraphExprStr() string {
+	X.Traces(0)
+	return X.xstate.TriGraphExprStr()
+}
+
+
 
 // PermuteVtxSigns emits a Graph for every possible vertex pole permutation of the given Graph.
 //
