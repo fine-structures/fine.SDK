@@ -1,12 +1,48 @@
 package lib2x3
 
 import (
-	"encoding/base32"
 	"errors"
 	"fmt"
 	"io"
 	"sort"
+	"strconv"
 )
+
+func chopBuf(consume []int64, N int32) (alloc []int64, remain []int64) {
+	return consume[0:N], consume[N:]
+}
+
+// GraphTriID is a 2x3 cycle spectrum encoding
+type GraphTriID []byte
+
+var (
+	ErrNilGraph = errors.New("nil graph")
+	ErrBadEdges = errors.New("edge count does not correspond to vertex count")
+)
+
+type vtxStatus int32
+
+const (
+	newlyReset vtxStatus = iota + 1
+	calculating
+	canonized
+	tricoded
+)
+
+type graphState struct {
+	vtxCount       int32
+	vtxDimSz       int32
+	vtx            []*graphVtx // maps initial vertex index to cycle group vtx
+	vtxGroups      []*graphVtx // ordered list of vtx groups
+	numCycleGroups byte        // number of unique cycle vectors present
+	numVtxGroups   byte        // number of unique vertex groups present
+
+	curCi  int32
+	traces Traces
+	triID  []byte
+	status vtxStatus
+	store  [256]byte
+}
 
 type EdgeGrouping byte
 
@@ -109,13 +145,6 @@ func (v *triVtx) EdgesCycleOrd() int {
 	return ord
 }
 
-func (v *triVtx) AppendEdgesLabel(io []byte) []byte {
-	for _, ei := range v.edges {
-		io = append(io, 'A'+byte(ei.srcGroup)-1)
-	}
-	return io
-}
-
 func (v *triVtx) familyEdgeOrd(ei int) uint8 {
 	cyclesID := v.edges[ei].srcGroup
 	ord := uint8(cyclesID) << 1
@@ -209,50 +238,6 @@ func (v *graphVtx) Init(vtxID byte) {
 	v.edges[2].edgeSign = 0
 }
 
-const Graph3IDSz = 16
-
-type Graph3ID [Graph3IDSz]byte
-
-func (uid Graph3ID) String() string {
-	return Base32Encoding.EncodeToString(uid[:])
-}
-
-// GeohashBase32Alphabet is the alphabet used for Base32Encoding
-const GeohashBase32Alphabet = "0123456789bcdefghjkmnpqrstuvwxyz"
-
-var (
-	// Base32Encoding is used to encode/decode binary buffer to/from base 32
-	Base32Encoding = base32.NewEncoding(GeohashBase32Alphabet).WithPadding(base32.NoPadding)
-)
-
-func chopBuf(consume []int64, N int32) (alloc []int64, remain []int64) {
-	return consume[0:N], consume[N:]
-}
-
-type vtxStatus int32
-
-const (
-	newlyReset vtxStatus = iota + 1
-	calculating
-	canonized
-	tricoded
-)
-
-type graphState struct {
-	vtxCount       int32
-	vtxDimSz       int32
-	vtx            []*graphVtx // maps initial vertex index to cycle group vtx
-	vtxGroups      []*graphVtx // ordered list of vtx groups
-	numCycleGroups byte        // number of unique cycle vectors present
-	numVtxGroups   byte        // number of unique vertex groups present
-
-	curCi  int32
-	traces Traces
-	triID  []byte
-	status vtxStatus
-	store  [256]byte
-}
-
 func (X *graphState) reset(numVerts byte) {
 	Nv := int32(numVerts)
 
@@ -292,11 +277,6 @@ func (X *graphState) reset(numVerts byte) {
 	}
 
 }
-
-var (
-	ErrNilGraph = errors.New("nil graph")
-	ErrBadEdges = errors.New("edge count does not correspond to vertex count")
-)
 
 func (X *graphState) AssignGraph(Xsrc *Graph) error {
 	if Xsrc == nil {
@@ -597,17 +577,6 @@ func (X *graphState) canonize() {
 	X.status = canonized
 }
 
-func TriIDBinLen(Nv int32) int {
-	return int(Nv) * 5
-}
-
-func TriIDStrLen(Nv byte) int32 {
-	return int32(Nv) * 7
-}
-
-// GraphTriID is a 2x3 cycle spectrum encoding
-type GraphTriID []byte
-
 func (X *graphState) TriGraphExprStr() string {
 	X.GraphTriID()
 
@@ -655,111 +624,77 @@ func (X *graphState) exportEncoding(io []byte, opts TriGraphEncoderOpts) (TriID 
 }
 
 func (X *graphState) exportGraphDesc(io []byte) []byte {
-	//b := strings.Builder{}
 
-	//var scrap [32]byte
-
-	// Gn - Group count
-	//fmt.Fprintf(&buf, "%d:", len(X.Groups))
-	//io = append(io, byte('0' + len(X.Groups)))
-
+	// Build output like: "**C((+-- +-+)A (+-- +-+)B) *AB(+-+ ++-)C"
 	Xg := X.VtxGroups()
 
-	for i, gi := range Xg {
-		//b.Reset()
-		if i > 0 {
+	var giTri, gjTri [3]byte
+	runLen := 0
+
+	for gi := 0; gi < len(Xg); gi += runLen {
+		if gi > 0 {
 			io = append(io, ' ')
 		}
-		// numSigns := gi.SignCardinality()
-		// if numSigns > 1 {
-		// 	io = append(io, '(')
-		// }
 
-		//for i, ci := range gi.Counts {
+		g := Xg[gi]
+		g.printEdges(giTri[:])
 
-		// if numSigns > 1 {
-		// 	io = append(io, ')')
-		// }
-		{
-			N := gi.count
-			if N >= 10 {
-				io = append(io, '0'+byte(N/10))
+		numCycleGroups := 1
+		runLen = 1
+		for gj := gi + 1; gj < len(Xg); gj++ {
+			Xg[gj].printEdges(gjTri[:])
+			if giTri != gjTri {
+				break
 			}
-			if N == 1 {
+			if Xg[gj].CyclesID != g.CyclesID {
+				numCycleGroups++
+			}
+			runLen++
+		}
+
+		// cycleRunLen := 1
+		// for gj := gi + 1; gj < gi + runLen; gj++ {
+		// 	if Xg[gj].CyclesID != g.CyclesID {
+		// 		break
+		// 	}
+		// 	cycleRunLen++
+		// }
+
+		io = append(io, giTri[:]...)
+
+		if runLen > 1 {
+			io = append(io, '(')
+		}
+		for i := 0; i < runLen; i++ {
+			if i > 0 {
 				io = append(io, ' ')
-			} else {
-				io = append(io, '0'+byte(N%10))
+			}
+
+			g = Xg[gi+i]
+
+			for _, e := range g.edges {
+				c := byte('+')
+				if e.edgeSign < 0 {
+					c = '-'
+				}
+				io = append(io, c)
+			}
+			if g.count > 1 {
+				io = strconv.AppendInt(io, int64(g.count), 10)
+			}
+			if numCycleGroups > 1 {
+				io = append(io, 'A'-1+byte(g.CyclesID))
 			}
 		}
-
-		for _, ei := range gi.edges {
-			c := byte('?')
-			switch {
-			case ei.isLoop && ei.edgeSign > 0:
-				c = '*'
-			case ei.isLoop && ei.edgeSign < 0:
-				c = '^'
-			case ei.edgeSign > 0:
-				c = '+'
-			case ei.edgeSign < 0:
-				c = '-'
-			}
-			io = append(io, c)
+		if runLen > 1 {
+			io = append(io, ')')
 		}
-
-		io = gi.AppendEdgesLabel(io)
-
-		//io = append(io, b.String()...)
+		if numCycleGroups == 1 {
+			io = append(io, 'A'-1+byte(g.CyclesID))
+		}
 	}
 
 	return io
-}
-
-/*
-func (X *graphState) computeUID() {
-	if X.status >= uidComputed {
-		return
-	}
-
-	X.canonize()
-
-	{
-		hasher := splitMix{}
-		hasher.Reset()
-
-		{
-			Nv := X.vtxCount
-			for _, vi := range X.vtx[:Nv] {
-				hasher.Write(int64(vi.groupID))
-				for _, e := range vi.edges {
-					hasher.Write(int64(e.edgeCode))
-				}
-				// for ci := int32(0); ci < Nv; ci++ {
-				// 	// Open mystery: removing [0:3]input (below) decreases total graph count as expected, but it also decreases the unique Traces count!?!
-				// 	// The unique Traces count of a complete catalog should be *unaffected* by GraphUID choices and conventions, no!?
-				// 	hasher.Write(vi.traces[ci].cycles)
-				// 	hasher.Write(vi.traces[ci].input[0])
-				// 	hasher.Write(vi.traces[ci].input[1])
-				// 	hasher.Write(vi.traces[ci].input[2])
-				// 	hasher.Write(vi.traces[ci].extSum)
-				// 	hasher.Write(vi.VtxType())
-				// }
-			}
-		}
-
-		hash := hasher.Sum()
-		copy(X.uid[:], hash[:])
-		X.status = uidComputed
-	}
-}
-*/
-
-var labels = []string{
-	//	"FAMILY ID    ",
-	"FAMILY EDGES ",
-	"CYCLES ID    ",
-	"SIGNS        ",
-	"COUNT        ",
 }
 
 func (X *graphState) PrintTriCodes(out io.Writer) {
@@ -768,20 +703,26 @@ func (X *graphState) PrintTriCodes(out io.Writer) {
 	Xg := X.VtxGroups()
 
 	var buf [256]byte
-	var groupTri, thisTri [3]byte
+	var giTri, gjTri [3]byte
 
 	// Vertex type str
 	for line := 0; line < 4; line++ {
-		fmt.Fprintf(out, "\n   %s  ", labels[line])
+		fmt.Fprintf(out, "\n   %s  ", []string{
+			"FAMILY EDGES ",
+			"CYCLES ID    ",
+			"SIGNS        ",
+			"COUNT        ",
+		}[line])
 
-		for vi := 0; vi < len(Xg); {
+		for gi := 0; gi < len(Xg); {
+			g := Xg[gi]
 
 			// Calc col width based on grouping
 			groupCols := 1
-			Xg[vi].printEdges(groupTri[:])
-			for gi := vi + 1; gi < len(Xg); gi++ {
-				Xg[gi].printEdges(thisTri[:])
-				if thisTri != groupTri {
+			g.printEdges(giTri[:])
+			for gj := gi + 1; gj < len(Xg); gj++ {
+				Xg[gj].printEdges(gjTri[:])
+				if gjTri != giTri {
 					break
 				}
 				groupCols++
@@ -792,7 +733,6 @@ func (X *graphState) PrintTriCodes(out io.Writer) {
 				col_[i] = ' '
 			}
 
-			v := Xg[vi]
 			c := byte('?')
 
 			switch line {
@@ -812,47 +752,50 @@ func (X *graphState) PrintTriCodes(out io.Writer) {
 			// 	}
 			case 0: // FAMILY EDGES
 				center := (len(col) - 3) / 2
-				v.printEdges(col[center:])
+				copy(col[center:], giTri[:])
+
 			case 1: // CYCLES ID
 				for i := range col {
 					col[i] = ':'
 				}
 				{
-					for gi := 0; gi < groupCols; gi++ {
-						v = Xg[vi+gi]
-						c = 'A' + byte(v.CyclesID) - 1
-						for j := 0; j < 3; j++ {
-							col[gi*8+j] = c
+					for j := 0; j < groupCols; j++ {
+						g = Xg[gi+j]
+						c = 'A' + byte(g.CyclesID) - 1
+						for k := 0; k < 3; k++ {
+							col[j*8+k] = c
 						}
 					}
 				}
 
 			case 2: // SIGNS
-				for gi := 0; gi < groupCols; gi++ {
-					v = Xg[vi+gi]
+				for j := 0; j < groupCols; j++ {
+					g = Xg[gi+j]
 
-					for ei, e := range v.edges {
+					for ei, e := range g.edges {
 						if e.edgeSign < 0 {
 							c = '-'
 						} else {
 							c = '+'
 						}
-						col[gi*8+ei] = c
+						col[j*8+ei] = c
 					}
 				}
-			case 3: // COUNT
-				for gi := 0; gi < groupCols; gi++ {
-					v = Xg[vi+gi]
 
-					NNN := v.count
-					for j := 2; j >= 0; j-- {
-						col[gi*8+j] = '0' + byte(NNN%10)
+			case 3: // COUNT
+				for j := 0; j < groupCols; j++ {
+					g = Xg[gi+j]
+
+					NNN := g.count
+					for k := 2; k >= 0; k-- {
+						col[j*8+k] = '0' + byte(NNN%10)
 						NNN /= 10
 					}
 				}
+
 			}
 			out.Write(col_)
-			vi += groupCols
+			gi += groupCols
 		}
 	}
 
@@ -879,73 +822,4 @@ func (X *graphState) Traces(numTraces int) Traces {
 
 	X.calcUpTo(int32(numTraces))
 	return X.traces[:numTraces]
-}
-
-// AP Hash Function
-// https://www.partow.net/programming/hashfunctions/#AvailableHashFunctions
-func APHash64(buf []byte) uint64 {
-	var hash uint64 = 0xaaaaaaaaaaaaaaaa
-	for i, b := range buf {
-		if (i & 1) == 0 {
-			hash ^= ((hash << 7) ^ uint64(b) ^ (hash >> 3))
-		} else {
-			hash ^= (^((hash << 11) ^ uint64(b) ^ (hash >> 5)) + 1)
-		}
-	}
-	return hash
-}
-
-func writeU64(buf []byte, val uint64) {
-	buf[0] = byte((val) & 0xFF)
-	buf[1] = byte((val >> 8) & 0xFF)
-	buf[2] = byte((val >> 16) & 0xFF)
-	buf[3] = byte((val >> 24) & 0xFF)
-	buf[4] = byte((val >> 32) & 0xFF)
-	buf[5] = byte((val >> 40) & 0xFF)
-	buf[6] = byte((val >> 48) & 0xFF)
-	buf[7] = byte((val >> 56) & 0xFF)
-}
-
-type splitMix struct {
-	h1 uint64
-	h2 uint64
-}
-
-func (mix *splitMix) Reset() {
-	mix.h1 = 0xaaaaaaaaaaaaaaaa
-	mix.h2 = 0
-}
-
-func (mix *splitMix) Write(val int64) {
-	x := mix.h1 ^ mix.h2
-
-	// https://github.com/skeeto/hash-prospector
-	x1 := x
-	x1 = x1 + 0x9e3779b97f4a7c15 + uint64(val)
-	x1 ^= (x1 >> 30)
-	x1 *= 0xbf58476d1ce4e5b9
-	x1 ^= (x1 >> 27)
-	x1 *= 0x94d049bb133111eb
-	x1 ^= (x1 >> 31)
-	mix.h1 = x1
-
-	// https://gist.github.com/badboy/6267743
-	x2 := x
-	x2 = (^x2) + (x2 << 21) // x2 = (x2 << 21) - x2 - 1;
-	x2 = x2 ^ (x2 >> 24)
-	x2 = (x2 + (x2 << 3)) + (x2 << 8) // x2 * 265
-	x2 = x2 ^ (x2 >> 14)
-	x2 = (x2 + (x2 << 2)) + (x2 << 4) // x2 * 21
-	x2 = x2 ^ (x2 >> 28)
-	x2 = x2 + (x2 << 31)
-	mix.h2 = x2
-}
-
-func (mix *splitMix) Sum() [16]byte {
-	var hash [16]byte
-
-	writeU64(hash[:8], mix.h1)
-	writeU64(hash[8:16], mix.h2)
-
-	return hash
 }
