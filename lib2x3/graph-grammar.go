@@ -10,55 +10,42 @@ import (
 // Here, a GColor is a one-based index representing a vertex "G" group.
 type GroupID byte
 
-// GroupCode is an ASCII character in the range [A-Z], '|', and '* denoting a human readable
-
-// GroupEdge expresses a partnered group one-based index
+// GroupEdge expresses edge embedding an inlet group number, edge sign, and if the edge is a loop.
 type GroupEdge byte
 
-// Returns:
-//    0 if loop
-//    1 if edge (non-loop)
-func (e GroupEdge) LoopBit() int32 {
-	return int32((^uint8(e)) >> 7)
+// Returns 1 if loop, 0 if edge (non-loop).
+func (e GroupEdge) LoopBit() int {
+	return (int(e) >> kLoopBitShift) & 1
 }
 
-// func (e GroupEdge) LoopBit() int32 {
-// 	return int32((^uint8(e)) >> 7)
-// }
-
-
-func (e GroupEdge) CycleGroupID() int {
-	return int(uint8(e) & 0x3F)
+// Returns -1 or 1
+func (e GroupEdge) Sign() int {
+	return ((int(e) >> (kSignBitShift - 1)) & 0x2) - 1
 }
 
-func FormGroupEdge(i GroupID, isLoop bool) GroupEdge {
+func (e GroupEdge) GroupID() int {
+	return int(e) & kGroupID_Mask
+}
+
+func FormGroupEdge(i GroupID, isLoop, isNeg bool) GroupEdge {
 	e := GroupEdge(i)
 	if isLoop {
-		e |= kIsLoop
+		e |= 1 << kLoopBitShift
 	}
-	return GroupEdge(e)
+	if isNeg {
+		e |= 1 << kSignBitShift
+	}
+	return e
 }
 
 const (
 	GroupID_nil GroupID = 0
 
-	GroupID_Bits = 6
+	kGroupID_Bits = 6
+	kGroupID_Mask = (1 << kGroupID_Bits) - 1
+	kLoopBitShift = 6 // When bit is set, edge is a loop
+	kSignBitShift = 7 // When bit is set, edge sign is negative
 
-	kIsLoop     GroupEdge = 0x80
-	kIsNegative GroupEdge = 0x40
-	//kNegate    GroupEdge = 0x40
-
-	// GroupLoop GroupCode = '*'
-	// GroupDupe GroupCode = '|'
-	// GroupA    GroupCode = 'A'
-
-	// Adjacent_0_3L Adjacency = 0 // loop,   loop    loop         v=1 (e, ~e, π, ~π)
-	// Adjacent_1_2L Adjacency = 1 // single  loop    loop         v=2 (single edge)
-	// Adjacent_1_1L Adjacency = 2 // double  loop    ---          v=2 (double edge)
-	// Adjacent_1_0L Adjacency = 3 // triple  ---     ---          v=2 (tri gamma)
-	// Adjacent_2_1L Adjacency = 4 // single  single  loop         v=3+
-	// Adjacent_2_0L Adjacency = 5 // single  double  ---          v=3+ (1-2 gamma)
-	// Adjacent_3_0L Adjacency = 6 // single  single  single       v=3+ (disjoint gamma)
 )
 
 const NumTriSigns = 8
@@ -70,26 +57,11 @@ var TriSignStr = [NumTriSigns]string{
 
 type TriSign byte
 
-// type TriEdge struct {
-// 	ToGroup byte // one-based index of the source group
-// 	IsLoop  bool
-// 	//Sign    int8 // -1 ot +1
-// 	//Code   GroupCode  // ASCII representation of the tricode (may contain * and |)
-// }
-// type EdgesType uint8
-// type EdgesColor [3]uint8
-
-// Lexograhically
-// {LoopOct}{MaskedTricode}{Tricode}{SignTri}
-// |** B** |AA 03 +++1
-// |** B** |CC 02 +++4
-
 type TriGroup struct {
 	FamilyID GroupID           // which vtx family group this is
 	CyclesID GroupID           // which cycles group this is
 	Edges    [3]GroupEdge      // cycle group connections
 	Counts   [NumTriSigns]int8 // instance counts
-	
 
 	Grouping EdgeGrouping // Which edges are double or triple (needed???)
 }
@@ -109,49 +81,10 @@ func (g *TriGroup) EdgesType() VtxEdgesType {
 func (g *TriGroup) EdgesCycleOrd() int {
 	ord := int(0)
 	for _, ei := range g.Edges {
-		ord = (ord << GroupID_Bits) | ei.CycleGroupID()
+		ord = (ord << 8) | ei.GroupID()
 	}
 	return ord
 }
-
-func (g *TriGroup) SubGroupingOrd() int {
-	 return 0 /// ???
-	// switch {
-	// case g.Edges[0]. == GroupLoop && tri.Src2 == GroupLoop && tri.Src3 == GroupLoop:
-	// 	return Adjacent_None
-	// case tri.Src1 >= GroupA && tri.Src2 >= GroupA && tri.Src3 >= GroupA:
-	// 	return Adjacent_Three
-	// }
-	
-	// loops := g.Edges[0].LoopBit() + g.Edges[1].LoopBit() + g.Edges[2].LoopBit()
-	// switch {
-	// case loops == 3:
-	// 	return Adjacent_None
-	// case loops == 2:
-	// 	return Adjacent_One
-	// case loops == 1:
-	// 	if g.Edges[0].
-	// 	return Adjacent_Two
-	// case loops == 0:
-	// 	return Adjacent_None
-		
-	
-	// if !g.Edges[0].isLoop && v.edges[0].srcVtx == v.edges[1].srcVtx {
-	// 	if v.edges[1].srcVtx == v.edges[2].srcVtx {
-	// 		v.grouping = Grouping_111
-	// 	} else {
-	// 		v.grouping = Grouping_112
-	// 	}
-	// } else {
-	// 	v.grouping = Grouping_Disjoint
-	// }
-	
-	// return Grouping_Disjoint;
-	
-	
-	// TODO: does grouping even matter??
-}
-
 
 func (g *TriGroup) VtxCount() int8 {
 	var total int8
@@ -245,10 +178,9 @@ func (tri *TriGroup) Ordinal() int32 {
 	io = append(io, S3)
 }*/
 
-
 func (g *TriGroup) AppendEdgesLabel(io []byte) []byte {
 	for _, ei := range g.Edges {
-		io = append(io, 'a' + byte(ei.CycleGroupID()) - 1)
+		io = append(io, 'a'+byte(ei.GroupID())-1)
 	}
 	// for i, ei := range g.Edges {
 	// 	c := byte('?')
@@ -281,8 +213,6 @@ func (g *TriGroup) AppendEdgesLabel(io []byte) []byte {
 
 	return io
 }
-
-
 
 type TriGraph struct {
 	//	This PhaseID // *trailing* byte lexicographically in encodings  (matter vs anti-matter)
@@ -346,8 +276,6 @@ func (X *TriGraph) Consolidate() {
 }
 */
 
-
-
 // Note that all Encodings have an implied "anti-matter" phase, which just flips all the TriSigns.
 type TriGraphEncoderOpts int
 
@@ -395,7 +323,7 @@ func (X *TriGraph) ExportGraphDesc(io []byte) []byte {
 		if numSigns > 1 {
 			io = append(io, ')')
 		}
-		
+
 		io = gi.AppendEdgesLabel(io)
 
 		//io = append(io, b.String()...)
@@ -403,7 +331,6 @@ func (X *TriGraph) ExportGraphDesc(io []byte) []byte {
 
 	return io
 }
-
 
 type TriGraphExpr struct {
 	//Parts []*Part `(@@ (";" @@)*)?`

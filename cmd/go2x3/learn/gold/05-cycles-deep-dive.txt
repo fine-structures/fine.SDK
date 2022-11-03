@@ -8,27 +8,27 @@
 
 
 
-e- (electron),000001,p=1,v=1,"***+++A","1","{{3}}",3,9,27,81,243,729,2187,6561,
+e- (electron),000001,p=1,v=1,"1:*** A,1+++   ","1","{{3}}",3,9,27,81,243,729,2187,6561,
    FAMILY EDGES   ***     
    CYCLES ID      AAA     
    SIGNS          +++     
    COUNT          001     
    T1:3             3
-~e (positron),000001,p=1,v=1,"***---A","1^^^","{{-3}}",-3,9,-27,81,-243,729,-2187,6561,
-   FAMILY EDGES   ***     
+~e (positron),000001,p=1,v=1,"1:^^^ A,1---   ","1^^^","{{-3}}",-3,9,-27,81,-243,729,-2187,6561,
+   FAMILY EDGES   ^^^     
    CYCLES ID      AAA     
    SIGNS          ---     
    COUNT          001     
    T1:-3           -3
-γ0 (photon),000001,p=1,v=2,"***+++2A","1---2","{{0,3},{3,0}}",0,18,0,162,0,1458,0,13122,
-   FAMILY EDGES   ***     
+γ0 (photon),000001,p=1,v=2,"1:||| A,2+++   ","1---2","{{0,3},{3,0}}",0,18,0,162,0,1458,0,13122,
+   FAMILY EDGES   |||     
    CYCLES ID      AAA     
    SIGNS          +++     
    COUNT          002     
    T1:0             0
    T2:18            9
-γ0 (photon),000002,p=1,v=2,"***---2A","1~~~2","{{0,-3},{-3,0}}",0,18,0,162,0,1458,0,13122,
-   FAMILY EDGES   ***     
+γ0 (photon),000002,p=1,v=2,"1:||| A,2---   ","1~~~2","{{0,-3},{-3,0}}",0,18,0,162,0,1458,0,13122,
+   FAMILY EDGES   |||     
    CYCLES ID      AAA     
    SIGNS          ---     
    COUNT          002     
@@ -36,120 +36,134 @@ e- (electron),000001,p=1,v=1,"***+++A","1","{{3}}",3,9,27,81,243,729,2187,6561,
    T2:18            9
 
 
-W+ (charged weak),000001,p=1,v=1,"***++-A","1^","{{1}}",1,1,1,1,1,1,1,1,
-   FAMILY EDGES   ***     
+W+ (charged weak),000001,p=1,v=1,"1:^** A,1-++   ","1^","{{1}}",1,1,1,1,1,1,1,1,
+   FAMILY EDGES   ^**     
    CYCLES ID      AAA     
-   SIGNS          ++-     
+   SIGNS          -++     
    COUNT          001     
    T1:1             1
-W- (charged weak),000001,p=1,v=1,"***+--A","1^^","{{-1}}",-1,1,-1,1,-1,1,-1,1,
-   FAMILY EDGES   ***     
+W- (charged weak),000001,p=1,v=1,"1:^^* A,1--+   ","1^^","{{-1}}",-1,1,-1,1,-1,1,-1,1,
+   FAMILY EDGES   ^^*     
    CYCLES ID      AAA     
-   SIGNS          +--     
+   SIGNS          --+     
    COUNT          001     
    T1:-1           -1
-Z0 (neutral weak),000001,p=1,v=2,"***++-2A","1^-2^","{{0,1},{1,0}}",0,2,0,2,0,2,0,2,
-   FAMILY EDGES   ***     
+Z0 (neutral weak),000001,p=1,v=2,"1:|^* A,2+-+   ","1^-2^","{{0,1},{1,0}}",0,2,0,2,0,2,0,2,
+   FAMILY EDGES   |^*     
    CYCLES ID      AAA     
-   SIGNS          ++-     
+   SIGNS          +-+     
    COUNT          002     
    T1:0             0
    T2:2             1
-Z0 (neutral weak),000002,p=1,v=2,"***+--2A","1^~2^","{{0,-1},{-1,0}}",0,2,0,2,0,2,0,2,
-   FAMILY EDGES   ***     
+Z0 (neutral weak),000002,p=1,v=2,"1:|^* A,2--+   ","1^~2^","{{0,-1},{-1,0}}",0,2,0,2,0,2,0,2,
+   FAMILY EDGES   |^*     
    CYCLES ID      AAA     
-   SIGNS          +--     
+   SIGNS          --+     
    COUNT          002     
    T1:0             0
    T2:2             1
-Z0 (neutral weak),000003,p=1,v=2,"*AA++-B *BB-+-A","1^-~2","{{-1,0},{0,1}}",0,2,0,2,0,2,0,2,
-   FAMILY EDGES   *AA     *BB     
+Z0 (neutral weak),000003,p=1,v=2,"1:||| A,2-++   ","1--~2","{{0,1},{1,0}}",0,2,0,2,0,2,0,2,
+   FAMILY EDGES   |||     
+   CYCLES ID      AAA     
+   SIGNS          -++     
+   COUNT          002     
+   T1:0             0
+   T2:2             1
+Z0 (neutral weak),000004,p=1,v=2,"1:||| A,2--+   ","1-~~2","{{0,-1},{-1,0}}",0,2,0,2,0,2,0,2,
+   FAMILY EDGES   |||     
+   CYCLES ID      AAA     
+   SIGNS          --+     
+   COUNT          002     
+   T1:0             0
+   T2:2             1
+Z0 (neutral weak),000005,p=1,v=2,"2:AA* BB^ B,A,1-++   1-+-   ","1^-~2","{{-1,0},{0,1}}",0,2,0,2,0,2,0,2,
+   FAMILY EDGES   AA*     BB^     
    CYCLES ID      BBB     AAA     
-   SIGNS          ++-     -+-     
+   SIGNS          -++     -+-     
    COUNT          001     001     
    T1:0             1      -1
    T2:2             1       1
 
 
-e-,000001,p=1,v=1,"***+++A","1","{{3}}",3,9,27,81,243,729,2187,6561,
+e-,000001,p=1,v=1,"1:*** A,1+++   ","1","{{3}}",3,9,27,81,243,729,2187,6561,
    FAMILY EDGES   ***     
    CYCLES ID      AAA     
    SIGNS          +++     
    COUNT          001     
    T1:3             3
-p+,000001,p=1,v=3,"**A+++2B *BB+++A","1-2-3","{{2,1,0},{1,1,1},{0,1,2}}",5,13,35,97,275,793,2315,6817,
-   FAMILY EDGES   **A     *BB     
+p+,000001,p=1,v=3,"2:A** BB* B,A,2+++   1+++   ","1-2-3","{{2,1,0},{1,1,1},{0,1,2}}",5,13,35,97,275,793,2315,6817,
+   FAMILY EDGES   A**     BB*     
    CYCLES ID      BBB     AAA     
    SIGNS          +++     +++     
    COUNT          002     001     
    T1:5             2       1
    T2:13            5       3
    T3:35           13       9
-p+,000002,p=1,v=3,"**A++-2B *BB+--A","1~2~3","{{2,-1,0},{-1,1,-1},{0,-1,2}}",5,13,35,97,275,793,2315,6817,
-   FAMILY EDGES   **A     *BB     
+p+,000002,p=1,v=3,"2:A** BB* B,A,2-++   1--+   ","1~2~3","{{2,-1,0},{-1,1,-1},{0,-1,2}}",5,13,35,97,275,793,2315,6817,
+   FAMILY EDGES   A**     BB*     
    CYCLES ID      BBB     AAA     
-   SIGNS          ++-     +--     
+   SIGNS          -++     --+     
    COUNT          002     001     
    T1:5             2       1
    T2:13            5       3
    T3:35           13       9
-p+,000003,p=1,v=3,"**A(++- +++)B *BB++-A","1~2-3","{{2,-1,0},{-1,1,1},{0,1,2}}",5,13,35,97,275,793,2315,6817,
-   FAMILY EDGES       **A         *BB     
+p+,000003,p=1,v=3,"3:2A** BB* BB,A,1-++ 1+++   1-++   ","1~2-3","{{2,-1,0},{-1,1,1},{0,1,2}}",5,13,35,97,275,793,2315,6817,
+   FAMILY EDGES       A**         BB*     
    CYCLES ID      BBB:::::BBB     AAA     
-   SIGNS          ++-     +++     ++-     
+   SIGNS          -++     +++     -++     
    COUNT          001     001     001     
    T1:5             2       2       1
    T2:13            5       5       3
    T3:35           13      13       9
-n0,000001,p=1,v=4,"**A(+++2B +++C) BBC+++A","1-2-3-4-2","{{2,1,0,0},{1,0,1,1},{0,1,1,1},{0,1,1,1}}",4,14,34,98,274,794,2314,6818,
-   FAMILY EDGES       **A         BBC     
-   CYCLES ID      BBB:::::CCC     AAA     
+n0,000001,p=1,v=4,"3:2A|* BBC BC,A,2+++ 1+++   1+++   ","1-2-3-4-2","{{2,1,0,0},{1,0,1,1},{0,1,1,1},{0,1,1,1}}",4,14,34,98,274,794,2314,6818,
+   FAMILY EDGES   A|*     A**     BBC     
+   CYCLES ID      BBB     CCC     AAA     
    SIGNS          +++     +++     +++     
    COUNT          002     001     001     
    T1:4             1       2       0
    T2:14            3       5       3
    T3:34            8      12       6
    T4:98           23      31      21
-n0,000002,p=1,v=4,"**A(+++2B ++-C) BBC++-A","1~2-3-4-2","{{2,-1,0,0},{-1,0,1,1},{0,1,1,1},{0,1,1,1}}",4,14,34,98,274,794,2314,6818,
-   FAMILY EDGES       **A         BBC     
-   CYCLES ID      BBB:::::CCC     AAA     
-   SIGNS          +++     ++-     ++-     
+n0,000002,p=1,v=4,"3:2A|* BBC BC,A,2+++ 1-++   1++-   ","1~2-3-4-2","{{2,-1,0,0},{-1,0,1,1},{0,1,1,1},{0,1,1,1}}",4,14,34,98,274,794,2314,6818,
+   FAMILY EDGES   A|*     A**     BBC     
+   CYCLES ID      BBB     CCC     AAA     
+   SIGNS          +++     -++     ++-     
    COUNT          002     001     001     
    T1:4             1       2       0
    T2:14            3       5       3
    T3:34            8      12       6
    T4:98           23      31      21
-n0,000003,p=1,v=4,"**A(++-2B +++C) BBC--+A","1-2~3-4~2","{{2,1,0,0},{1,0,-1,-1},{0,-1,1,1},{0,-1,1,1}}",4,14,34,98,274,794,2314,6818,
-   FAMILY EDGES       **A         BBC     
-   CYCLES ID      BBB:::::CCC     AAA     
-   SIGNS          ++-     +++     --+     
+n0,000003,p=1,v=4,"3:2A|* BBC BC,A,2-++ 1+++   1--+   ","1-2~3-4~2","{{2,1,0,0},{1,0,-1,-1},{0,-1,1,1},{0,-1,1,1}}",4,14,34,98,274,794,2314,6818,
+   FAMILY EDGES   A|*     A**     BBC     
+   CYCLES ID      BBB     CCC     AAA     
+   SIGNS          -++     +++     --+     
    COUNT          002     001     001     
    T1:4             1       2       0
    T2:14            3       5       3
    T3:34            8      12       6
    T4:98           23      31      21
-n0,000004,p=1,v=4,"**A(++-2B ++-C) BBC---A","1~2~3-4~2","{{2,-1,0,0},{-1,0,-1,-1},{0,-1,1,1},{0,-1,1,1}}",4,14,34,98,274,794,2314,6818,
-   FAMILY EDGES       **A         BBC     
-   CYCLES ID      BBB:::::CCC     AAA     
-   SIGNS          ++-     ++-     ---     
+n0,000004,p=1,v=4,"3:2A|* BBC BC,A,2-++ 1-++   1---   ","1~2~3-4~2","{{2,-1,0,0},{-1,0,-1,-1},{0,-1,1,1},{0,-1,1,1}}",4,14,34,98,274,794,2314,6818,
+   FAMILY EDGES   A|*     A**     BBC     
+   CYCLES ID      BBB     CCC     AAA     
+   SIGNS          -++     -++     ---     
    COUNT          002     001     001     
    T1:4             1       2       0
    T2:14            3       5       3
    T3:34            8      12       6
    T4:98           23      31      21
-n0,000005,p=1,v=4,"**A(+--B +-+B +++C) BBC+-+A","1-2~3~4-2","{{2,1,0,0},{1,0,-1,1},{0,-1,1,-1},{0,1,-1,1}}",4,14,34,98,274,794,2314,6818,
-   FAMILY EDGES           **A             BBC     
-   CYCLES ID      BBB:::::BBB:::::CCC     AAA     
-   SIGNS          +--     +-+     +++     +-+     
+n0,000005,p=1,v=4,"4:3A|* BBC BBC,A,1--+ 1+-+ 1+++   1-++   ","1-2~3~4-2","{{2,1,0,0},{1,0,-1,1},{0,-1,1,-1},{0,1,-1,1}}",4,14,34,98,274,794,2314,6818,
+   FAMILY EDGES       A|*         A**     BBC     
+   CYCLES ID      BBB:::::BBB     CCC     AAA     
+   SIGNS          --+     +-+     +++     -++     
    COUNT          001     001     001     001     
    T1:4             1       1       2       0
    T2:14            3       3       5       3
    T3:34            8       8      12       6
    T4:98           23      23      31      21
-n0,000006,p=1,v=4,"**A(+--B +-+B ++-C) BBC+--A","1~2~3~4-2","{{2,-1,0,0},{-1,0,-1,1},{0,-1,1,-1},{0,1,-1,1}}",4,14,34,98,274,794,2314,6818,
-   FAMILY EDGES           **A             BBC     
-   CYCLES ID      BBB:::::BBB:::::CCC     AAA     
-   SIGNS          +--     +-+     ++-     +--     
+n0,000006,p=1,v=4,"4:3A|* BBC BBC,A,1--+ 1+-+ 1-++   1-+-   ","1~2~3~4-2","{{2,-1,0,0},{-1,0,-1,1},{0,-1,1,-1},{0,1,-1,1}}",4,14,34,98,274,794,2314,6818,
+   FAMILY EDGES       A|*         A**     BBC     
+   CYCLES ID      BBB:::::BBB     CCC     AAA     
+   SIGNS          --+     +-+     -++     -+-     
    COUNT          001     001     001     001     
    T1:4             1       1       2       0
    T2:14            3       3       5       3
@@ -157,1028 +171,1105 @@ n0,000006,p=1,v=4,"**A(+--B +-+B ++-C) BBC+--A","1~2~3~4-2","{{2,-1,0,0},{-1,0,-
    T4:98           23      23      31      21
 
 
-tetra,000001,p=1,v=4,"***+++4A","1-2-3-1-4-2 3-4",0,12,24,84,
-   FAMILY EDGES   ***     
+tetra,000001,p=1,v=4,"1:||| A,4+++   ","1-2-3-1-4-2 3-4",0,12,24,84,
+   FAMILY EDGES   |||     
    CYCLES ID      AAA     
    SIGNS          +++     
    COUNT          004     
-tetra,000002,p=1,v=4,"***+--4A","1-2~3~1~4~2 3-4",0,12,24,84,
-   FAMILY EDGES   ***     
+tetra,000002,p=1,v=4,"1:||| A,4--+   ","1-2~3~1~4~2 3-4",0,12,24,84,
+   FAMILY EDGES   |||     
    CYCLES ID      AAA     
-   SIGNS          +--     
+   SIGNS          --+     
    COUNT          004     
-tetra,000003,p=1,v=4,"***(--- ++-3)A","1~2-3~1~4-2 3-4",0,12,24,84,
-   FAMILY EDGES       ***         
+tetra,000003,p=1,v=4,"2:2||| AA,1--- 3-++   ","1~2-3~1~4-2 3-4",0,12,24,84,
+   FAMILY EDGES       |||         
    CYCLES ID      AAA:::::AAA     
-   SIGNS          ---     ++-     
+   SIGNS          ---     -++     
    COUNT          001     003     
 
 
-e- (electron),000001,p=1,v=1,"***+++A","1",3,
+e- (electron),000001,p=1,v=1,"1:*** A,1+++   ","1",3,
    FAMILY EDGES   ***     
    CYCLES ID      AAA     
    SIGNS          +++     
    COUNT          001     
-µ- (muon)    ,000001,p=1,v=3,"**A+++C *AA+++B BBC+++A","1-2=3",3,15,27,
-   FAMILY EDGES   **A     *AA     BBC     
-   CYCLES ID      CCC     BBB     AAA     
+µ- (muon)    ,000001,p=1,v=3,"3:AA* A** BBC B,C,A,1+++   1+++   1+++   ","1-2=3",3,15,27,
+   FAMILY EDGES   AA*     A**     BBC     
+   CYCLES ID      BBB     CCC     AAA     
    SIGNS          +++     +++     +++     
    COUNT          001     001     001     
-µ- (muon)    ,000002,p=1,v=3,"**A+++C *AA+--B BBC--+A","1-2~~3",3,15,27,
-   FAMILY EDGES   **A     *AA     BBC     
-   CYCLES ID      CCC     BBB     AAA     
-   SIGNS          +++     +--     --+     
+µ- (muon)    ,000002,p=1,v=3,"3:AA* A** BBC B,C,A,1+++   1-++   1++-   ","1~2=3",3,15,27,
+   FAMILY EDGES   AA*     A**     BBC     
+   CYCLES ID      BBB     CCC     AAA     
+   SIGNS          +++     -++     ++-     
    COUNT          001     001     001     
-µ- (muon)    ,000003,p=1,v=3,"**A++-C *AA+++B BBC++-A","1~2=3",3,15,27,
-   FAMILY EDGES   **A     *AA     BBC     
-   CYCLES ID      CCC     BBB     AAA     
-   SIGNS          ++-     +++     ++-     
+µ- (muon)    ,000003,p=1,v=3,"3:AA* A** BBC B,C,A,1--+   1+++   1--+   ","1-2~~3",3,15,27,
+   FAMILY EDGES   AA*     A**     BBC     
+   CYCLES ID      BBB     CCC     AAA     
+   SIGNS          --+     +++     --+     
    COUNT          001     001     001     
-µ- (muon)    ,000004,p=1,v=3,"**A++-C *AA+--B BBC---A","1~2~~3",3,15,27,
-   FAMILY EDGES   **A     *AA     BBC     
-   CYCLES ID      CCC     BBB     AAA     
-   SIGNS          ++-     +--     ---     
+µ- (muon)    ,000004,p=1,v=3,"3:AA* A** BBC B,C,A,1--+   1-++   1---   ","1~2~~3",3,15,27,
+   FAMILY EDGES   AA*     A**     BBC     
+   CYCLES ID      BBB     CCC     AAA     
+   SIGNS          --+     -++     ---     
    COUNT          001     001     001     
-τ  (tau)     ,000001,p=1,v=5,"**B+++E *CC+++D AAE+++B ADD+++C BBC+++A","1-2=3-4=5",3,25,27,165,243,
-   FAMILY EDGES   **B     *CC     AAE     ADD     BBC     
-   CYCLES ID      EEE     DDD     BBB     CCC     AAA     
+τ  (tau)     ,000001,p=1,v=5,"5:AAE ADD BBC B** CC* B,C,A,E,D,1+++   1+++   1+++   1+++   1+++   ","1-2=3-4=5",3,25,27,165,243,
+   FAMILY EDGES   AAE     ADD     BBC     B**     CC*     
+   CYCLES ID      BBB     CCC     AAA     EEE     DDD     
    SIGNS          +++     +++     +++     +++     +++     
    COUNT          001     001     001     001     001     
-τ  (tau)     ,000002,p=1,v=5,"**B+++E *CC+++D AAE+++B ADD-++C BBC++-A","1-2=3~4=5",3,25,27,165,243,
-   FAMILY EDGES   **B     *CC     AAE     ADD     BBC     
-   CYCLES ID      EEE     DDD     BBB     CCC     AAA     
-   SIGNS          +++     +++     +++     -++     ++-     
+τ  (tau)     ,000002,p=1,v=5,"5:AAE ADD BBC B** CC* B,C,A,E,D,1+++   1+--   1+++   1+++   1--+   ","1-2=3-4~~5",3,25,27,165,243,
+   FAMILY EDGES   AAE     ADD     BBC     B**     CC*     
+   CYCLES ID      BBB     CCC     AAA     EEE     DDD     
+   SIGNS          +++     +--     +++     +++     --+     
    COUNT          001     001     001     001     001     
-τ  (tau)     ,000003,p=1,v=5,"**B+++E *CC+++D AAE--+B ADD+++C BBC--+A","1-2~~3-4=5",3,25,27,165,243,
-   FAMILY EDGES   **B     *CC     AAE     ADD     BBC     
-   CYCLES ID      EEE     DDD     BBB     CCC     AAA     
-   SIGNS          +++     +++     --+     +++     --+     
+τ  (tau)     ,000003,p=1,v=5,"5:AAE ADD BBC B** CC* B,C,A,E,D,1+++   1-++   1++-   1+++   1+++   ","1-2=3~4=5",3,25,27,165,243,
+   FAMILY EDGES   AAE     ADD     BBC     B**     CC*     
+   CYCLES ID      BBB     CCC     AAA     EEE     DDD     
+   SIGNS          +++     -++     ++-     +++     +++     
    COUNT          001     001     001     001     001     
-τ  (tau)     ,000004,p=1,v=5,"**B+++E *CC+++D AAE--+B ADD-++C BBC---A","1-2~~3~4=5",3,25,27,165,243,
-   FAMILY EDGES   **B     *CC     AAE     ADD     BBC     
-   CYCLES ID      EEE     DDD     BBB     CCC     AAA     
-   SIGNS          +++     +++     --+     -++     ---     
+τ  (tau)     ,000004,p=1,v=5,"5:AAE ADD BBC B** CC* B,C,A,E,D,1+++   1---   1++-   1+++   1--+   ","1-2=3~4~~5",3,25,27,165,243,
+   FAMILY EDGES   AAE     ADD     BBC     B**     CC*     
+   CYCLES ID      BBB     CCC     AAA     EEE     DDD     
+   SIGNS          +++     ---     ++-     +++     --+     
    COUNT          001     001     001     001     001     
-τ  (tau)     ,000005,p=1,v=5,"**B+++E *CC+--D AAE+++B ADD+--C BBC+++A","1-2=3-4~~5",3,25,27,165,243,
-   FAMILY EDGES   **B     *CC     AAE     ADD     BBC     
-   CYCLES ID      EEE     DDD     BBB     CCC     AAA     
-   SIGNS          +++     +--     +++     +--     +++     
+τ  (tau)     ,000005,p=1,v=5,"5:AAE ADD BBC B** CC* B,C,A,E,D,1++-   1+++   1+++   1-++   1+++   ","1~2=3-4=5",3,25,27,165,243,
+   FAMILY EDGES   AAE     ADD     BBC     B**     CC*     
+   CYCLES ID      BBB     CCC     AAA     EEE     DDD     
+   SIGNS          ++-     +++     +++     -++     +++     
    COUNT          001     001     001     001     001     
-τ  (tau)     ,000006,p=1,v=5,"**B+++E *CC+--D AAE+++B ADD---C BBC++-A","1-2=3~4~~5",3,25,27,165,243,
-   FAMILY EDGES   **B     *CC     AAE     ADD     BBC     
-   CYCLES ID      EEE     DDD     BBB     CCC     AAA     
-   SIGNS          +++     +--     +++     ---     ++-     
+τ  (tau)     ,000006,p=1,v=5,"5:AAE ADD BBC B** CC* B,C,A,E,D,1++-   1+--   1+++   1-++   1--+   ","1~2=3-4~~5",3,25,27,165,243,
+   FAMILY EDGES   AAE     ADD     BBC     B**     CC*     
+   CYCLES ID      BBB     CCC     AAA     EEE     DDD     
+   SIGNS          ++-     +--     +++     -++     --+     
    COUNT          001     001     001     001     001     
-τ  (tau)     ,000007,p=1,v=5,"**B+++E *CC+--D AAE--+B ADD+--C BBC--+A","1-2~~3-4~~5",3,25,27,165,243,
-   FAMILY EDGES   **B     *CC     AAE     ADD     BBC     
-   CYCLES ID      EEE     DDD     BBB     CCC     AAA     
-   SIGNS          +++     +--     --+     +--     --+     
+τ  (tau)     ,000007,p=1,v=5,"5:AAE ADD BBC B** CC* B,C,A,E,D,1++-   1-++   1++-   1-++   1+++   ","1~2=3~4=5",3,25,27,165,243,
+   FAMILY EDGES   AAE     ADD     BBC     B**     CC*     
+   CYCLES ID      BBB     CCC     AAA     EEE     DDD     
+   SIGNS          ++-     -++     ++-     -++     +++     
    COUNT          001     001     001     001     001     
-τ  (tau)     ,000008,p=1,v=5,"**B+++E *CC+--D AAE--+B ADD---C BBC---A","1-2~~3~4~~5",3,25,27,165,243,
-   FAMILY EDGES   **B     *CC     AAE     ADD     BBC     
-   CYCLES ID      EEE     DDD     BBB     CCC     AAA     
-   SIGNS          +++     +--     --+     ---     ---     
+τ  (tau)     ,000008,p=1,v=5,"5:AAE ADD BBC B** CC* B,C,A,E,D,1++-   1---   1++-   1-++   1--+   ","1~2=3~4~~5",3,25,27,165,243,
+   FAMILY EDGES   AAE     ADD     BBC     B**     CC*     
+   CYCLES ID      BBB     CCC     AAA     EEE     DDD     
+   SIGNS          ++-     ---     ++-     -++     --+     
    COUNT          001     001     001     001     001     
-τ  (tau)     ,000009,p=1,v=5,"**B++-E *CC+++D AAE++-B ADD+++C BBC+++A","1~2=3-4=5",3,25,27,165,243,
-   FAMILY EDGES   **B     *CC     AAE     ADD     BBC     
-   CYCLES ID      EEE     DDD     BBB     CCC     AAA     
-   SIGNS          ++-     +++     ++-     +++     +++     
+τ  (tau)     ,000009,p=1,v=5,"5:AAE ADD BBC B** CC* B,C,A,E,D,1--+   1+++   1--+   1+++   1+++   ","1-2~~3-4=5",3,25,27,165,243,
+   FAMILY EDGES   AAE     ADD     BBC     B**     CC*     
+   CYCLES ID      BBB     CCC     AAA     EEE     DDD     
+   SIGNS          --+     +++     --+     +++     +++     
    COUNT          001     001     001     001     001     
-τ  (tau)     ,000010,p=1,v=5,"**B++-E *CC+++D AAE++-B ADD-++C BBC++-A","1~2=3~4=5",3,25,27,165,243,
-   FAMILY EDGES   **B     *CC     AAE     ADD     BBC     
-   CYCLES ID      EEE     DDD     BBB     CCC     AAA     
-   SIGNS          ++-     +++     ++-     -++     ++-     
+τ  (tau)     ,000010,p=1,v=5,"5:AAE ADD BBC B** CC* B,C,A,E,D,1--+   1+--   1--+   1+++   1--+   ","1-2~~3-4~~5",3,25,27,165,243,
+   FAMILY EDGES   AAE     ADD     BBC     B**     CC*     
+   CYCLES ID      BBB     CCC     AAA     EEE     DDD     
+   SIGNS          --+     +--     --+     +++     --+     
    COUNT          001     001     001     001     001     
-τ  (tau)     ,000011,p=1,v=5,"**B++-E *CC+++D AAE---B ADD+++C BBC--+A","1~2~~3-4=5",3,25,27,165,243,
-   FAMILY EDGES   **B     *CC     AAE     ADD     BBC     
-   CYCLES ID      EEE     DDD     BBB     CCC     AAA     
-   SIGNS          ++-     +++     ---     +++     --+     
+τ  (tau)     ,000011,p=1,v=5,"5:AAE ADD BBC B** CC* B,C,A,E,D,1--+   1-++   1---   1+++   1+++   ","1-2~~3~4=5",3,25,27,165,243,
+   FAMILY EDGES   AAE     ADD     BBC     B**     CC*     
+   CYCLES ID      BBB     CCC     AAA     EEE     DDD     
+   SIGNS          --+     -++     ---     +++     +++     
    COUNT          001     001     001     001     001     
-τ  (tau)     ,000012,p=1,v=5,"**B++-E *CC+++D AAE---B ADD-++C BBC---A","1~2~~3~4=5",3,25,27,165,243,
-   FAMILY EDGES   **B     *CC     AAE     ADD     BBC     
-   CYCLES ID      EEE     DDD     BBB     CCC     AAA     
-   SIGNS          ++-     +++     ---     -++     ---     
+τ  (tau)     ,000012,p=1,v=5,"5:AAE ADD BBC B** CC* B,C,A,E,D,1--+   1---   1---   1+++   1--+   ","1-2~~3~4~~5",3,25,27,165,243,
+   FAMILY EDGES   AAE     ADD     BBC     B**     CC*     
+   CYCLES ID      BBB     CCC     AAA     EEE     DDD     
+   SIGNS          --+     ---     ---     +++     --+     
    COUNT          001     001     001     001     001     
-τ  (tau)     ,000013,p=1,v=5,"**B++-E *CC+--D AAE++-B ADD+--C BBC+++A","1~2=3-4~~5",3,25,27,165,243,
-   FAMILY EDGES   **B     *CC     AAE     ADD     BBC     
-   CYCLES ID      EEE     DDD     BBB     CCC     AAA     
-   SIGNS          ++-     +--     ++-     +--     +++     
+τ  (tau)     ,000013,p=1,v=5,"5:AAE ADD BBC B** CC* B,C,A,E,D,1---   1+++   1--+   1-++   1+++   ","1~2~~3-4=5",3,25,27,165,243,
+   FAMILY EDGES   AAE     ADD     BBC     B**     CC*     
+   CYCLES ID      BBB     CCC     AAA     EEE     DDD     
+   SIGNS          ---     +++     --+     -++     +++     
    COUNT          001     001     001     001     001     
-τ  (tau)     ,000014,p=1,v=5,"**B++-E *CC+--D AAE++-B ADD---C BBC++-A","1~2=3~4~~5",3,25,27,165,243,
-   FAMILY EDGES   **B     *CC     AAE     ADD     BBC     
-   CYCLES ID      EEE     DDD     BBB     CCC     AAA     
-   SIGNS          ++-     +--     ++-     ---     ++-     
+τ  (tau)     ,000014,p=1,v=5,"5:AAE ADD BBC B** CC* B,C,A,E,D,1---   1+--   1--+   1-++   1--+   ","1~2~~3-4~~5",3,25,27,165,243,
+   FAMILY EDGES   AAE     ADD     BBC     B**     CC*     
+   CYCLES ID      BBB     CCC     AAA     EEE     DDD     
+   SIGNS          ---     +--     --+     -++     --+     
    COUNT          001     001     001     001     001     
-τ  (tau)     ,000015,p=1,v=5,"**B++-E *CC+--D AAE---B ADD+--C BBC--+A","1~2~~3-4~~5",3,25,27,165,243,
-   FAMILY EDGES   **B     *CC     AAE     ADD     BBC     
-   CYCLES ID      EEE     DDD     BBB     CCC     AAA     
-   SIGNS          ++-     +--     ---     +--     --+     
+τ  (tau)     ,000015,p=1,v=5,"5:AAE ADD BBC B** CC* B,C,A,E,D,1---   1-++   1---   1-++   1+++   ","1~2~~3~4=5",3,25,27,165,243,
+   FAMILY EDGES   AAE     ADD     BBC     B**     CC*     
+   CYCLES ID      BBB     CCC     AAA     EEE     DDD     
+   SIGNS          ---     -++     ---     -++     +++     
    COUNT          001     001     001     001     001     
-τ  (tau)     ,000016,p=1,v=5,"**B++-E *CC+--D AAE---B ADD---C BBC---A","1~2~~3~4~~5",3,25,27,165,243,
-   FAMILY EDGES   **B     *CC     AAE     ADD     BBC     
-   CYCLES ID      EEE     DDD     BBB     CCC     AAA     
-   SIGNS          ++-     +--     ---     ---     ---     
+τ  (tau)     ,000016,p=1,v=5,"5:AAE ADD BBC B** CC* B,C,A,E,D,1---   1---   1---   1-++   1--+   ","1~2~~3~4~~5",3,25,27,165,243,
+   FAMILY EDGES   AAE     ADD     BBC     B**     CC*     
+   CYCLES ID      BBB     CCC     AAA     EEE     DDD     
+   SIGNS          ---     ---     ---     -++     --+     
    COUNT          001     001     001     001     001     
 
 
-K4,000001,p=1,v=4,"*AC+++2B *BB(-++A +++C)","1^-2-3-4-2 1-4","{{-1,1,0,1},{1,0,1,1},{0,1,1,1},{1,1,1,0}}",0,12,12,68,120,444,980,3076,
-   FAMILY EDGES   *AC         *BB         
-   CYCLES ID      BBB     AAA:::::CCC     
-   SIGNS          +++     -++     +++     
+K4,000001,p=1,v=4,"3:AC| BB^ BB* B,A,C,2+++   1++-   1+++   ","1^-2-3-4-2 1-4","{{-1,1,0,1},{1,0,1,1},{0,1,1,1},{1,1,1,0}}",0,12,12,68,120,444,980,3076,
+   FAMILY EDGES   AC|     BB^     BB*     
+   CYCLES ID      BBB     AAA     CCC     
+   SIGNS          +++     ++-     +++     
    COUNT          002     001     001     
    T1:0             0      -1       1
    T2:12            3       3       3
    T3:12            4      -3       7
    T4:68           17      13      21
-K4,000002,p=1,v=4,"*AC++-2B *BB(-++A +--C)","1^-2~3~4-2 1-4","{{-1,1,0,1},{1,0,-1,1},{0,-1,1,-1},{1,1,-1,0}}",0,12,12,68,120,444,980,3076,
-   FAMILY EDGES   *AC         *BB         
-   CYCLES ID      BBB     AAA:::::CCC     
-   SIGNS          ++-     -++     +--     
+K4,000002,p=1,v=4,"3:AC| BB^ BB* B,A,C,2+-+   1++-   1--+   ","1^-2~3~4-2 1-4","{{-1,1,0,1},{1,0,-1,1},{0,-1,1,-1},{1,1,-1,0}}",0,12,12,68,120,444,980,3076,
+   FAMILY EDGES   AC|     BB^     BB*     
+   CYCLES ID      BBB     AAA     CCC     
+   SIGNS          +-+     ++-     --+     
    COUNT          002     001     001     
    T1:0             0      -1       1
    T2:12            3       3       3
    T3:12            4      -3       7
    T4:68           17      13      21
-K4,000003,p=1,v=4,"*AC+-+2B *BB(---A +++C)","1^~2-3-4-2 1~4","{{-1,-1,0,-1},{-1,0,1,1},{0,1,1,1},{-1,1,1,0}}",0,12,12,68,120,444,980,3076,
-   FAMILY EDGES   *AC         *BB         
-   CYCLES ID      BBB     AAA:::::CCC     
-   SIGNS          +-+     ---     +++     
+K4,000003,p=1,v=4,"3:AC| BB^ BB* B,A,C,2-++   1---   1+++   ","1^~2-3-4-2 1~4","{{-1,-1,0,-1},{-1,0,1,1},{0,1,1,1},{-1,1,1,0}}",0,12,12,68,120,444,980,3076,
+   FAMILY EDGES   AC|     BB^     BB*     
+   CYCLES ID      BBB     AAA     CCC     
+   SIGNS          -++     ---     +++     
    COUNT          002     001     001     
    T1:0             0      -1       1
    T2:12            3       3       3
    T3:12            4      -3       7
    T4:68           17      13      21
-K4,000004,p=1,v=4,"*AC+--2B *BB(---A +--C)","1^~2~3~4-2 1~4","{{-1,-1,0,-1},{-1,0,-1,1},{0,-1,1,-1},{-1,1,-1,0}}",0,12,12,68,120,444,980,3076,
-   FAMILY EDGES   *AC         *BB         
-   CYCLES ID      BBB     AAA:::::CCC     
-   SIGNS          +--     ---     +--     
+K4,000004,p=1,v=4,"3:AC| BB^ BB* B,A,C,2--+   1---   1--+   ","1^~2~3~4-2 1~4","{{-1,-1,0,-1},{-1,0,-1,1},{0,-1,1,-1},{-1,1,-1,0}}",0,12,12,68,120,444,980,3076,
+   FAMILY EDGES   AC|     BB^     BB*     
+   CYCLES ID      BBB     AAA     CCC     
+   SIGNS          --+     ---     --+     
    COUNT          002     001     001     
    T1:0             0      -1       1
    T2:12            3       3       3
    T3:12            4      -3       7
    T4:68           17      13      21
-K4,000005,p=1,v=4,"*AC(--+ -+-)B *BB(-+-A ++-C)","1^-2~3-4~2 1~4","{{-1,1,0,-1},{1,0,-1,-1},{0,-1,1,1},{-1,-1,1,0}}",0,12,12,68,120,444,980,3076,
-   FAMILY EDGES       *AC             *BB         
-   CYCLES ID      BBB:::::BBB     AAA:::::CCC     
-   SIGNS          --+     -+-     -+-     ++-     
+K4,000005,p=1,v=4,"4:AAC BB^ BDD CC* B,A,C,D,1-++   1-+-   1+++   1+++   ","1^-~2-3=4","{{-1,0,0,0},{0,0,1,0},{0,1,0,2},{0,0,2,1}}",0,12,12,68,120,444,980,3076,
+   FAMILY EDGES   AAC     BB^     BDD     CC*     
+   CYCLES ID      BBB     AAA     CCC     DDD     
+   SIGNS          -++     -+-     +++     +++     
+   COUNT          001     001     001     001     
+   T1:0             0      -1       0       1
+   T2:12            1       1       5       5
+   T3:12            0      -1       4       9
+   T4:68            5       1      29      33
+K4,000006,p=1,v=4,"4:AAC BB^ BDD CC* B,A,C,D,1-++   1-+-   1+--   1--+   ","1^-~2-3~~4","{{-1,0,0,0},{0,0,1,0},{0,1,0,-2},{0,0,-2,1}}",0,12,12,68,120,444,980,3076,
+   FAMILY EDGES   AAC     BB^     BDD     CC*     
+   CYCLES ID      BBB     AAA     CCC     DDD     
+   SIGNS          -++     -+-     +--     --+     
+   COUNT          001     001     001     001     
+   T1:0             0      -1       0       1
+   T2:12            1       1       5       5
+   T3:12            0      -1       4       9
+   T4:68            5       1      29      33
+K4,000007,p=1,v=4,"4:AAC BB^ BDD CC* B,A,C,D,1-+-   1-+-   1-++   1+++   ","1^-~2~3=4","{{-1,0,0,0},{0,0,-1,0},{0,-1,0,2},{0,0,2,1}}",0,12,12,68,120,444,980,3076,
+   FAMILY EDGES   AAC     BB^     BDD     CC*     
+   CYCLES ID      BBB     AAA     CCC     DDD     
+   SIGNS          -+-     -+-     -++     +++     
+   COUNT          001     001     001     001     
+   T1:0             0      -1       0       1
+   T2:12            1       1       5       5
+   T3:12            0      -1       4       9
+   T4:68            5       1      29      33
+K4,000008,p=1,v=4,"4:AAC BB^ BDD CC* B,A,C,D,1-+-   1-+-   1---   1--+   ","1^-~2~3~~4","{{-1,0,0,0},{0,0,-1,0},{0,-1,0,-2},{0,0,-2,1}}",0,12,12,68,120,444,980,3076,
+   FAMILY EDGES   AAC     BB^     BDD     CC*     
+   CYCLES ID      BBB     AAA     CCC     DDD     
+   SIGNS          -+-     -+-     ---     --+     
+   COUNT          001     001     001     001     
+   T1:0             0      -1       0       1
+   T2:12            1       1       5       5
+   T3:12            0      -1       4       9
+   T4:68            5       1      29      33
+K4,000009,p=1,v=4,"4:2AC| BB^ BB* BB,A,C,1-+- 1+--   1-+-   1-++   ","1^-2~3-4~2 1~4","{{-1,1,0,-1},{1,0,-1,-1},{0,-1,1,1},{-1,-1,1,0}}",0,12,12,68,120,444,980,3076,
+   FAMILY EDGES       AC|         BB^     BB*     
+   CYCLES ID      BBB:::::BBB     AAA     CCC     
+   SIGNS          -+-     +--     -+-     -++     
    COUNT          001     001     001     001     
    T1:0             0       0      -1       1
    T2:12            3       3       3       3
    T3:12            4       4      -3       7
    T4:68           17      17      13      21
-K4,000006,p=1,v=4,"*AC(--- -++)B *BB(-+-A ++-C)","1^~2~3-4~2 1-4","{{-1,-1,0,1},{-1,0,-1,-1},{0,-1,1,1},{1,-1,1,0}}",0,12,12,68,120,444,980,3076,
-   FAMILY EDGES       *AC             *BB         
-   CYCLES ID      BBB:::::BBB     AAA:::::CCC     
-   SIGNS          ---     -++     -+-     ++-     
+K4,000010,p=1,v=4,"4:2AC| BB^ BB* BB,A,C,1--- 1++-   1-+-   1-++   ","1^~2~3-4~2 1-4","{{-1,-1,0,1},{-1,0,-1,-1},{0,-1,1,1},{1,-1,1,0}}",0,12,12,68,120,444,980,3076,
+   FAMILY EDGES       AC|         BB^     BB*     
+   CYCLES ID      BBB:::::BBB     AAA     CCC     
+   SIGNS          ---     ++-     -+-     -++     
    COUNT          001     001     001     001     
    T1:0             0       0      -1       1
    T2:12            3       3       3       3
    T3:12            4       4      -3       7
    T4:68           17      17      13      21
-K4,000007,p=1,v=4,"*BB-+-A *CC+++D AAC+-+B BDD+++C","1^-~2-3=4","{{-1,0,0,0},{0,0,1,0},{0,1,0,2},{0,0,2,1}}",0,12,12,68,120,444,980,3076,
-   FAMILY EDGES   *BB     *CC     AAC     BDD     
-   CYCLES ID      AAA     DDD     BBB     CCC     
-   SIGNS          -+-     +++     +-+     +++     
-   COUNT          001     001     001     001     
-   T1:0            -1       1       0       0
-   T2:12            1       5       1       5
-   T3:12           -1       9       0       4
-   T4:68            1      33       5      29
-K4,000008,p=1,v=4,"*BB-+-A *CC+++D AAC+--B BDD-++C","1^-~2~3=4","{{-1,0,0,0},{0,0,-1,0},{0,-1,0,2},{0,0,2,1}}",0,12,12,68,120,444,980,3076,
-   FAMILY EDGES   *BB     *CC     AAC     BDD     
-   CYCLES ID      AAA     DDD     BBB     CCC     
-   SIGNS          -+-     +++     +--     -++     
-   COUNT          001     001     001     001     
-   T1:0            -1       1       0       0
-   T2:12            1       5       1       5
-   T3:12           -1       9       0       4
-   T4:68            1      33       5      29
-K4,000009,p=1,v=4,"*BB-+-A *CC+--D AAC+-+B BDD+--C","1^-~2-3~~4","{{-1,0,0,0},{0,0,1,0},{0,1,0,-2},{0,0,-2,1}}",0,12,12,68,120,444,980,3076,
-   FAMILY EDGES   *BB     *CC     AAC     BDD     
-   CYCLES ID      AAA     DDD     BBB     CCC     
-   SIGNS          -+-     +--     +-+     +--     
-   COUNT          001     001     001     001     
-   T1:0            -1       1       0       0
-   T2:12            1       5       1       5
-   T3:12           -1       9       0       4
-   T4:68            1      33       5      29
-K4,000010,p=1,v=4,"*BB-+-A *CC+--D AAC+--B BDD---C","1^-~2~3~~4","{{-1,0,0,0},{0,0,-1,0},{0,-1,0,-2},{0,0,-2,1}}",0,12,12,68,120,444,980,3076,
-   FAMILY EDGES   *BB     *CC     AAC     BDD     
-   CYCLES ID      AAA     DDD     BBB     CCC     
-   SIGNS          -+-     +--     +--     ---     
-   COUNT          001     001     001     001     
-   T1:0            -1       1       0       0
-   T2:12            1       5       1       5
-   T3:12           -1       9       0       4
-   T4:68            1      33       5      29
 
 
-tricky1,000001,p=1,v=4,"*AC-++2B *BB(-++A +++C)","1^-2-3-4~2 1-4","{{-1,1,0,1},{1,0,1,-1},{0,1,1,1},{1,-1,1,0}}",0,12,-12,68,-120,444,-980,3076,
-   FAMILY EDGES   *AC         *BB         
-   CYCLES ID      BBB     AAA:::::CCC     
-   SIGNS          -++     -++     +++     
+tricky1,000001,p=1,v=4,"3:AC| BB^ BB* B,A,C,2++-   1++-   1+++   ","1^-2-3-4~2 1-4","{{-1,1,0,1},{1,0,1,-1},{0,1,1,1},{1,-1,1,0}}",0,12,-12,68,-120,444,-980,3076,
+   FAMILY EDGES   AC|     BB^     BB*     
+   CYCLES ID      BBB     AAA     CCC     
+   SIGNS          ++-     ++-     +++     
    COUNT          002     001     001     
    T1:0             0      -1       1
    T2:12            3       3       3
    T3:-12          -4      -7       3
    T4:68           17      21      13
-tricky1,000002,p=1,v=4,"*AC-+-2B *BB(-++A +--C)","1^-2~3~4~2 1-4","{{-1,1,0,1},{1,0,-1,-1},{0,-1,1,-1},{1,-1,-1,0}}",0,12,-12,68,-120,444,-980,3076,
-   FAMILY EDGES   *AC         *BB         
-   CYCLES ID      BBB     AAA:::::CCC     
-   SIGNS          -+-     -++     +--     
+tricky1,000002,p=1,v=4,"3:AC| BB^ BB* B,A,C,2+--   1++-   1--+   ","1^-2~3~4~2 1-4","{{-1,1,0,1},{1,0,-1,-1},{0,-1,1,-1},{1,-1,-1,0}}",0,12,-12,68,-120,444,-980,3076,
+   FAMILY EDGES   AC|     BB^     BB*     
+   CYCLES ID      BBB     AAA     CCC     
+   SIGNS          +--     ++-     --+     
    COUNT          002     001     001     
    T1:0             0      -1       1
    T2:12            3       3       3
    T3:-12          -4      -7       3
    T4:68           17      21      13
-tricky1,000003,p=1,v=4,"*AC--+2B *BB(---A +++C)","1^~2-3-4~2 1~4","{{-1,-1,0,-1},{-1,0,1,-1},{0,1,1,1},{-1,-1,1,0}}",0,12,-12,68,-120,444,-980,3076,
-   FAMILY EDGES   *AC         *BB         
-   CYCLES ID      BBB     AAA:::::CCC     
-   SIGNS          --+     ---     +++     
+tricky1,000003,p=1,v=4,"3:AC| BB^ BB* B,A,C,2-+-   1---   1+++   ","1^~2-3-4~2 1~4","{{-1,-1,0,-1},{-1,0,1,-1},{0,1,1,1},{-1,-1,1,0}}",0,12,-12,68,-120,444,-980,3076,
+   FAMILY EDGES   AC|     BB^     BB*     
+   CYCLES ID      BBB     AAA     CCC     
+   SIGNS          -+-     ---     +++     
    COUNT          002     001     001     
    T1:0             0      -1       1
    T2:12            3       3       3
    T3:-12          -4      -7       3
    T4:68           17      21      13
-tricky1,000004,p=1,v=4,"*AC---2B *BB(---A +--C)","1^~2~3~4~2 1~4","{{-1,-1,0,-1},{-1,0,-1,-1},{0,-1,1,-1},{-1,-1,-1,0}}",0,12,-12,68,-120,444,-980,3076,
-   FAMILY EDGES   *AC         *BB         
-   CYCLES ID      BBB     AAA:::::CCC     
-   SIGNS          ---     ---     +--     
+tricky1,000004,p=1,v=4,"3:AC| BB^ BB* B,A,C,2---   1---   1--+   ","1^~2~3~4~2 1~4","{{-1,-1,0,-1},{-1,0,-1,-1},{0,-1,1,-1},{-1,-1,-1,0}}",0,12,-12,68,-120,444,-980,3076,
+   FAMILY EDGES   AC|     BB^     BB*     
+   CYCLES ID      BBB     AAA     CCC     
+   SIGNS          ---     ---     --+     
    COUNT          002     001     001     
    T1:0             0      -1       1
    T2:12            3       3       3
    T3:-12          -4      -7       3
    T4:68           17      21      13
-tricky1,000005,p=1,v=4,"*AC(+-+ ++-)B *BB(-+-A ++-C)","1^-2~3-4-2 1~4","{{-1,1,0,-1},{1,0,-1,1},{0,-1,1,1},{-1,1,1,0}}",0,12,-12,68,-120,444,-980,3076,
-   FAMILY EDGES       *AC             *BB         
-   CYCLES ID      BBB:::::BBB     AAA:::::CCC     
-   SIGNS          +-+     ++-     -+-     ++-     
+tricky1,000005,p=1,v=4,"4:AAB BB* CC^ CDD C,D,A,B,1+++   1-++   1++-   1+-+   ","1^=2-3-~4","{{-1,2,0,0},{2,0,1,0},{0,1,0,0},{0,0,0,1}}",0,12,-12,68,-120,444,-980,3076,
+   FAMILY EDGES   AAB     BB*     CC^     CDD     
+   CYCLES ID      CCC     DDD     AAA     BBB     
+   SIGNS          +++     -++     ++-     +-+     
+   COUNT          001     001     001     001     
+   T1:0             0       1      -1       0
+   T2:12            5       1       5       1
+   T3:-12          -4       1      -9       0
+   T4:68           29       1      33       5
+tricky1,000006,p=1,v=4,"4:AAB BB* CC^ CDD C,D,A,B,1++-   1-++   1++-   1--+   ","1^=2~3-~4","{{-1,2,0,0},{2,0,-1,0},{0,-1,0,0},{0,0,0,1}}",0,12,-12,68,-120,444,-980,3076,
+   FAMILY EDGES   AAB     BB*     CC^     CDD     
+   CYCLES ID      CCC     DDD     AAA     BBB     
+   SIGNS          ++-     -++     ++-     --+     
+   COUNT          001     001     001     001     
+   T1:0             0       1      -1       0
+   T2:12            5       1       5       1
+   T3:-12          -4       1      -9       0
+   T4:68           29       1      33       5
+tricky1,000007,p=1,v=4,"4:AAB BB* CC^ CDD C,D,A,B,1--+   1-++   1---   1+-+   ","1^~~2-3-~4","{{-1,-2,0,0},{-2,0,1,0},{0,1,0,0},{0,0,0,1}}",0,12,-12,68,-120,444,-980,3076,
+   FAMILY EDGES   AAB     BB*     CC^     CDD     
+   CYCLES ID      CCC     DDD     AAA     BBB     
+   SIGNS          --+     -++     ---     +-+     
+   COUNT          001     001     001     001     
+   T1:0             0       1      -1       0
+   T2:12            5       1       5       1
+   T3:-12          -4       1      -9       0
+   T4:68           29       1      33       5
+tricky1,000008,p=1,v=4,"4:AAB BB* CC^ CDD C,D,A,B,1---   1-++   1---   1--+   ","1^~~2~3-~4","{{-1,-2,0,0},{-2,0,-1,0},{0,-1,0,0},{0,0,0,1}}",0,12,-12,68,-120,444,-980,3076,
+   FAMILY EDGES   AAB     BB*     CC^     CDD     
+   CYCLES ID      CCC     DDD     AAA     BBB     
+   SIGNS          ---     -++     ---     --+     
+   COUNT          001     001     001     001     
+   T1:0             0       1      -1       0
+   T2:12            5       1       5       1
+   T3:-12          -4       1      -9       0
+   T4:68           29       1      33       5
+tricky1,000009,p=1,v=4,"4:2AC| BB^ BB* BB,A,C,1-++ 1+-+   1-+-   1-++   ","1^-2~3-4-2 1~4","{{-1,1,0,-1},{1,0,-1,1},{0,-1,1,1},{-1,1,1,0}}",0,12,-12,68,-120,444,-980,3076,
+   FAMILY EDGES       AC|         BB^     BB*     
+   CYCLES ID      BBB:::::BBB     AAA     CCC     
+   SIGNS          -++     +-+     -+-     -++     
    COUNT          001     001     001     001     
    T1:0             0       0      -1       1
    T2:12            3       3       3       3
    T3:-12          -4      -4      -7       3
    T4:68           17      17      21      13
-tricky1,000006,p=1,v=4,"*AC(+-- +++)B *BB(-+-A ++-C)","1^~2~3-4-2 1-4","{{-1,-1,0,1},{-1,0,-1,1},{0,-1,1,1},{1,1,1,0}}",0,12,-12,68,-120,444,-980,3076,
-   FAMILY EDGES       *AC             *BB         
-   CYCLES ID      BBB:::::BBB     AAA:::::CCC     
-   SIGNS          +--     +++     -+-     ++-     
+tricky1,000010,p=1,v=4,"4:2AC| BB^ BB* BB,A,C,1--+ 1+++   1-+-   1-++   ","1^~2~3-4-2 1-4","{{-1,-1,0,1},{-1,0,-1,1},{0,-1,1,1},{1,1,1,0}}",0,12,-12,68,-120,444,-980,3076,
+   FAMILY EDGES       AC|         BB^     BB*     
+   CYCLES ID      BBB:::::BBB     AAA     CCC     
+   SIGNS          --+     +++     -+-     -++     
    COUNT          001     001     001     001     
    T1:0             0       0      -1       1
    T2:12            3       3       3       3
    T3:-12          -4      -4      -7       3
    T4:68           17      17      21      13
-tricky1,000007,p=1,v=4,"*BB++-D *CC-++A AAB+++C CDD++-B","1^=2-3-~4","{{-1,2,0,0},{2,0,1,0},{0,1,0,0},{0,0,0,1}}",0,12,-12,68,-120,444,-980,3076,
-   FAMILY EDGES   *BB     *CC     AAB     CDD     
-   CYCLES ID      DDD     AAA     CCC     BBB     
-   SIGNS          ++-     -++     +++     ++-     
-   COUNT          001     001     001     001     
-   T1:0             1      -1       0       0
-   T2:12            1       5       5       1
-   T3:-12           1      -9      -4       0
-   T4:68            1      33      29       5
-tricky1,000008,p=1,v=4,"*BB++-D *CC-++A AAB++-C CDD-+-B","1^=2~3-~4","{{-1,2,0,0},{2,0,-1,0},{0,-1,0,0},{0,0,0,1}}",0,12,-12,68,-120,444,-980,3076,
-   FAMILY EDGES   *BB     *CC     AAB     CDD     
-   CYCLES ID      DDD     AAA     CCC     BBB     
-   SIGNS          ++-     -++     ++-     -+-     
-   COUNT          001     001     001     001     
-   T1:0             1      -1       0       0
-   T2:12            1       5       5       1
-   T3:-12           1      -9      -4       0
-   T4:68            1      33      29       5
-tricky1,000009,p=1,v=4,"*BB++-D *CC---A AAB--+C CDD++-B","1^~~2-3-~4","{{-1,-2,0,0},{-2,0,1,0},{0,1,0,0},{0,0,0,1}}",0,12,-12,68,-120,444,-980,3076,
-   FAMILY EDGES   *BB     *CC     AAB     CDD     
-   CYCLES ID      DDD     AAA     CCC     BBB     
-   SIGNS          ++-     ---     --+     ++-     
-   COUNT          001     001     001     001     
-   T1:0             1      -1       0       0
-   T2:12            1       5       5       1
-   T3:-12           1      -9      -4       0
-   T4:68            1      33      29       5
-tricky1,000010,p=1,v=4,"*BB++-D *CC---A AAB---C CDD-+-B","1^~~2~3-~4","{{-1,-2,0,0},{-2,0,-1,0},{0,-1,0,0},{0,0,0,1}}",0,12,-12,68,-120,444,-980,3076,
-   FAMILY EDGES   *BB     *CC     AAB     CDD     
-   CYCLES ID      DDD     AAA     CCC     BBB     
-   SIGNS          ++-     ---     ---     -+-     
-   COUNT          001     001     001     001     
-   T1:0             1      -1       0       0
-   T2:12            1       5       5       1
-   T3:-12           1      -9      -4       0
-   T4:68            1      33      29       5
 
 
-tricky2,000001,p=1,v=4,"***++-4A","1^-2-~3-4^","{{0,1,0,0},{1,0,0,0},{0,0,0,1},{0,0,1,0}}",0,4,0,4,0,4,0,4,
-   FAMILY EDGES   ***     
+tricky2,000001,p=1,v=4,"1:||| A,4-++   ","1-~2-4-~3-1","{{0,0,1,0},{0,0,0,1},{1,0,0,0},{0,1,0,0}}",0,4,0,4,0,4,0,4,
+   FAMILY EDGES   |||     
    CYCLES ID      AAA     
-   SIGNS          ++-     
+   SIGNS          -++     
    COUNT          004     
    T1:0             0
    T2:4             1
    T3:0             0
    T4:4             1
-tricky2,000002,p=1,v=4,"***+--4A","1^~2-~3~4^","{{0,-1,0,0},{-1,0,0,0},{0,0,0,-1},{0,0,-1,0}}",0,4,0,4,0,4,0,4,
-   FAMILY EDGES   ***     
+tricky2,000002,p=1,v=4,"1:||| A,4--+   ","1-~2~4-~3~1","{{0,0,-1,0},{0,0,0,-1},{-1,0,0,0},{0,-1,0,0}}",0,4,0,4,0,4,0,4,
+   FAMILY EDGES   |||     
    CYCLES ID      AAA     
-   SIGNS          +--     
+   SIGNS          --+     
    COUNT          004     
    T1:0             0
    T2:4             1
    T3:0             0
    T4:4             1
-tricky2,000003,p=1,v=4,"***(+--2 ++-2)A","1^~2-~3-4^","{{0,-1,0,0},{-1,0,0,0},{0,0,0,1},{0,0,1,0}}",0,4,0,4,0,4,0,4,
-   FAMILY EDGES       ***         
-   CYCLES ID      AAA:::::AAA     
-   SIGNS          +--     ++-     
+tricky2,000003,p=1,v=4,"2:|^* ||| A,A,2+-+   2-++   ","1^-2-~3-4^","{{0,1,0,0},{1,0,0,0},{0,0,0,1},{0,0,1,0}}",0,4,0,4,0,4,0,4,
+   FAMILY EDGES   |^*     |||     
+   CYCLES ID      AAA     AAA     
+   SIGNS          +-+     -++     
    COUNT          002     002     
    T1:0             0       0
    T2:4             1       1
    T3:0             0       0
    T4:4             1       1
-tricky2,000004,p=1,v=4,"*AA++-B *BB(-+-A ++-C) *CC++-B","1^-~2-3-~4","{{-1,0,0,0},{0,0,1,0},{0,1,0,0},{0,0,0,1}}",0,4,0,4,0,4,0,4,
-   FAMILY EDGES   *AA         *BB         *CC     
-   CYCLES ID      BBB     AAA:::::CCC     BBB     
-   SIGNS          ++-     -+-     ++-     ++-     
+tricky2,000004,p=1,v=4,"2:|^* ||| A,A,2--+   2--+   ","1^~2-~3~4^","{{0,-1,0,0},{-1,0,0,0},{0,0,0,-1},{0,0,-1,0}}",0,4,0,4,0,4,0,4,
+   FAMILY EDGES   |^*     |||     
+   CYCLES ID      AAA     AAA     
+   SIGNS          --+     --+     
+   COUNT          002     002     
+   T1:0             0       0
+   T2:4             1       1
+   T3:0             0       0
+   T4:4             1       1
+tricky2,000005,p=1,v=4,"2:2||| AA,2--+ 2-++   ","1-~2-4-~3~1","{{0,0,-1,0},{0,0,0,1},{-1,0,0,0},{0,1,0,0}}",0,4,0,4,0,4,0,4,
+   FAMILY EDGES       |||         
+   CYCLES ID      AAA:::::AAA     
+   SIGNS          --+     -++     
+   COUNT          002     002     
+   T1:0             0       0
+   T2:4             1       1
+   T3:0             0       0
+   T4:4             1       1
+tricky2,000006,p=1,v=4,"4:AA| BB^ BB* CC| B,A,C,B,1-++   1-+-   1-++   1-++   ","1^-~2-3-~4","{{-1,0,0,0},{0,0,1,0},{0,1,0,0},{0,0,0,1}}",0,4,0,4,0,4,0,4,
+   FAMILY EDGES   AA|     BB^     BB*     CC|     
+   CYCLES ID      BBB     AAA     CCC     BBB     
+   SIGNS          -++     -+-     -++     -++     
    COUNT          001     001     001     001     
    T1:0             0      -1       1       0
    T2:4             1       1       1       1
    T3:0             0      -1       1       0
    T4:4             1       1       1       1
-tricky2,000005,p=1,v=4,"*AA-+-B *BB(-+-A ++-C) *CC-+-B","1^-~2~3-~4","{{-1,0,0,0},{0,0,-1,0},{0,-1,0,0},{0,0,0,1}}",0,4,0,4,0,4,0,4,
-   FAMILY EDGES   *AA         *BB         *CC     
-   CYCLES ID      BBB     AAA:::::CCC     BBB     
-   SIGNS          -+-     -+-     ++-     -+-     
+tricky2,000007,p=1,v=4,"4:AA| BB^ BB* CC| B,A,C,B,1-+-   1-+-   1-++   1-+-   ","1^-~2~3-~4","{{-1,0,0,0},{0,0,-1,0},{0,-1,0,0},{0,0,0,1}}",0,4,0,4,0,4,0,4,
+   FAMILY EDGES   AA|     BB^     BB*     CC|     
+   CYCLES ID      BBB     AAA     CCC     BBB     
+   SIGNS          -+-     -+-     -++     -+-     
    COUNT          001     001     001     001     
    T1:0             0      -1       1       0
    T2:4             1       1       1       1
    T3:0             0      -1       1       0
+   T4:4             1       1       1       1
+tricky2,000008,p=1,v=4,"4:2|^* 2||| AA,AA,1--+ 1+-+   1--+ 1-++   ","1^~2-~3-4^","{{0,-1,0,0},{-1,0,0,0},{0,0,0,1},{0,0,1,0}}",0,4,0,4,0,4,0,4,
+   FAMILY EDGES       |^*             |||         
+   CYCLES ID      AAA:::::AAA     AAA:::::AAA     
+   SIGNS          --+     +-+     --+     -++     
+   COUNT          001     001     001     001     
+   T1:0             0       0       0       0
+   T2:4             1       1       1       1
+   T3:0             0       0       0       0
    T4:4             1       1       1       1
 
 
 ########################################################################
 ##        On-Demand Prime Particle Catalog Generation to v=8          ##
 ##____________________________________________________________________##
-##  v= 7:       471398 graphs        8487 traces        6459 primes   ##
-##  v= 8:      4673947 graphs       38401 traces       27701 primes   ##
+##  v= 7:       482206 graphs        8488 traces        6460 primes   ##
+##  v= 8:      4775530 graphs       38408 traces       27708 primes   ##
 ########################################################################
-K8,000001,p=1,v=8,"*AC+++4B *BB(-++2A +++2C)","1^-2-3-6-7^-8-5-4-2 6-8 1-4",0,24,12,104,120,552,980,3400,
-   FAMILY EDGES   *AC         *BB         
-   CYCLES ID      BBB     AAA:::::CCC     
-   SIGNS          +++     -++     +++     
+K8,000001,p=1,v=8,"3:AC| BB^ BB* B,A,C,4+++   2++-   2+++   ","1^-2-3-6-7^-8-5-4-2 6-8 1-4",0,24,12,104,120,552,980,3400,
+   FAMILY EDGES   AC|     BB^     BB*     
+   CYCLES ID      BBB     AAA     CCC     
+   SIGNS          +++     ++-     +++     
    COUNT          004     002     002     
-K8,000002,p=1,v=8,"*AC++-4B *BB(-++2A +--2C)","1^-2~3~6-7^-8~5~4-2 6-8 1-4",0,24,12,104,120,552,980,3400,
-   FAMILY EDGES   *AC         *BB         
-   CYCLES ID      BBB     AAA:::::CCC     
-   SIGNS          ++-     -++     +--     
+K8,000002,p=1,v=8,"3:AC| BB^ BB* B,A,C,4+-+   2++-   2--+   ","1^-2~3~6-7^-8~5~4-2 6-8 1-4",0,24,12,104,120,552,980,3400,
+   FAMILY EDGES   AC|     BB^     BB*     
+   CYCLES ID      BBB     AAA     CCC     
+   SIGNS          +-+     ++-     --+     
    COUNT          004     002     002     
-K8,000003,p=1,v=8,"*AC+-+4B *BB(---2A +++2C)","1^~2-3-6~7^~8-5-4-2 6-8 1~4",0,24,12,104,120,552,980,3400,
-   FAMILY EDGES   *AC         *BB         
-   CYCLES ID      BBB     AAA:::::CCC     
-   SIGNS          +-+     ---     +++     
+K8,000003,p=1,v=8,"3:AC| BB^ BB* B,A,C,4-++   2---   2+++   ","1^~2-3-6~7^~8-5-4-2 6-8 1~4",0,24,12,104,120,552,980,3400,
+   FAMILY EDGES   AC|     BB^     BB*     
+   CYCLES ID      BBB     AAA     CCC     
+   SIGNS          -++     ---     +++     
    COUNT          004     002     002     
-K8,000004,p=1,v=8,"*AC+--4B *BB(---2A +--2C)","1^~2~3~6~7^~8~5~4-2 6-8 1~4",0,24,12,104,120,552,980,3400,
-   FAMILY EDGES   *AC         *BB         
-   CYCLES ID      BBB     AAA:::::CCC     
-   SIGNS          +--     ---     +--     
+K8,000004,p=1,v=8,"3:AC| BB^ BB* B,A,C,4--+   2---   2--+   ","1^~2~3~6~7^~8~5~4-2 6-8 1~4",0,24,12,104,120,552,980,3400,
+   FAMILY EDGES   AC|     BB^     BB*     
+   CYCLES ID      BBB     AAA     CCC     
+   SIGNS          --+     ---     --+     
    COUNT          004     002     002     
-K8,000005,p=1,v=8,"*AC(++-2 +++2)B *BB(-++2A ++-2C)","1^-2~3-6-7^-8-5~4-2 6-8 1-4",0,24,12,104,120,552,980,3400,
-   FAMILY EDGES       *AC             *BB         
-   CYCLES ID      BBB:::::BBB     AAA:::::CCC     
-   SIGNS          ++-     +++     -++     ++-     
-   COUNT          002     002     002     002     
-K8,000006,p=1,v=8,"*AC(+-+2 +++2)B *BB(++-2A -++2C)","1-2-3-1-4-5~2 3~6-7~4 5-8-6 7-8",0,24,12,104,120,552,980,3400,
-   FAMILY EDGES       *AC             *BB         
-   CYCLES ID      BBB:::::BBB     AAA:::::CCC     
+K8,000005,p=1,v=8,"3:AC| 2BB| B,AC,4+++   2++- 2+++   ","1-2-3-1-4~5-2 3-6-7-4 5-8-6 7-8",0,24,12,104,120,552,980,3400,
+   FAMILY EDGES   AC|         BB|         
+   CYCLES ID      BBB     AAA:::::CCC     
+   SIGNS          +++     ++-     +++     
+   COUNT          004     002     002     
+K8,000006,p=1,v=8,"3:AC| 2BB| B,AC,4+-+   2++- 2--+   ","1-2~3~1-4~5-2 3-6~7-4 5-8~6 7-8",0,24,12,104,120,552,980,3400,
+   FAMILY EDGES   AC|         BB|         
+   CYCLES ID      BBB     AAA:::::CCC     
+   SIGNS          +-+     ++-     --+     
+   COUNT          004     002     002     
+K8,000007,p=1,v=8,"3:AC| 2BB| B,AC,4-++   2--- 2+++   ","1-2-3-1~4~5~2 3-6-7~4 5~8-6 7-8",0,24,12,104,120,552,980,3400,
+   FAMILY EDGES   AC|         BB|         
+   CYCLES ID      BBB     AAA:::::CCC     
+   SIGNS          -++     ---     +++     
+   COUNT          004     002     002     
+K8,000008,p=1,v=8,"3:AC| 2BB| B,AC,4--+   2--- 2--+   ","1-2~3~1~4~5~2 3-6~7~4 5~8~6 7-8",0,24,12,104,120,552,980,3400,
+   FAMILY EDGES   AC|         BB|         
+   CYCLES ID      BBB     AAA:::::CCC     
+   SIGNS          --+     ---     --+     
+   COUNT          004     002     002     
+K8,000009,p=1,v=8,"4:2AC| BB^ BB* BB,A,C,2+-+ 2+++   2++-   2-++   ","1^-2~3-6-7^-8-5~4-2 6-8 1-4",0,24,12,104,120,552,980,3400,
+   FAMILY EDGES       AC|         BB^     BB*     
+   CYCLES ID      BBB:::::BBB     AAA     CCC     
    SIGNS          +-+     +++     ++-     -++     
    COUNT          002     002     002     002     
-K8,000007,p=1,v=8,"*AC(+-+2 +++2)B *BB(-+-2A -++2C)","1-2-3-1~4~5~2 3~6-7-4 5-8-6 7-8",0,24,12,104,120,552,980,3400,
-   FAMILY EDGES       *AC             *BB         
-   CYCLES ID      BBB:::::BBB     AAA:::::CCC     
-   SIGNS          +-+     +++     -+-     -++     
+K8,000010,p=1,v=8,"4:2AC| BB^ BB* BB,A,C,2-+- 2++-   2-+-   2+++   ","1^~2-3-6~7^-8-5-4~2 6~8 1-4",0,24,12,104,120,552,980,3400,
+   FAMILY EDGES       AC|         BB^     BB*     
+   CYCLES ID      BBB:::::BBB     AAA     CCC     
+   SIGNS          -+-     ++-     -+-     +++     
    COUNT          002     002     002     002     
-K8,000008,p=1,v=8,"*AC(+--2 ++-2)B *BB(++-2A ---2C)","1-2~3~1-4-5~2 3~6~7~4 5-8~6 7-8",0,24,12,104,120,552,980,3400,
-   FAMILY EDGES       *AC             *BB         
-   CYCLES ID      BBB:::::BBB     AAA:::::CCC     
-   SIGNS          +--     ++-     ++-     ---     
+K8,000011,p=1,v=8,"4:2AC| BB^ BB* BB,A,C,2-+- 2+--   2-+-   2-++   ","1^-2~3-6~7^-8~5-4~2 6~8 1~4",0,24,12,104,120,552,980,3400,
+   FAMILY EDGES       AC|         BB^     BB*     
+   CYCLES ID      BBB:::::BBB     AAA     CCC     
+   SIGNS          -+-     +--     -+-     -++     
    COUNT          002     002     002     002     
-K8,000009,p=1,v=8,"*AC(+--2 ++-2)B *BB(-+-2A ---2C)","1-2~3~1~4~5~2 3~6~7-4 5-8~6 7-8",0,24,12,104,120,552,980,3400,
-   FAMILY EDGES       *AC             *BB         
-   CYCLES ID      BBB:::::BBB     AAA:::::CCC     
-   SIGNS          +--     ++-     -+-     ---     
+K8,000012,p=1,v=8,"4:2AC| BB^ BB* BB,A,C,2--+ 2-++   2---   2-++   ","1^~2~3-6~7^~8-5~4-2 6-8 1~4",0,24,12,104,120,552,980,3400,
+   FAMILY EDGES       AC|         BB^     BB*     
+   CYCLES ID      BBB:::::BBB     AAA     CCC     
+   SIGNS          --+     -++     ---     -++     
    COUNT          002     002     002     002     
-K8,000010,p=1,v=8,"*AC(+--2 +-+2)B *BB(---2A ++-2C)","1^~2~3-6~7^~8-5~4-2 6-8 1~4",0,24,12,104,120,552,980,3400,
-   FAMILY EDGES       *AC             *BB         
-   CYCLES ID      BBB:::::BBB     AAA:::::CCC     
-   SIGNS          +--     +-+     ---     ++-     
+K8,000013,p=1,v=8,"4:2AC| BB^ BB* BB,A,C,2--- 2++-   2-+-   2-++   ","1^-2-3~6~7^-8-5~4~2 6~8 1~4",0,24,12,104,120,552,980,3400,
+   FAMILY EDGES       AC|         BB^     BB*     
+   CYCLES ID      BBB:::::BBB     AAA     CCC     
+   SIGNS          ---     ++-     -+-     -++     
    COUNT          002     002     002     002     
-K8,000011,p=1,v=8,"*AC(-+-2 -++2)B *BB(+++2A ++-2C)","1~2-3~1-4-5-2 3-6~7-4 5-8-6 7~8",0,24,12,104,120,552,980,3400,
-   FAMILY EDGES       *AC             *BB         
-   CYCLES ID      BBB:::::BBB     AAA:::::CCC     
-   SIGNS          -+-     -++     +++     ++-     
+K8,000014,p=1,v=8,"4:2AC| BB^ BB* BB,A,C,2--- 2+--   2-+-   2--+   ","1^~2~3~6~7^-8~5~4~2 6~8 1-4",0,24,12,104,120,552,980,3400,
+   FAMILY EDGES       AC|         BB^     BB*     
+   CYCLES ID      BBB:::::BBB     AAA     CCC     
+   SIGNS          ---     +--     -+-     --+     
    COUNT          002     002     002     002     
-K8,000012,p=1,v=8,"*AC(-+-2 -++2)B *BB(+++2A -+-2C)","1~2~3-1-4-5-2 3~6~7-4 5-8-6 7~8",0,24,12,104,120,552,980,3400,
-   FAMILY EDGES       *AC             *BB         
+K8,000015,p=1,v=8,"4:2AC| 2BB| BB,AC,2+-- 2++-   2+++ 2-++   ","1~2-3~1-4-5-2 3-6~7-4 5-8-6 7~8",0,24,12,104,120,552,980,3400,
+   FAMILY EDGES       AC|             BB|         
    CYCLES ID      BBB:::::BBB     AAA:::::CCC     
-   SIGNS          -+-     -++     +++     -+-     
+   SIGNS          +--     ++-     +++     -++     
    COUNT          002     002     002     002     
-K8,000013,p=1,v=8,"*AC(--+2 -++2)B *BB(-+-2A +++2C)","1^~2-3-6~7^-8-5-4~2 6~8 1-4",0,24,12,104,120,552,980,3400,
-   FAMILY EDGES       *AC             *BB         
+K8,000016,p=1,v=8,"4:2AC| 2BB| BB,AC,2+-- 2++-   2+++ 2-+-   ","1~2~3-1-4-5-2 3~6~7-4 5-8-6 7~8",0,24,12,104,120,552,980,3400,
+   FAMILY EDGES       AC|             BB|         
    CYCLES ID      BBB:::::BBB     AAA:::::CCC     
-   SIGNS          --+     -++     -+-     +++     
+   SIGNS          +--     ++-     +++     -+-     
    COUNT          002     002     002     002     
-K8,000014,p=1,v=8,"*AC(--+2 -+-2)B *BB(-+-2A ++-2C)","1^-2~3-6~7^-8~5-4~2 6~8 1~4",0,24,12,104,120,552,980,3400,
-   FAMILY EDGES       *AC             *BB         
+K8,000017,p=1,v=8,"4:2AC| 2BB| BB,AC,2-++ 2+++   2-++ 2++-   ","1-2-3-1-4-5~2 3~6-7~4 5-8-6 7-8",0,24,12,104,120,552,980,3400,
+   FAMILY EDGES       AC|             BB|         
    CYCLES ID      BBB:::::BBB     AAA:::::CCC     
-   SIGNS          --+     -+-     -+-     ++-     
+   SIGNS          -++     +++     -++     ++-     
    COUNT          002     002     002     002     
-K8,000015,p=1,v=8,"*AC(---2 -++2)B *BB(-+-2A ++-2C)","1^-2-3~6~7^-8-5~4~2 6~8 1~4",0,24,12,104,120,552,980,3400,
-   FAMILY EDGES       *AC             *BB         
+K8,000018,p=1,v=8,"4:2AC| 2BB| BB,AC,2-++ 2+++   2-+- 2++-   ","1-2-3-1~4~5~2 3~6-7-4 5-8-6 7-8",0,24,12,104,120,552,980,3400,
+   FAMILY EDGES       AC|             BB|         
    CYCLES ID      BBB:::::BBB     AAA:::::CCC     
-   SIGNS          ---     -++     -+-     ++-     
+   SIGNS          -++     +++     -+-     ++-     
    COUNT          002     002     002     002     
-K8,000016,p=1,v=8,"*AC(---2 -+-2)B *BB(-+-2A +--2C)","1^~2~3~6~7^-8~5~4~2 6~8 1-4",0,24,12,104,120,552,980,3400,
-   FAMILY EDGES       *AC             *BB         
+K8,000019,p=1,v=8,"4:2AC| 2BB| BB,AC,2-+- 2+--   2-+- 2-++   ","1~2~3-1~4~5-2 3-6~7-4 5~8-6 7~8",0,24,12,104,120,552,980,3400,
+   FAMILY EDGES       AC|             BB|         
    CYCLES ID      BBB:::::BBB     AAA:::::CCC     
-   SIGNS          ---     -+-     -+-     +--     
+   SIGNS          -+-     +--     -+-     -++     
    COUNT          002     002     002     002     
-K8,000017,p=1,v=8,"*AC(---2 --+2)B *BB(+--2A ++-2C)","1~2-3~1~4-5~2 3-6~7~4 5~8-6 7~8",0,24,12,104,120,552,980,3400,
-   FAMILY EDGES       *AC             *BB         
+K8,000020,p=1,v=8,"4:2AC| 2BB| BB,AC,2--+ 2+-+   2-++ 2---   ","1-2~3~1-4-5~2 3~6~7~4 5-8~6 7-8",0,24,12,104,120,552,980,3400,
+   FAMILY EDGES       AC|             BB|         
    CYCLES ID      BBB:::::BBB     AAA:::::CCC     
-   SIGNS          ---     --+     +--     ++-     
+   SIGNS          --+     +-+     -++     ---     
    COUNT          002     002     002     002     
-K8,000018,p=1,v=8,"*AC(---2 --+2)B *BB(+--2A -+-2C)","1~2~3-1~4-5~2 3~6~7~4 5~8-6 7~8",0,24,12,104,120,552,980,3400,
-   FAMILY EDGES       *AC             *BB         
+K8,000021,p=1,v=8,"4:2AC| 2BB| BB,AC,2--+ 2+-+   2-+- 2---   ","1-2~3~1~4~5~2 3~6~7-4 5-8~6 7-8",0,24,12,104,120,552,980,3400,
+   FAMILY EDGES       AC|             BB|         
    CYCLES ID      BBB:::::BBB     AAA:::::CCC     
-   SIGNS          ---     --+     +--     -+-     
+   SIGNS          --+     +-+     -+-     ---     
    COUNT          002     002     002     002     
-K8,000019,p=1,v=8,"*AC(+-+2 +++2)B *BB(+--A +++A +++2C)","1-2-3-1~4-5-2 3-6-7~4 5-8-6 7-8",0,24,12,104,120,552,980,3400,
-   FAMILY EDGES       *AC                 *BB             
-   CYCLES ID      BBB:::::BBB     AAA:::::AAA:::::CCC     
-   SIGNS          +-+     +++     +--     +++     +++     
-   COUNT          002     002     001     001     002     
-K8,000020,p=1,v=8,"*AC(+-+2 +++2)B *BB(---A -++A +++2C)","1^~2-3-6-7^-8-5-4-2 6-8 1~4",0,24,12,104,120,552,980,3400,
-   FAMILY EDGES       *AC                 *BB             
-   CYCLES ID      BBB:::::BBB     AAA:::::AAA:::::CCC     
-   SIGNS          +-+     +++     ---     -++     +++     
-   COUNT          002     002     001     001     002     
-K8,000021,p=1,v=8,"*AC(+-+2 ++-2)B *BB(---A -++A ++-2C)","1^~2-3~6-7^-8~5-4-2 6-8 1~4",0,24,12,104,120,552,980,3400,
-   FAMILY EDGES       *AC                 *BB             
-   CYCLES ID      BBB:::::BBB     AAA:::::AAA:::::CCC     
-   SIGNS          +-+     ++-     ---     -++     ++-     
-   COUNT          002     002     001     001     002     
-K8,000022,p=1,v=8,"*AC(+--2 +++2)B *BB(---A -++A ++-2C)","1^~2~3-6-7^-8-5~4-2 6-8 1~4",0,24,12,104,120,552,980,3400,
-   FAMILY EDGES       *AC                 *BB             
-   CYCLES ID      BBB:::::BBB     AAA:::::AAA:::::CCC     
-   SIGNS          +--     +++     ---     -++     ++-     
-   COUNT          002     002     001     001     002     
-K8,000023,p=1,v=8,"*AC(+--2 ++-2)B *BB(+--A +++A +--2C)","1-2~3~1~4-5-2 3-6~7~4 5-8~6 7-8",0,24,12,104,120,552,980,3400,
-   FAMILY EDGES       *AC                 *BB             
-   CYCLES ID      BBB:::::BBB     AAA:::::AAA:::::CCC     
-   SIGNS          +--     ++-     +--     +++     +--     
-   COUNT          002     002     001     001     002     
-K8,000024,p=1,v=8,"*AC(+--2 ++-2)B *BB(---A -++A +--2C)","1^~2~3~6-7^-8~5~4-2 6-8 1~4",0,24,12,104,120,552,980,3400,
-   FAMILY EDGES       *AC                 *BB             
-   CYCLES ID      BBB:::::BBB     AAA:::::AAA:::::CCC     
-   SIGNS          +--     ++-     ---     -++     +--     
-   COUNT          002     002     001     001     002     
-K8,000025,p=1,v=8,"*AC(--+2 -+-2)B *BB(---A -++A ++-2C)","1~2-3~1-4~5~2 3-6~7-4 5~8-6 7~8",0,24,12,104,120,552,980,3400,
-   FAMILY EDGES       *AC                 *BB             
-   CYCLES ID      BBB:::::BBB     AAA:::::AAA:::::CCC     
-   SIGNS          --+     -+-     ---     -++     ++-     
-   COUNT          002     002     001     001     002     
-K8,000026,p=1,v=8,"*AC(---2 -++2)B *BB(---A -++A ++-2C)","1~2-3~1~4~5-2 3-6~7~4 5-8-6 7~8",0,24,12,104,120,552,980,3400,
-   FAMILY EDGES       *AC                 *BB             
-   CYCLES ID      BBB:::::BBB     AAA:::::AAA:::::CCC     
-   SIGNS          ---     -++     ---     -++     ++-     
-   COUNT          002     002     001     001     002     
-K8,000027,p=1,v=8,"*AC(++-2 +++2)B *BB(-++2A +--C +++C)","1^-2~3~6-7^-8-5-4-2 6-8 1-4",0,24,12,104,120,552,980,3400,
-   FAMILY EDGES       *AC                 *BB             
-   CYCLES ID      BBB:::::BBB     AAA:::::CCC:::::CCC     
-   SIGNS          ++-     +++     -++     +--     +++     
+K8,000022,p=1,v=8,"4:2AC| 2BB| BB,AC,2--- 2++-   2-+- 2-++   ","1~2~3-1-4~5~2 3-6~7~4 5-8-6 7~8",0,24,12,104,120,552,980,3400,
+   FAMILY EDGES       AC|             BB|         
+   CYCLES ID      BBB:::::BBB     AAA:::::CCC     
+   SIGNS          ---     ++-     -+-     -++     
+   COUNT          002     002     002     002     
+K8,000023,p=1,v=8,"4:2AC| 2BB| BB,AC,2--- 2-+-   2--+ 2-++   ","1~2-3~1~4-5~2 3-6~7~4 5~8-6 7~8",0,24,12,104,120,552,980,3400,
+   FAMILY EDGES       AC|             BB|         
+   CYCLES ID      BBB:::::BBB     AAA:::::CCC     
+   SIGNS          ---     -+-     --+     -++     
+   COUNT          002     002     002     002     
+K8,000024,p=1,v=8,"4:2AC| 2BB| BB,AC,2--- 2-+-   2--+ 2-+-   ","1~2~3-1~4-5~2 3~6~7~4 5~8-6 7~8",0,24,12,104,120,552,980,3400,
+   FAMILY EDGES       AC|             BB|         
+   CYCLES ID      BBB:::::BBB     AAA:::::CCC     
+   SIGNS          ---     -+-     --+     -+-     
+   COUNT          002     002     002     002     
+K8,000025,p=1,v=8,"5:2AC| BB^ 2BB* BB,A,CC,2+-+ 2+++   2++-   1--+ 1+++   ","1^-2~3~6-7^-8-5-4-2 6-8 1-4",0,24,12,104,120,552,980,3400,
+   FAMILY EDGES       AC|         BB^         BB*         
+   CYCLES ID      BBB:::::BBB     AAA     CCC:::::CCC     
+   SIGNS          +-+     +++     ++-     --+     +++     
    COUNT          002     002     002     001     001     
-K8,000028,p=1,v=8,"*AC(++-2 +++2)B *BB(-++2A ---C -++C)","1-2~3~1-4~5-2 3~6-7-4 5-8-6 7-8",0,24,12,104,120,552,980,3400,
-   FAMILY EDGES       *AC                 *BB             
-   CYCLES ID      BBB:::::BBB     AAA:::::CCC:::::CCC     
-   SIGNS          ++-     +++     -++     ---     -++     
+K8,000026,p=1,v=8,"5:2AC| BB^ 2BB* BB,A,CC,2-+- 2+--   2-+-   1--+ 1+++   ","1^~2-3-6~7^-8~5~4~2 6~8 1-4",0,24,12,104,120,552,980,3400,
+   FAMILY EDGES       AC|         BB^         BB*         
+   CYCLES ID      BBB:::::BBB     AAA     CCC:::::CCC     
+   SIGNS          -+-     +--     -+-     --+     +++     
    COUNT          002     002     002     001     001     
-K8,000029,p=1,v=8,"*AC(+-+2 ++-2)B *BB(-+-2A +--C +++C)","1-2~3~1-4~5-2 3-6-7~4 5~8-6 7-8",0,24,12,104,120,552,980,3400,
-   FAMILY EDGES       *AC                 *BB             
-   CYCLES ID      BBB:::::BBB     AAA:::::CCC:::::CCC     
-   SIGNS          +-+     ++-     -+-     +--     +++     
+K8,000027,p=1,v=8,"5:2AC| BB^ 2BB* BB,A,CC,2--+ 2-++   2---   1--+ 1+++   ","1^~2~3~6~7^~8-5-4-2 6-8 1~4",0,24,12,104,120,552,980,3400,
+   FAMILY EDGES       AC|         BB^         BB*         
+   CYCLES ID      BBB:::::BBB     AAA     CCC:::::CCC     
+   SIGNS          --+     -++     ---     --+     +++     
    COUNT          002     002     002     001     001     
-K8,000030,p=1,v=8,"*AC(+--2 +++2)B *BB(-+-2A +--C +++C)","1-2~3~1~4~5~2 3-6-7-4 5-8-6 7-8",0,24,12,104,120,552,980,3400,
-   FAMILY EDGES       *AC                 *BB             
-   CYCLES ID      BBB:::::BBB     AAA:::::CCC:::::CCC     
-   SIGNS          +--     +++     -+-     +--     +++     
+K8,000028,p=1,v=8,"5:2AC| BB^ 2BB* BB,A,CC,2--- 2++-   2-+-   1--+ 1+++   ","1^~2~3~6~7^-8-5-4~2 6~8 1-4",0,24,12,104,120,552,980,3400,
+   FAMILY EDGES       AC|         BB^         BB*         
+   CYCLES ID      BBB:::::BBB     AAA     CCC:::::CCC     
+   SIGNS          ---     ++-     -+-     --+     +++     
    COUNT          002     002     002     001     001     
-K8,000031,p=1,v=8,"*AC(+--2 +-+2)B *BB(---2A +--C +++C)","1^~2~3~6~7^~8-5-4-2 6-8 1~4",0,24,12,104,120,552,980,3400,
-   FAMILY EDGES       *AC                 *BB             
+K8,000029,p=1,v=8,"5:2AC| 2BB^ BB* BB,AA,C,2-++ 2+++   1--- 1++-   2+++   ","1^~2-3-6-7^-8-5-4-2 6-8 1~4",0,24,12,104,120,552,980,3400,
+   FAMILY EDGES       AC|             BB^         BB*     
+   CYCLES ID      BBB:::::BBB     AAA:::::AAA     CCC     
+   SIGNS          -++     +++     ---     ++-     +++     
+   COUNT          002     002     001     001     002     
+K8,000030,p=1,v=8,"5:2AC| 2BB^ BB* BB,AA,C,2-++ 2+-+   1--- 1++-   2-++   ","1^~2-3~6-7^-8~5-4-2 6-8 1~4",0,24,12,104,120,552,980,3400,
+   FAMILY EDGES       AC|             BB^         BB*     
+   CYCLES ID      BBB:::::BBB     AAA:::::AAA     CCC     
+   SIGNS          -++     +-+     ---     ++-     -++     
+   COUNT          002     002     001     001     002     
+K8,000031,p=1,v=8,"5:2AC| 2BB^ BB* BB,AA,C,2--+ 2+++   1--- 1++-   2-++   ","1^~2~3-6-7^-8-5~4-2 6-8 1~4",0,24,12,104,120,552,980,3400,
+   FAMILY EDGES       AC|             BB^         BB*     
+   CYCLES ID      BBB:::::BBB     AAA:::::AAA     CCC     
+   SIGNS          --+     +++     ---     ++-     -++     
+   COUNT          002     002     001     001     002     
+K8,000032,p=1,v=8,"5:2AC| 2BB^ BB* BB,AA,C,2--+ 2+-+   1--- 1++-   2--+   ","1^~2~3~6-7^-8~5~4-2 6-8 1~4",0,24,12,104,120,552,980,3400,
+   FAMILY EDGES       AC|             BB^         BB*     
+   CYCLES ID      BBB:::::BBB     AAA:::::AAA     CCC     
+   SIGNS          --+     +-+     ---     ++-     --+     
+   COUNT          002     002     001     001     002     
+K8,000033,p=1,v=8,"5:2AC| 3BB| BB,AAC,2-++ 2+++   1--+ 1+++ 2+++   ","1-2-3-1~4-5-2 3-6-7~4 5-8-6 7-8",0,24,12,104,120,552,980,3400,
+   FAMILY EDGES       AC|                 BB|             
+   CYCLES ID      BBB:::::BBB     AAA:::::AAA:::::CCC     
+   SIGNS          -++     +++     --+     +++     +++     
+   COUNT          002     002     001     001     002     
+K8,000034,p=1,v=8,"5:2AC| 3BB| BB,AAC,2-+- 2+--   1--- 1++- 2-++   ","1~2-3~1-4~5~2 3-6~7-4 5~8-6 7~8",0,24,12,104,120,552,980,3400,
+   FAMILY EDGES       AC|                 BB|             
+   CYCLES ID      BBB:::::BBB     AAA:::::AAA:::::CCC     
+   SIGNS          -+-     +--     ---     ++-     -++     
+   COUNT          002     002     001     001     002     
+K8,000035,p=1,v=8,"5:2AC| 3BB| BB,AAC,2--+ 2+-+   1--+ 1+++ 2--+   ","1-2~3~1~4-5-2 3-6~7~4 5-8~6 7-8",0,24,12,104,120,552,980,3400,
+   FAMILY EDGES       AC|                 BB|             
+   CYCLES ID      BBB:::::BBB     AAA:::::AAA:::::CCC     
+   SIGNS          --+     +-+     --+     +++     --+     
+   COUNT          002     002     001     001     002     
+K8,000036,p=1,v=8,"5:2AC| 3BB| BB,AAC,2--- 2++-   1--- 1++- 2-++   ","1~2-3~1~4~5-2 3-6~7~4 5-8-6 7~8",0,24,12,104,120,552,980,3400,
+   FAMILY EDGES       AC|                 BB|             
+   CYCLES ID      BBB:::::BBB     AAA:::::AAA:::::CCC     
+   SIGNS          ---     ++-     ---     ++-     -++     
+   COUNT          002     002     001     001     002     
+K8,000037,p=1,v=8,"5:2AC| 3BB| BB,ACC,2+-+ 2+++   2++- 1--- 1++-   ","1-2~3~1-4~5-2 3~6-7-4 5-8-6 7-8",0,24,12,104,120,552,980,3400,
+   FAMILY EDGES       AC|                 BB|             
    CYCLES ID      BBB:::::BBB     AAA:::::CCC:::::CCC     
-   SIGNS          +--     +-+     ---     +--     +++     
+   SIGNS          +-+     +++     ++-     ---     ++-     
    COUNT          002     002     002     001     001     
-K8,000032,p=1,v=8,"*AC(+--2 +-+2)B *BB(---2A ---C -++C)","1-2~3~1~4~5~2 3~6-7~4 5~8-6 7-8",0,24,12,104,120,552,980,3400,
-   FAMILY EDGES       *AC                 *BB             
+K8,000038,p=1,v=8,"5:2AC| 3BB| BB,ACC,2-++ 2+-+   2-+- 1--+ 1+++   ","1-2~3~1-4~5-2 3-6-7~4 5~8-6 7-8",0,24,12,104,120,552,980,3400,
+   FAMILY EDGES       AC|                 BB|             
    CYCLES ID      BBB:::::BBB     AAA:::::CCC:::::CCC     
-   SIGNS          +--     +-+     ---     ---     -++     
+   SIGNS          -++     +-+     -+-     --+     +++     
    COUNT          002     002     002     001     001     
-K8,000033,p=1,v=8,"*AC(--+2 -+-2)B *BB(-+-2A +--C +++C)","1^~2-3-6~7^-8~5~4~2 6~8 1-4",0,24,12,104,120,552,980,3400,
-   FAMILY EDGES       *AC                 *BB             
+K8,000039,p=1,v=8,"5:2AC| 3BB| BB,ACC,2--+ 2+++   2-+- 1--+ 1+++   ","1-2~3~1~4~5~2 3-6-7-4 5-8-6 7-8",0,24,12,104,120,552,980,3400,
+   FAMILY EDGES       AC|                 BB|             
    CYCLES ID      BBB:::::BBB     AAA:::::CCC:::::CCC     
-   SIGNS          --+     -+-     -+-     +--     +++     
+   SIGNS          --+     +++     -+-     --+     +++     
    COUNT          002     002     002     001     001     
-K8,000034,p=1,v=8,"*AC(---2 -++2)B *BB(-+-2A +--C +++C)","1^~2~3~6~7^-8-5-4~2 6~8 1-4",0,24,12,104,120,552,980,3400,
-   FAMILY EDGES       *AC                 *BB             
+K8,000040,p=1,v=8,"5:2AC| 3BB| BB,ACC,2--+ 2-++   2--- 1--- 1++-   ","1-2~3~1~4~5~2 3~6-7~4 5~8-6 7-8",0,24,12,104,120,552,980,3400,
+   FAMILY EDGES       AC|                 BB|             
    CYCLES ID      BBB:::::BBB     AAA:::::CCC:::::CCC     
-   SIGNS          ---     -++     -+-     +--     +++     
+   SIGNS          --+     -++     ---     ---     ++-     
    COUNT          002     002     002     001     001     
-K8,000035,p=1,v=8,"*AC(--- --+ -+- -++)B *BB(++-2A ++-2C)","1~2~3-1~4-5~2 3-6~7-4 5-8-6 7~8",0,24,12,104,120,552,980,3400,
-   FAMILY EDGES               *AC                     *BB         
-   CYCLES ID      BBB:::::BBB:::::BBB:::::BBB     AAA:::::CCC     
-   SIGNS          ---     --+     -+-     -++     ++-     ++-     
+K8,000041,p=1,v=8,"6:4AC| BB^ BB* BBBB,A,C,1--- 1-+- 1+-- 1++-   2-+-   2-++   ","1^~2~3-6~7^-8-5~4~2 6~8 1-4",0,24,12,104,120,552,980,3400,
+   FAMILY EDGES               AC|                 BB^     BB*     
+   CYCLES ID      BBB:::::BBB:::::BBB:::::BBB     AAA     CCC     
+   SIGNS          ---     -+-     +--     ++-     -+-     -++     
    COUNT          001     001     001     001     002     002     
-K8,000036,p=1,v=8,"*AC(--- --+ -+- -++)B *BB(++-2A -+-2C)","1~2-3~1~4-5~2 3~6~7-4 5-8-6 7~8",0,24,12,104,120,552,980,3400,
-   FAMILY EDGES               *AC                     *BB         
+K8,000042,p=1,v=8,"6:4AC| 2BB| BBBB,AC,1--- 1-+- 1+-- 1++-   2-++ 2-++   ","1~2~3-1~4-5~2 3-6~7-4 5-8-6 7~8",0,24,12,104,120,552,980,3400,
+   FAMILY EDGES               AC|                     BB|         
    CYCLES ID      BBB:::::BBB:::::BBB:::::BBB     AAA:::::CCC     
-   SIGNS          ---     --+     -+-     -++     ++-     -+-     
+   SIGNS          ---     -+-     +--     ++-     -++     -++     
    COUNT          001     001     001     001     002     002     
-K8,000037,p=1,v=8,"*AC(--- --+ -+- -++)B *BB(-+-2A ++-2C)","1^~2~3-6~7^-8-5~4~2 6~8 1-4",0,24,12,104,120,552,980,3400,
-   FAMILY EDGES               *AC                     *BB         
+K8,000043,p=1,v=8,"6:4AC| 2BB| BBBB,AC,1--- 1-+- 1+-- 1++-   2-++ 2-+-   ","1~2-3~1~4-5~2 3~6~7-4 5-8-6 7~8",0,24,12,104,120,552,980,3400,
+   FAMILY EDGES               AC|                     BB|         
    CYCLES ID      BBB:::::BBB:::::BBB:::::BBB     AAA:::::CCC     
-   SIGNS          ---     --+     -+-     -++     -+-     ++-     
+   SIGNS          ---     -+-     +--     ++-     -++     -+-     
    COUNT          001     001     001     001     002     002     
-K8,000038,p=1,v=8,"*AC(--- --+ -+- -++)B *BB(-+-2A -+-2C)","1~2-3~1-4~5~2 3~6~7~4 5-8-6 7~8",0,24,12,104,120,552,980,3400,
-   FAMILY EDGES               *AC                     *BB         
+K8,000044,p=1,v=8,"6:4AC| 2BB| BBBB,AC,1--- 1-+- 1+-- 1++-   2-+- 2-+-   ","1~2-3~1-4~5~2 3~6~7~4 5-8-6 7~8",0,24,12,104,120,552,980,3400,
+   FAMILY EDGES               AC|                     BB|         
    CYCLES ID      BBB:::::BBB:::::BBB:::::BBB     AAA:::::CCC     
-   SIGNS          ---     --+     -+-     -++     -+-     -+-     
+   SIGNS          ---     -+-     +--     ++-     -+-     -+-     
    COUNT          001     001     001     001     002     002     
-K8,000039,p=1,v=8,"*AC(+-- +-+ ++- +++)B *BB(---A -++A ++-2C)","1^~2-3~6-7^-8-5~4-2 6-8 1~4",0,24,12,104,120,552,980,3400,
-   FAMILY EDGES               *AC                         *BB             
-   CYCLES ID      BBB:::::BBB:::::BBB:::::BBB     AAA:::::AAA:::::CCC     
-   SIGNS          +--     +-+     ++-     +++     ---     -++     ++-     
-   COUNT          001     001     001     001     001     001     002     
-K8,000040,p=1,v=8,"*AC(--- --+ -+- -++)B *BB(---A -++A -+-2C)","1~2~3-1~4~5-2 3~6~7~4 5-8-6 7~8",0,24,12,104,120,552,980,3400,
-   FAMILY EDGES               *AC                         *BB             
-   CYCLES ID      BBB:::::BBB:::::BBB:::::BBB     AAA:::::AAA:::::CCC     
-   SIGNS          ---     --+     -+-     -++     ---     -++     -+-     
-   COUNT          001     001     001     001     001     001     002     
-K8,000041,p=1,v=8,"*AC(+-- +-+ ++- +++)B *BB(++-2A +--C +++C)","1-2~3~1-4-5~2 3-6-7~4 5-8-6 7-8",0,24,12,104,120,552,980,3400,
-   FAMILY EDGES               *AC                         *BB             
-   CYCLES ID      BBB:::::BBB:::::BBB:::::BBB     AAA:::::CCC:::::CCC     
-   SIGNS          +--     +-+     ++-     +++     ++-     +--     +++     
-   COUNT          001     001     001     001     002     001     001     
-K8,000042,p=1,v=8,"*AC(--- --+ -+- -++)B *BB(-+-2A +--C +++C)","1^-2~3~6~7^-8-5-4~2 6~8 1~4",0,24,12,104,120,552,980,3400,
-   FAMILY EDGES               *AC                         *BB             
-   CYCLES ID      BBB:::::BBB:::::BBB:::::BBB     AAA:::::CCC:::::CCC     
-   SIGNS          ---     --+     -+-     -++     -+-     +--     +++     
-   COUNT          001     001     001     001     002     001     001     
-K8,000043,p=1,v=8,"*AC(--+ -+- +++2)B *BB(-+-A -++A ++-C +++C)","1^-2~3-6-7^-8-5-4~2 6-8 1~4",0,24,12,104,120,552,980,3400,
-   FAMILY EDGES           *AC                         *BB                 
-   CYCLES ID      BBB:::::BBB:::::BBB     AAA:::::AAA:::::CCC:::::CCC     
-   SIGNS          --+     -+-     +++     -+-     -++     ++-     +++     
+K8,000045,p=1,v=8,"7:3AC| 2BB^ 2BB* BBB,AA,CC,1-+- 1+-- 2+++   1-+- 1++-   1-++ 1+++   ","1^-2~3-6-7^-8-5-4~2 6-8 1~4",0,24,12,104,120,552,980,3400,
+   FAMILY EDGES           AC|                 BB^             BB*         
+   CYCLES ID      BBB:::::BBB:::::BBB     AAA:::::AAA     CCC:::::CCC     
+   SIGNS          -+-     +--     +++     -+-     ++-     -++     +++     
    COUNT          001     001     002     001     001     001     001     
-K8,000044,p=1,v=8,"*AC(--+ -+- +++2)B *BB(-+-A -++A -+-C -++C)","1~2~3-1~4~5-2 3~6-7-4 5-8-6 7-8",0,24,12,104,120,552,980,3400,
-   FAMILY EDGES           *AC                         *BB                 
-   CYCLES ID      BBB:::::BBB:::::BBB     AAA:::::AAA:::::CCC:::::CCC     
-   SIGNS          --+     -+-     +++     -+-     -++     -+-     -++     
+K8,000046,p=1,v=8,"7:3AC| 2BB^ 2BB* BBB,AA,CC,1-+- 1+-- 2+-+   1-+- 1++-   1--+ 1-++   ","1^-2~3~6-7^-8~5-4~2 6-8 1~4",0,24,12,104,120,552,980,3400,
+   FAMILY EDGES           AC|                 BB^             BB*         
+   CYCLES ID      BBB:::::BBB:::::BBB     AAA:::::AAA     CCC:::::CCC     
+   SIGNS          -+-     +--     +-+     -+-     ++-     --+     -++     
    COUNT          001     001     002     001     001     001     001     
-K8,000045,p=1,v=8,"*AC(--+ -+- ++-2)B *BB(-+-A -++A +--C ++-C)","1^-2~3~6-7^-8~5-4~2 6-8 1~4",0,24,12,104,120,552,980,3400,
-   FAMILY EDGES           *AC                         *BB                 
-   CYCLES ID      BBB:::::BBB:::::BBB     AAA:::::AAA:::::CCC:::::CCC     
-   SIGNS          --+     -+-     ++-     -+-     -++     +--     ++-     
+K8,000047,p=1,v=8,"7:3AC| 2BB^ 2BB* BBB,AA,CC,1-+- 2-++ 1+--   1--- 1-+-   1-++ 1+++   ","1^~2-3-6~7^-8~5-4-2 6~8 1~4",0,24,12,104,120,552,980,3400,
+   FAMILY EDGES           AC|                 BB^             BB*         
+   CYCLES ID      BBB:::::BBB:::::BBB     AAA:::::AAA     CCC:::::CCC     
+   SIGNS          -+-     -++     +--     ---     -+-     -++     +++     
+   COUNT          001     002     001     001     001     001     001     
+K8,000048,p=1,v=8,"7:3AC| 2BB^ 2BB* BBB,AA,CC,2--+ 1-+- 1+--   1--- 1-+-   1--+ 1-++   ","1^~2~3-6~7^-8~5~4-2 6~8 1~4",0,24,12,104,120,552,980,3400,
+   FAMILY EDGES           AC|                 BB^             BB*         
+   CYCLES ID      BBB:::::BBB:::::BBB     AAA:::::AAA     CCC:::::CCC     
+   SIGNS          --+     -+-     +--     ---     -+-     --+     -++     
+   COUNT          002     001     001     001     001     001     001     
+K8,000049,p=1,v=8,"7:3AC| 2BB^ 2BB* BBB,AA,CC,1--- 1++- 2+++   1-+- 1++-   1-++ 1+++   ","1^~2~3-6-7^-8-5-4~2 6-8 1-4",0,24,12,104,120,552,980,3400,
+   FAMILY EDGES           AC|                 BB^             BB*         
+   CYCLES ID      BBB:::::BBB:::::BBB     AAA:::::AAA     CCC:::::CCC     
+   SIGNS          ---     ++-     +++     -+-     ++-     -++     +++     
    COUNT          001     001     002     001     001     001     001     
-K8,000046,p=1,v=8,"*AC(--+ -+- +-+2)B *BB(---A -+-A ++-C +++C)","1^~2-3-6~7^-8~5-4-2 6~8 1~4",0,24,12,104,120,552,980,3400,
-   FAMILY EDGES           *AC                         *BB                 
+K8,000050,p=1,v=8,"7:3AC| 2BB^ 2BB* BBB,AA,CC,1--- 2+-+ 1++-   1-+- 1++-   1--+ 1-++   ","1^~2~3~6-7^-8~5-4~2 6-8 1-4",0,24,12,104,120,552,980,3400,
+   FAMILY EDGES           AC|                 BB^             BB*         
+   CYCLES ID      BBB:::::BBB:::::BBB     AAA:::::AAA     CCC:::::CCC     
+   SIGNS          ---     +-+     ++-     -+-     ++-     --+     -++     
+   COUNT          001     002     001     001     001     001     001     
+K8,000051,p=1,v=8,"7:3AC| 2BB^ 2BB* BBB,AA,CC,1--- 2-++ 1++-   1--- 1-+-   1-++ 1+++   ","1^~2-3~6~7^-8-5-4-2 6~8 1~4",0,24,12,104,120,552,980,3400,
+   FAMILY EDGES           AC|                 BB^             BB*         
+   CYCLES ID      BBB:::::BBB:::::BBB     AAA:::::AAA     CCC:::::CCC     
+   SIGNS          ---     -++     ++-     ---     -+-     -++     +++     
+   COUNT          001     002     001     001     001     001     001     
+K8,000052,p=1,v=8,"7:3AC| 2BB^ 2BB* BBB,AA,CC,1--- 2--+ 1++-   1--- 1-+-   1--+ 1-++   ","1^~2~3~6~7^-8-5~4-2 6~8 1~4",0,24,12,104,120,552,980,3400,
+   FAMILY EDGES           AC|                 BB^             BB*         
+   CYCLES ID      BBB:::::BBB:::::BBB     AAA:::::AAA     CCC:::::CCC     
+   SIGNS          ---     --+     ++-     ---     -+-     --+     -++     
+   COUNT          001     002     001     001     001     001     001     
+K8,000053,p=1,v=8,"7:3AC| 4BB| BBB,AACC,1-+- 1+-- 2+++   1-+- 1++- 1-+- 1++-   ","1~2~3-1~4~5-2 3~6-7-4 5-8-6 7-8",0,24,12,104,120,552,980,3400,
+   FAMILY EDGES           AC|                         BB|                 
    CYCLES ID      BBB:::::BBB:::::BBB     AAA:::::AAA:::::CCC:::::CCC     
-   SIGNS          --+     -+-     +-+     ---     -+-     ++-     +++     
+   SIGNS          -+-     +--     +++     -+-     ++-     -+-     ++-     
    COUNT          001     001     002     001     001     001     001     
-K8,000047,p=1,v=8,"*AC(--+ -+- +--2)B *BB(---A -+-A +--C ++-C)","1^~2~3-6~7^-8~5~4-2 6~8 1~4",0,24,12,104,120,552,980,3400,
-   FAMILY EDGES           *AC                         *BB                 
+K8,000054,p=1,v=8,"7:3AC| 4BB| BBB,AACC,1-+- 1+-- 2+-+   1-+- 1++- 1--+ 1-++   ","1~2~3-1~4~5-2 3-6~7-4 5-8~6 7-8",0,24,12,104,120,552,980,3400,
+   FAMILY EDGES           AC|                         BB|                 
    CYCLES ID      BBB:::::BBB:::::BBB     AAA:::::AAA:::::CCC:::::CCC     
-   SIGNS          --+     -+-     +--     ---     -+-     +--     ++-     
+   SIGNS          -+-     +--     +-+     -+-     ++-     --+     -++     
    COUNT          001     001     002     001     001     001     001     
-K8,000048,p=1,v=8,"*AC(--+ -+- +--2)B *BB(---A -+-A ---C -+-C)","1~2~3-1~4~5-2 3~6~7~4 5~8~6 7-8",0,24,12,104,120,552,980,3400,
-   FAMILY EDGES           *AC                         *BB                 
+K8,000055,p=1,v=8,"7:3AC| 4BB| BBB,AACC,1-+- 2-++ 1+--   1--- 1-+- 1-++ 1+++   ","1~2~3-1~4~5-2 3-6-7~4 5~8-6 7-8",0,24,12,104,120,552,980,3400,
+   FAMILY EDGES           AC|                         BB|                 
+   CYCLES ID      BBB:::::BBB:::::BBB     AAA:::::AAA:::::CCC:::::CCC     
+   SIGNS          -+-     -++     +--     ---     -+-     -++     +++     
+   COUNT          001     002     001     001     001     001     001     
+K8,000056,p=1,v=8,"7:3AC| 4BB| BBB,AACC,2--+ 1-+- 1+--   1--- 1-+- 1--- 1-+-   ","1~2~3-1~4~5-2 3~6~7~4 5~8~6 7-8",0,24,12,104,120,552,980,3400,
+   FAMILY EDGES           AC|                         BB|                 
    CYCLES ID      BBB:::::BBB:::::BBB     AAA:::::AAA:::::CCC:::::CCC     
    SIGNS          --+     -+-     +--     ---     -+-     ---     -+-     
-   COUNT          001     001     002     001     001     001     001     
-K8,000049,p=1,v=8,"*AC(--- -++ +++2)B *BB(-+-A -++A ++-C +++C)","1^~2~3-6-7^-8-5-4~2 6-8 1-4",0,24,12,104,120,552,980,3400,
-   FAMILY EDGES           *AC                         *BB                 
+   COUNT          002     001     001     001     001     001     001     
+K8,000057,p=1,v=8,"7:3AC| 4BB| BBB,AACC,1--- 1++- 2+++   1-+- 1++- 1-++ 1+++   ","1~2-3~1~4~5-2 3-6-7-4 5-8-6 7-8",0,24,12,104,120,552,980,3400,
+   FAMILY EDGES           AC|                         BB|                 
    CYCLES ID      BBB:::::BBB:::::BBB     AAA:::::AAA:::::CCC:::::CCC     
-   SIGNS          ---     -++     +++     -+-     -++     ++-     +++     
+   SIGNS          ---     ++-     +++     -+-     ++-     -++     +++     
    COUNT          001     001     002     001     001     001     001     
-K8,000050,p=1,v=8,"*AC(--- -++ ++-2)B *BB(-+-A -++A +--C ++-C)","1^~2~3~6-7^-8~5-4~2 6-8 1-4",0,24,12,104,120,552,980,3400,
-   FAMILY EDGES           *AC                         *BB                 
+K8,000058,p=1,v=8,"7:3AC| 4BB| BBB,AACC,1--- 2+-+ 1++-   1-+- 1++- 1--- 1-+-   ","1~2-3~1~4~5-2 3~6~7-4 5-8~6 7-8",0,24,12,104,120,552,980,3400,
+   FAMILY EDGES           AC|                         BB|                 
    CYCLES ID      BBB:::::BBB:::::BBB     AAA:::::AAA:::::CCC:::::CCC     
-   SIGNS          ---     -++     ++-     -+-     -++     +--     ++-     
-   COUNT          001     001     002     001     001     001     001     
-K8,000051,p=1,v=8,"*AC(--- -++ ++-2)B *BB(-+-A -++A ---C -+-C)","1~2-3~1~4~5-2 3~6~7-4 5-8~6 7-8",0,24,12,104,120,552,980,3400,
-   FAMILY EDGES           *AC                         *BB                 
+   SIGNS          ---     +-+     ++-     -+-     ++-     ---     -+-     
+   COUNT          001     002     001     001     001     001     001     
+K8,000059,p=1,v=8,"7:3AC| 4BB| BBB,AACC,1--- 2-++ 1++-   1--- 1-+- 1-+- 1++-   ","1~2-3~1~4~5-2 3~6-7~4 5~8-6 7-8",0,24,12,104,120,552,980,3400,
+   FAMILY EDGES           AC|                         BB|                 
    CYCLES ID      BBB:::::BBB:::::BBB     AAA:::::AAA:::::CCC:::::CCC     
-   SIGNS          ---     -++     ++-     -+-     -++     ---     -+-     
-   COUNT          001     001     002     001     001     001     001     
-K8,000052,p=1,v=8,"*AC(--- -++ +-+2)B *BB(---A -+-A ++-C +++C)","1^~2-3~6~7^-8-5-4-2 6~8 1~4",0,24,12,104,120,552,980,3400,
-   FAMILY EDGES           *AC                         *BB                 
+   SIGNS          ---     -++     ++-     ---     -+-     -+-     ++-     
+   COUNT          001     002     001     001     001     001     001     
+K8,000060,p=1,v=8,"7:3AC| 4BB| BBB,AACC,1--- 2--+ 1++-   1--- 1-+- 1--+ 1-++   ","1~2-3~1~4~5-2 3-6~7~4 5~8~6 7-8",0,24,12,104,120,552,980,3400,
+   FAMILY EDGES           AC|                         BB|                 
    CYCLES ID      BBB:::::BBB:::::BBB     AAA:::::AAA:::::CCC:::::CCC     
-   SIGNS          ---     -++     +-+     ---     -+-     ++-     +++     
-   COUNT          001     001     002     001     001     001     001     
-K8,000053,p=1,v=8,"*AC(--- -++ +-+2)B *BB(---A -+-A -+-C -++C)","1~2-3~1~4~5-2 3~6-7~4 5~8-6 7-8",0,24,12,104,120,552,980,3400,
-   FAMILY EDGES           *AC                         *BB                 
-   CYCLES ID      BBB:::::BBB:::::BBB     AAA:::::AAA:::::CCC:::::CCC     
-   SIGNS          ---     -++     +-+     ---     -+-     -+-     -++     
-   COUNT          001     001     002     001     001     001     001     
-K8,000054,p=1,v=8,"*AC(--- -++ +--2)B *BB(---A -+-A +--C ++-C)","1^~2~3~6~7^-8-5~4-2 6~8 1~4",0,24,12,104,120,552,980,3400,
-   FAMILY EDGES           *AC                         *BB                 
-   CYCLES ID      BBB:::::BBB:::::BBB     AAA:::::AAA:::::CCC:::::CCC     
-   SIGNS          ---     -++     +--     ---     -+-     +--     ++-     
-   COUNT          001     001     002     001     001     001     001     
-K8,000055,p=1,v=8,"*AC(+-- +-+ ++- +++)B *BB(+--A +++A ---C -++C)","1-2~3~1~4-5-2 3~6-7~4 5-8-6 7-8",0,24,12,104,120,552,980,3400,
-   FAMILY EDGES               *AC                             *BB                 
-   CYCLES ID      BBB:::::BBB:::::BBB:::::BBB     AAA:::::AAA:::::CCC:::::CCC     
-   SIGNS          +--     +-+     ++-     +++     +--     +++     ---     -++     
+   SIGNS          ---     --+     ++-     ---     -+-     --+     -++     
+   COUNT          001     002     001     001     001     001     001     
+K8,000061,p=1,v=8,"7:4AC| BB^ 2BB* BBBB,A,CC,1--- 1-+- 1+-- 1++-   2-+-   1--+ 1+++   ","1^-2~3~6~7^-8-5-4~2 6~8 1~4",0,24,12,104,120,552,980,3400,
+   FAMILY EDGES               AC|                 BB^         BB*         
+   CYCLES ID      BBB:::::BBB:::::BBB:::::BBB     AAA     CCC:::::CCC     
+   SIGNS          ---     -+-     +--     ++-     -+-     --+     +++     
+   COUNT          001     001     001     001     002     001     001     
+K8,000062,p=1,v=8,"7:4AC| 2BB^ BB* BBBB,AA,C,1--+ 1-++ 1+-+ 1+++   1--- 1++-   2-++   ","1^~2-3~6-7^-8-5~4-2 6-8 1~4",0,24,12,104,120,552,980,3400,
+   FAMILY EDGES               AC|                     BB^         BB*     
+   CYCLES ID      BBB:::::BBB:::::BBB:::::BBB     AAA:::::AAA     CCC     
+   SIGNS          --+     -++     +-+     +++     ---     ++-     -++     
+   COUNT          001     001     001     001     001     001     002     
+K8,000063,p=1,v=8,"7:4AC| 3BB| BBBB,AAC,1--- 1-+- 1+-- 1++-   1--- 1++- 2-+-   ","1~2~3-1~4~5-2 3~6~7~4 5-8-6 7~8",0,24,12,104,120,552,980,3400,
+   FAMILY EDGES               AC|                         BB|             
+   CYCLES ID      BBB:::::BBB:::::BBB:::::BBB     AAA:::::AAA:::::CCC     
+   SIGNS          ---     -+-     +--     ++-     ---     ++-     -+-     
+   COUNT          001     001     001     001     001     001     002     
+K8,000064,p=1,v=8,"7:4AC| 3BB| BBBB,ACC,1--+ 1-++ 1+-+ 1+++   2-++ 1--+ 1+++   ","1-2~3~1-4-5~2 3-6-7~4 5-8-6 7-8",0,24,12,104,120,552,980,3400,
+   FAMILY EDGES               AC|                         BB|             
+   CYCLES ID      BBB:::::BBB:::::BBB:::::BBB     AAA:::::CCC:::::CCC     
+   SIGNS          --+     -++     +-+     +++     -++     --+     +++     
+   COUNT          001     001     001     001     002     001     001     
+K8,000065,p=1,v=8,"8:4AC| 2BB^ 2BB* BBBB,AA,CC,1-+- 1+-+ 1++- 1+++   1-+- 1++-   1-++ 1+++   ","1^~2-3~6-7^-8-5-4~2 6-8 1-4",0,24,12,104,120,552,980,3400,
+   FAMILY EDGES               AC|                     BB^             BB*         
+   CYCLES ID      BBB:::::BBB:::::BBB:::::BBB     AAA:::::AAA     CCC:::::CCC     
+   SIGNS          -+-     +-+     ++-     +++     -+-     ++-     -++     +++     
    COUNT          001     001     001     001     001     001     001     001     
-K8,000056,p=1,v=8,"*AC(+-- +-+ ++- +++)B *BB(---A -++A +--C +++C)","1^~2~3~6-7^-8-5-4-2 6-8 1~4",0,24,12,104,120,552,980,3400,
-   FAMILY EDGES               *AC                             *BB                 
-   CYCLES ID      BBB:::::BBB:::::BBB:::::BBB     AAA:::::AAA:::::CCC:::::CCC     
-   SIGNS          +--     +-+     ++-     +++     ---     -++     +--     +++     
+K8,000066,p=1,v=8,"8:4AC| 2BB^ 2BB* BBBB,AA,CC,1--+ 1-++ 1+-+ 1+++   1--- 1++-   1--+ 1+++   ","1^~2~3~6-7^-8-5-4-2 6-8 1~4",0,24,12,104,120,552,980,3400,
+   FAMILY EDGES               AC|                     BB^             BB*         
+   CYCLES ID      BBB:::::BBB:::::BBB:::::BBB     AAA:::::AAA     CCC:::::CCC     
+   SIGNS          --+     -++     +-+     +++     ---     ++-     --+     +++     
    COUNT          001     001     001     001     001     001     001     001     
-K8,000057,p=1,v=8,"*AC(-+- -++ +-+ +++)B *BB(++-A +++A ++-C +++C)","1~2-3~1-4-5-2 3-6-7~4 5-8-6 7-8",0,24,12,104,120,552,980,3400,
-   FAMILY EDGES               *AC                             *BB                 
-   CYCLES ID      BBB:::::BBB:::::BBB:::::BBB     AAA:::::AAA:::::CCC:::::CCC     
-   SIGNS          -+-     -++     +-+     +++     ++-     +++     ++-     +++     
+K8,000067,p=1,v=8,"8:4AC| 2BB^ 2BB* BBBB,AA,CC,1--+ 1-+- 1-++ 1++-   1--- 1-+-   1-++ 1+++   ","1^~2~3-6~7^-8-5-4-2 6~8 1~4",0,24,12,104,120,552,980,3400,
+   FAMILY EDGES               AC|                     BB^             BB*         
+   CYCLES ID      BBB:::::BBB:::::BBB:::::BBB     AAA:::::AAA     CCC:::::CCC     
+   SIGNS          --+     -+-     -++     ++-     ---     -+-     -++     +++     
    COUNT          001     001     001     001     001     001     001     001     
-K8,000058,p=1,v=8,"*AC(-+- -++ +-+ +++)B *BB(++-A +++A -+-C -++C)","1~2~3-1-4-5-2 3~6-7~4 5-8-6 7-8",0,24,12,104,120,552,980,3400,
-   FAMILY EDGES               *AC                             *BB                 
-   CYCLES ID      BBB:::::BBB:::::BBB:::::BBB     AAA:::::AAA:::::CCC:::::CCC     
-   SIGNS          -+-     -++     +-+     +++     ++-     +++     -+-     -++     
+K8,000068,p=1,v=8,"8:4AC| 2BB^ 2BB* BBBB,AA,CC,1--- 1+-- 1+-+ 1+++   1-+- 1++-   1--+ 1-++   ","1^~2~3~6-7^-8-5~4~2 6-8 1-4",0,24,12,104,120,552,980,3400,
+   FAMILY EDGES               AC|                     BB^             BB*         
+   CYCLES ID      BBB:::::BBB:::::BBB:::::BBB     AAA:::::AAA     CCC:::::CCC     
+   SIGNS          ---     +--     +-+     +++     -+-     ++-     --+     -++     
    COUNT          001     001     001     001     001     001     001     001     
-K8,000059,p=1,v=8,"*AC(-+- -++ +-- ++-)B *BB(++-A +++A +--C ++-C)","1~2~3-1-4-5-2 3-6~7~4 5-8~6 7-8",0,24,12,104,120,552,980,3400,
-   FAMILY EDGES               *AC                             *BB                 
-   CYCLES ID      BBB:::::BBB:::::BBB:::::BBB     AAA:::::AAA:::::CCC:::::CCC     
-   SIGNS          -+-     -++     +--     ++-     ++-     +++     +--     ++-     
+K8,000069,p=1,v=8,"8:4AC| 2BB^ 2BB* BBBB,AA,CC,1--- 1--+ 1-++ 1+--   1--- 1-+-   1--+ 1-++   ","1^~2~3~6~7^-8~5-4-2 6~8 1~4",0,24,12,104,120,552,980,3400,
+   FAMILY EDGES               AC|                     BB^             BB*         
+   CYCLES ID      BBB:::::BBB:::::BBB:::::BBB     AAA:::::AAA     CCC:::::CCC     
+   SIGNS          ---     --+     -++     +--     ---     -+-     --+     -++     
    COUNT          001     001     001     001     001     001     001     001     
-K8,000060,p=1,v=8,"*AC(-+- -++ +-- ++-)B *BB(++-A +++A ---C -+-C)","1~2-3~1-4-5-2 3~6~7~4 5-8~6 7-8",0,24,12,104,120,552,980,3400,
-   FAMILY EDGES               *AC                             *BB                 
+K8,000070,p=1,v=8,"8:4AC| 4BB| BBBB,AACC,1-++ 1+-- 1++- 1+++   1-++ 1+++ 1-++ 1+++   ","1~2-3~1-4-5-2 3-6-7~4 5-8-6 7-8",0,24,12,104,120,552,980,3400,
+   FAMILY EDGES               AC|                             BB|                 
    CYCLES ID      BBB:::::BBB:::::BBB:::::BBB     AAA:::::AAA:::::CCC:::::CCC     
-   SIGNS          -+-     -++     +--     ++-     ++-     +++     ---     -+-     
+   SIGNS          -++     +--     ++-     +++     -++     +++     -++     +++     
    COUNT          001     001     001     001     001     001     001     001     
-K8,000061,p=1,v=8,"*AC(--+ -++ ++- +++)B *BB(-+-A -++A ++-C +++C)","1^~2-3~6-7^-8-5-4~2 6-8 1-4",0,24,12,104,120,552,980,3400,
-   FAMILY EDGES               *AC                             *BB                 
+K8,000071,p=1,v=8,"8:4AC| 4BB| BBBB,AACC,1-++ 1+-- 1++- 1+++   1-++ 1+++ 1-+- 1++-   ","1~2~3-1-4-5-2 3~6-7~4 5-8-6 7-8",0,24,12,104,120,552,980,3400,
+   FAMILY EDGES               AC|                             BB|                 
    CYCLES ID      BBB:::::BBB:::::BBB:::::BBB     AAA:::::AAA:::::CCC:::::CCC     
-   SIGNS          --+     -++     ++-     +++     -+-     -++     ++-     +++     
+   SIGNS          -++     +--     ++-     +++     -++     +++     -+-     ++-     
    COUNT          001     001     001     001     001     001     001     001     
-K8,000062,p=1,v=8,"*AC(--+ -++ +-- +-+)B *BB(---A -+-A ++-C +++C)","1^~2~3-6~7^-8-5-4-2 6~8 1~4",0,24,12,104,120,552,980,3400,
-   FAMILY EDGES               *AC                             *BB                 
+K8,000072,p=1,v=8,"8:4AC| 4BB| BBBB,AACC,1--+ 1+-- 1+-+ 1++-   1-++ 1+++ 1--+ 1-++   ","1~2~3-1-4-5-2 3-6~7~4 5-8~6 7-8",0,24,12,104,120,552,980,3400,
+   FAMILY EDGES               AC|                             BB|                 
    CYCLES ID      BBB:::::BBB:::::BBB:::::BBB     AAA:::::AAA:::::CCC:::::CCC     
-   SIGNS          --+     -++     +--     +-+     ---     -+-     ++-     +++     
+   SIGNS          --+     +--     +-+     ++-     -++     +++     --+     -++     
    COUNT          001     001     001     001     001     001     001     001     
-K8,000063,p=1,v=8,"*AC(--- -+- ++- +++)B *BB(-+-A -++A +--C ++-C)","1^~2~3~6-7^-8-5~4~2 6-8 1-4",0,24,12,104,120,552,980,3400,
-   FAMILY EDGES               *AC                             *BB                 
+K8,000073,p=1,v=8,"8:4AC| 4BB| BBBB,AACC,1--+ 1+-- 1+-+ 1++-   1-++ 1+++ 1--- 1-+-   ","1~2-3~1-4-5-2 3~6~7~4 5-8~6 7-8",0,24,12,104,120,552,980,3400,
+   FAMILY EDGES               AC|                             BB|                 
    CYCLES ID      BBB:::::BBB:::::BBB:::::BBB     AAA:::::AAA:::::CCC:::::CCC     
-   SIGNS          ---     -+-     ++-     +++     -+-     -++     +--     ++-     
+   SIGNS          --+     +--     +-+     ++-     -++     +++     ---     -+-     
    COUNT          001     001     001     001     001     001     001     001     
-K8,000064,p=1,v=8,"*AC(--- -+- +-- +-+)B *BB(---A -+-A +--C ++-C)","1^~2~3~6~7^-8~5-4-2 6~8 1~4",0,24,12,104,120,552,980,3400,
-   FAMILY EDGES               *AC                             *BB                 
+K8,000074,p=1,v=8,"8:4AC| 4BB| BBBB,AACC,1--+ 1-++ 1+-+ 1+++   1--+ 1+++ 1--- 1++-   ","1-2~3~1~4-5-2 3~6-7~4 5-8-6 7-8",0,24,12,104,120,552,980,3400,
+   FAMILY EDGES               AC|                             BB|                 
    CYCLES ID      BBB:::::BBB:::::BBB:::::BBB     AAA:::::AAA:::::CCC:::::CCC     
-   SIGNS          ---     -+-     +--     +-+     ---     -+-     +--     ++-     
+   SIGNS          --+     -++     +-+     +++     --+     +++     ---     ++-     
    COUNT          001     001     001     001     001     001     001     001     
-K8,000065,p=1,v=8,"*AC(--- --+ +-+ +++)B *BB(+--A ++-A ++-C +++C)","1~2~3-1~4-5~2 3-6-7~4 5-8-6 7-8",0,24,12,104,120,552,980,3400,
-   FAMILY EDGES               *AC                             *BB                 
+K8,000075,p=1,v=8,"8:4AC| 4BB| BBBB,AACC,1--- 1-+- 1-++ 1+++   1--+ 1-++ 1-++ 1+++   ","1~2~3-1~4-5~2 3-6-7~4 5-8-6 7-8",0,24,12,104,120,552,980,3400,
+   FAMILY EDGES               AC|                             BB|                 
    CYCLES ID      BBB:::::BBB:::::BBB:::::BBB     AAA:::::AAA:::::CCC:::::CCC     
-   SIGNS          ---     --+     +-+     +++     +--     ++-     ++-     +++     
+   SIGNS          ---     -+-     -++     +++     --+     -++     -++     +++     
    COUNT          001     001     001     001     001     001     001     001     
-K8,000066,p=1,v=8,"*AC(--- --+ +-+ +++)B *BB(+--A ++-A -+-C -++C)","1~2-3~1~4-5~2 3~6-7~4 5-8-6 7-8",0,24,12,104,120,552,980,3400,
-   FAMILY EDGES               *AC                             *BB                 
+K8,000076,p=1,v=8,"8:4AC| 4BB| BBBB,AACC,1--- 1-+- 1-++ 1+++   1--+ 1-++ 1-+- 1++-   ","1~2-3~1~4-5~2 3~6-7~4 5-8-6 7-8",0,24,12,104,120,552,980,3400,
+   FAMILY EDGES               AC|                             BB|                 
    CYCLES ID      BBB:::::BBB:::::BBB:::::BBB     AAA:::::AAA:::::CCC:::::CCC     
-   SIGNS          ---     --+     +-+     +++     +--     ++-     -+-     -++     
+   SIGNS          ---     -+-     -++     +++     --+     -++     -+-     ++-     
    COUNT          001     001     001     001     001     001     001     001     
-K8,000067,p=1,v=8,"*AC(--- --+ +-- ++-)B *BB(+--A ++-A +--C ++-C)","1~2-3~1~4-5~2 3-6~7~4 5-8~6 7-8",0,24,12,104,120,552,980,3400,
-   FAMILY EDGES               *AC                             *BB                 
+K8,000077,p=1,v=8,"8:4AC| 4BB| BBBB,AACC,1--- 1--+ 1-+- 1+-+   1--+ 1-++ 1--+ 1-++   ","1~2-3~1~4-5~2 3-6~7~4 5-8~6 7-8",0,24,12,104,120,552,980,3400,
+   FAMILY EDGES               AC|                             BB|                 
    CYCLES ID      BBB:::::BBB:::::BBB:::::BBB     AAA:::::AAA:::::CCC:::::CCC     
-   SIGNS          ---     --+     +--     ++-     +--     ++-     +--     ++-     
+   SIGNS          ---     --+     -+-     +-+     --+     -++     --+     -++     
    COUNT          001     001     001     001     001     001     001     001     
-K8,000068,p=1,v=8,"*AC(--- --+ +-- ++-)B *BB(+--A ++-A ---C -+-C)","1~2~3-1~4-5~2 3~6~7~4 5-8~6 7-8",0,24,12,104,120,552,980,3400,
-   FAMILY EDGES               *AC                             *BB                 
+K8,000078,p=1,v=8,"8:4AC| 4BB| BBBB,AACC,1--- 1--+ 1-+- 1+-+   1--+ 1-++ 1--- 1-+-   ","1~2~3-1~4-5~2 3~6~7~4 5-8~6 7-8",0,24,12,104,120,552,980,3400,
+   FAMILY EDGES               AC|                             BB|                 
    CYCLES ID      BBB:::::BBB:::::BBB:::::BBB     AAA:::::AAA:::::CCC:::::CCC     
-   SIGNS          ---     --+     +--     ++-     +--     ++-     ---     -+-     
+   SIGNS          ---     --+     -+-     +-+     --+     -++     ---     -+-     
    COUNT          001     001     001     001     001     001     001     001     
 
 
-higgs,000001,p=1,v=8,"***+++8A","1-2-5-3-1-4-6-2 3-7-4 5-8-6 7-8",0,24,0,168,0,1464,0,13128,
-   FAMILY EDGES   ***     
+higgs,000001,p=1,v=8,"1:||| A,8+++   ","1-2-5-3-1-4-6-2 3-7-4 5-8-6 7-8",0,24,0,168,0,1464,0,13128,
+   FAMILY EDGES   |||     
    CYCLES ID      AAA     
    SIGNS          +++     
    COUNT          008     
-higgs,000002,p=1,v=8,"***++-8A","1-2-5-3-1~4-6~2 3~7-4 5~8-6 7-8",0,24,0,168,0,1464,0,13128,
-   FAMILY EDGES   ***     
+higgs,000002,p=1,v=8,"1:||| A,8-++   ","1-2-5-3-1~4-6~2 3~7-4 5~8-6 7-8",0,24,0,168,0,1464,0,13128,
+   FAMILY EDGES   |||     
    CYCLES ID      AAA     
-   SIGNS          ++-     
+   SIGNS          -++     
    COUNT          008     
-higgs,000003,p=1,v=8,"***+--8A","1-2~5-3~1~4-6~2 3~7~4 5~8~6 7-8",0,24,0,168,0,1464,0,13128,
-   FAMILY EDGES   ***     
+higgs,000003,p=1,v=8,"1:||| A,8--+   ","1-2~5-3~1~4-6~2 3~7~4 5~8~6 7-8",0,24,0,168,0,1464,0,13128,
+   FAMILY EDGES   |||     
    CYCLES ID      AAA     
-   SIGNS          +--     
+   SIGNS          --+     
    COUNT          008     
-higgs,000004,p=1,v=8,"***---8A","1~2~5~3~1~4~6~2 3~7~4 5~8~6 7~8",0,24,0,168,0,1464,0,13128,
-   FAMILY EDGES   ***     
+higgs,000004,p=1,v=8,"1:||| A,8---   ","1~2~5~3~1~4~6~2 3~7~4 5~8~6 7~8",0,24,0,168,0,1464,0,13128,
+   FAMILY EDGES   |||     
    CYCLES ID      AAA     
    SIGNS          ---     
    COUNT          008     
-higgs,000005,p=1,v=8,"***(+--6 +++2)A","1-2~5~3-1-4~6~2 3~7~4 5-8-6 7-8",0,24,0,168,0,1464,0,13128,
-   FAMILY EDGES       ***         
+higgs,000005,p=1,v=8,"2:2||| AA,4--+ 4-++   ","1-2-5~3~1-4~6~2 3-7~4 5~8-6 7-8",0,24,0,168,0,1464,0,13128,
+   FAMILY EDGES       |||         
    CYCLES ID      AAA:::::AAA     
-   SIGNS          +--     +++     
-   COUNT          006     002     
-higgs,000006,p=1,v=8,"***(+--4 ++-4)A","1-2-5~3~1-4~6~2 3-7~4 5~8-6 7-8",0,24,0,168,0,1464,0,13128,
-   FAMILY EDGES       ***         
-   CYCLES ID      AAA:::::AAA     
-   SIGNS          +--     ++-     
+   SIGNS          --+     -++     
    COUNT          004     004     
-higgs,000007,p=1,v=8,"***(---2 ++-6)A","1-2~5~3-1~4~6-2 3-7~4 5~8-6 7-8",0,24,0,168,0,1464,0,13128,
-   FAMILY EDGES       ***         
+higgs,000006,p=1,v=8,"2:2||| AA,6--+ 2+++   ","1-2~5~3-1-4~6~2 3~7~4 5-8-6 7-8",0,24,0,168,0,1464,0,13128,
+   FAMILY EDGES       |||         
    CYCLES ID      AAA:::::AAA     
-   SIGNS          ---     ++-     
+   SIGNS          --+     +++     
+   COUNT          006     002     
+higgs,000007,p=1,v=8,"2:2||| AA,2--- 6-++   ","1-2~5~3-1~4~6-2 3-7~4 5~8-6 7-8",0,24,0,168,0,1464,0,13128,
+   FAMILY EDGES       |||         
+   CYCLES ID      AAA:::::AAA     
+   SIGNS          ---     -++     
    COUNT          002     006     
-higgs,000008,p=1,v=8,"***(+--2 ++-4 +++2)A","1-2~5-3~1~4-6~2 3-7-4 5-8-6 7-8",0,24,0,168,0,1464,0,13128,
-   FAMILY EDGES           ***             
+higgs,000008,p=1,v=8,"3:3||| AAA,2--+ 4-++ 2+++   ","1-2~5-3~1~4-6~2 3-7-4 5-8-6 7-8",0,24,0,168,0,1464,0,13128,
+   FAMILY EDGES           |||             
    CYCLES ID      AAA:::::AAA:::::AAA     
-   SIGNS          +--     ++-     +++     
+   SIGNS          --+     -++     +++     
    COUNT          002     004     002     
-higgs,000009,p=1,v=8,"***(+--3 ++-4 +++)A","1-2~5~3-1~4-6~2 3~7-4 5-8-6 7-8",0,24,0,168,0,1464,0,13128,
-   FAMILY EDGES           ***             
+higgs,000009,p=1,v=8,"3:3||| AAA,3--+ 4-++ 1+++   ","1-2~5~3-1~4-6~2 3~7-4 5-8-6 7-8",0,24,0,168,0,1464,0,13128,
+   FAMILY EDGES           |||             
    CYCLES ID      AAA:::::AAA:::::AAA     
-   SIGNS          +--     ++-     +++     
+   SIGNS          --+     -++     +++     
    COUNT          003     004     001     
-higgs,000010,p=1,v=8,"***(--- ++-3 +++4)A","1~2-5-3~1~4-6-2 3-7-4 5-8-6 7-8",0,24,0,168,0,1464,0,13128,
-   FAMILY EDGES           ***             
+higgs,000010,p=1,v=8,"3:3||| AAA,1--- 3-++ 4+++   ","1~2-5-3~1~4-6-2 3-7-4 5-8-6 7-8",0,24,0,168,0,1464,0,13128,
+   FAMILY EDGES           |||             
    CYCLES ID      AAA:::::AAA:::::AAA     
-   SIGNS          ---     ++-     +++     
+   SIGNS          ---     -++     +++     
    COUNT          001     003     004     
-higgs,000011,p=1,v=8,"***(---4 +--3 +++)A","1~2~5~3~1~4~6~2 3~7~4 5-8-6 7-8",0,24,0,168,0,1464,0,13128,
-   FAMILY EDGES           ***             
+higgs,000011,p=1,v=8,"3:3||| AAA,1--- 4--+ 3-++   ","1~2~5~3~1-4~6-2 3-7~4 5~8-6 7-8",0,24,0,168,0,1464,0,13128,
+   FAMILY EDGES           |||             
    CYCLES ID      AAA:::::AAA:::::AAA     
-   SIGNS          ---     +--     +++     
-   COUNT          004     003     001     
-higgs,000012,p=1,v=8,"***(--- +--4 ++-3)A","1~2~5~3~1-4~6-2 3-7~4 5~8-6 7-8",0,24,0,168,0,1464,0,13128,
-   FAMILY EDGES           ***             
-   CYCLES ID      AAA:::::AAA:::::AAA     
-   SIGNS          ---     +--     ++-     
+   SIGNS          ---     --+     -++     
    COUNT          001     004     003     
-higgs,000013,p=1,v=8,"***(---2 +--4 ++-2)A","1~2-5-3~1~4~6~2 3~7~4 5~8-6 7-8",0,24,0,168,0,1464,0,13128,
-   FAMILY EDGES           ***             
+higgs,000012,p=1,v=8,"3:3||| AAA,2--- 4--+ 2-++   ","1~2-5-3~1~4~6~2 3~7~4 5~8-6 7-8",0,24,0,168,0,1464,0,13128,
+   FAMILY EDGES           |||             
    CYCLES ID      AAA:::::AAA:::::AAA     
-   SIGNS          ---     +--     ++-     
+   SIGNS          ---     --+     -++     
    COUNT          002     004     002     
-higgs,000014,p=1,v=8,"***(---2 +--2 ++-2 +++2)A","1~2~5~3~1-4-6~2 3~7-4 5-8-6 7-8",0,24,0,168,0,1464,0,13128,
-   FAMILY EDGES               ***                 
+higgs,000013,p=1,v=8,"3:3||| AAA,4--- 3--+ 1+++   ","1~2~5~3~1~4~6~2 3~7~4 5-8-6 7-8",0,24,0,168,0,1464,0,13128,
+   FAMILY EDGES           |||             
+   CYCLES ID      AAA:::::AAA:::::AAA     
+   SIGNS          ---     --+     +++     
+   COUNT          004     003     001     
+higgs,000014,p=1,v=8,"4:4||| AAAA,2--- 2--+ 2-++ 2+++   ","1~2~5~3~1-4-6~2 3~7-4 5-8-6 7-8",0,24,0,168,0,1464,0,13128,
+   FAMILY EDGES               |||                 
    CYCLES ID      AAA:::::AAA:::::AAA:::::AAA     
-   SIGNS          ---     +--     ++-     +++     
+   SIGNS          ---     --+     -++     +++     
    COUNT          002     002     002     002     
 
 
-d4,000001,p=1,v=4,"***+++4A","1-2-4-3-1",4,12,28,84,
-   FAMILY EDGES   ***     
+d4,000001,p=1,v=4,"1:||* A,4+++   ","1-2-4-3-1",4,12,28,84,
+   FAMILY EDGES   ||*     
    CYCLES ID      AAA     
    SIGNS          +++     
    COUNT          004     
-d4,000002,p=1,v=4,"***++-4A","1-2~4-3~1",4,12,28,84,
-   FAMILY EDGES   ***     
+d4,000002,p=1,v=4,"1:||* A,4-++   ","1-2~4-3~1",4,12,28,84,
+   FAMILY EDGES   ||*     
    CYCLES ID      AAA     
-   SIGNS          ++-     
+   SIGNS          -++     
    COUNT          004     
-d4,000003,p=1,v=4,"***+--4A","1~2~4~3~1",4,12,28,84,
-   FAMILY EDGES   ***     
+d4,000003,p=1,v=4,"1:||* A,4--+   ","1~2~4~3~1",4,12,28,84,
+   FAMILY EDGES   ||*     
    CYCLES ID      AAA     
-   SIGNS          +--     
+   SIGNS          --+     
    COUNT          004     
-d4,000004,p=1,v=4,"***(+-- ++-2 +++)A","1~2-4-3~1",4,12,28,84,
-   FAMILY EDGES           ***             
+d4,000004,p=1,v=4,"3:3||* AAA,1--+ 2-++ 1+++   ","1~2-4-3~1",4,12,28,84,
+   FAMILY EDGES           ||*             
    CYCLES ID      AAA:::::AAA:::::AAA     
-   SIGNS          +--     ++-     +++     
+   SIGNS          --+     -++     +++     
    COUNT          001     002     001     
 
 
-d5,000001,p=1,v=5,"***+++5A","1-2-4-5-3-1",5,15,35,95,265,
-   FAMILY EDGES   ***     
+d5,000001,p=1,v=5,"1:||* A,5+++   ","1-2-4-5-3-1",5,15,35,95,265,
+   FAMILY EDGES   ||*     
    CYCLES ID      AAA     
    SIGNS          +++     
    COUNT          005     
-d5,000002,p=1,v=5,"***(++-4 +++)A","1-2~4-5-3~1",5,15,35,95,265,
-   FAMILY EDGES       ***         
+d5,000002,p=1,v=5,"2:2||* AA,4-++ 1+++   ","1-2~4-5-3~1",5,15,35,95,265,
+   FAMILY EDGES       ||*         
    CYCLES ID      AAA:::::AAA     
-   SIGNS          ++-     +++     
+   SIGNS          -++     +++     
    COUNT          004     001     
-d5,000003,p=1,v=5,"***(+--3 ++-2)A","1~2~4-5~3~1",5,15,35,95,265,
-   FAMILY EDGES       ***         
+d5,000003,p=1,v=5,"2:2||* AA,3--+ 2-++   ","1~2~4-5~3~1",5,15,35,95,265,
+   FAMILY EDGES       ||*         
    CYCLES ID      AAA:::::AAA     
-   SIGNS          +--     ++-     
+   SIGNS          --+     -++     
    COUNT          003     002     
-d5,000004,p=1,v=5,"***(+-- ++-2 +++2)A","1~2-4-5-3~1",5,15,35,95,265,
-   FAMILY EDGES           ***             
+d5,000004,p=1,v=5,"3:3||* AAA,1--+ 2-++ 2+++   ","1~2-4-5-3~1",5,15,35,95,265,
+   FAMILY EDGES           ||*             
    CYCLES ID      AAA:::::AAA:::::AAA     
-   SIGNS          +--     ++-     +++     
+   SIGNS          --+     -++     +++     
    COUNT          001     002     002     
 
 
-d6,000001,p=1,v=6,"***+++6A","1-2-4-6-5-3-1",6,18,42,114,306,858,
-   FAMILY EDGES   ***     
+d6,000001,p=1,v=6,"1:||* A,6+++   ","1-2-4-6-5-3-1",6,18,42,114,306,858,
+   FAMILY EDGES   ||*     
    CYCLES ID      AAA     
    SIGNS          +++     
    COUNT          006     
-d6,000002,p=1,v=6,"***+--6A","1~2~4~6~5~3~1",6,18,42,114,306,858,
-   FAMILY EDGES   ***     
+d6,000002,p=1,v=6,"1:||* A,6--+   ","1~2~4~6~5~3~1",6,18,42,114,306,858,
+   FAMILY EDGES   ||*     
    CYCLES ID      AAA     
-   SIGNS          +--     
+   SIGNS          --+     
    COUNT          006     
-d6,000003,p=1,v=6,"***(++-4 +++2)A","1-2~4-6-5-3~1",6,18,42,114,306,858,
-   FAMILY EDGES       ***         
+d6,000003,p=1,v=6,"2:2||* AA,4-++ 2+++   ","1-2~4-6-5-3~1",6,18,42,114,306,858,
+   FAMILY EDGES       ||*         
    CYCLES ID      AAA:::::AAA     
-   SIGNS          ++-     +++     
+   SIGNS          -++     +++     
    COUNT          004     002     
-d6,000004,p=1,v=6,"***(+--2 ++-4)A","1~2-4~6-5~3~1",6,18,42,114,306,858,
-   FAMILY EDGES       ***         
+d6,000004,p=1,v=6,"2:2||* AA,2--+ 4-++   ","1~2-4~6-5~3~1",6,18,42,114,306,858,
+   FAMILY EDGES       ||*         
    CYCLES ID      AAA:::::AAA     
-   SIGNS          +--     ++-     
+   SIGNS          --+     -++     
    COUNT          002     004     
-d6,000005,p=1,v=6,"***(+-- ++-2 +++3)A","1~2-4-6-5-3~1",6,18,42,114,306,858,
-   FAMILY EDGES           ***             
+d6,000005,p=1,v=6,"3:3||* AAA,1--+ 2-++ 3+++   ","1~2-4-6-5-3~1",6,18,42,114,306,858,
+   FAMILY EDGES           ||*             
    CYCLES ID      AAA:::::AAA:::::AAA     
-   SIGNS          +--     ++-     +++     
+   SIGNS          --+     -++     +++     
    COUNT          001     002     003     
-d6,000006,p=1,v=6,"***(+--3 ++-2 +++)A","1~2~4-6-5~3~1",6,18,42,114,306,858,
-   FAMILY EDGES           ***             
+d6,000006,p=1,v=6,"3:3||* AAA,3--+ 2-++ 1+++   ","1~2~4-6-5~3~1",6,18,42,114,306,858,
+   FAMILY EDGES           ||*             
    CYCLES ID      AAA:::::AAA:::::AAA     
-   SIGNS          +--     ++-     +++     
+   SIGNS          --+     -++     +++     
    COUNT          003     002     001     
 
 
-γ4,000001,p=1,v=4,"***+++4A","1=2-4=3-1",0,20,0,164,
-   FAMILY EDGES   ***     
+γ4,000001,p=1,v=4,"1:||| A,4+++   ","1=2-4=3-1",0,20,0,164,
+   FAMILY EDGES   |||     
    CYCLES ID      AAA     
    SIGNS          +++     
    COUNT          004     
-γ4,000002,p=1,v=4,"***++-4A","1=2~4=3~1",0,20,0,164,
-   FAMILY EDGES   ***     
+γ4,000002,p=1,v=4,"1:||| A,4-++   ","1=2~4=3~1",0,20,0,164,
+   FAMILY EDGES   |||     
    CYCLES ID      AAA     
-   SIGNS          ++-     
+   SIGNS          -++     
    COUNT          004     
-γ4,000003,p=1,v=4,"***+--4A","1~~2-4~~3-1",0,20,0,164,
-   FAMILY EDGES   ***     
+γ4,000003,p=1,v=4,"1:||| A,4--+   ","1~~2-4~~3-1",0,20,0,164,
+   FAMILY EDGES   |||     
    CYCLES ID      AAA     
-   SIGNS          +--     
+   SIGNS          --+     
    COUNT          004     
-γ4,000004,p=1,v=4,"***---4A","1~~2~4~~3~1",0,20,0,164,
-   FAMILY EDGES   ***     
+γ4,000004,p=1,v=4,"1:||| A,4---   ","1~~2~4~~3~1",0,20,0,164,
+   FAMILY EDGES   |||     
    CYCLES ID      AAA     
    SIGNS          ---     
    COUNT          004     
-γ4,000005,p=1,v=4,"***(--- +-- ++- +++)A","1~~2-4=3~1",0,20,0,164,
-   FAMILY EDGES               ***                 
+γ4,000005,p=1,v=4,"4:4||| AAAA,1--- 1--+ 1-++ 1+++   ","1~~2-4=3~1",0,20,0,164,
+   FAMILY EDGES               |||                 
    CYCLES ID      AAA:::::AAA:::::AAA:::::AAA     
-   SIGNS          ---     +--     ++-     +++     
+   SIGNS          ---     --+     -++     +++     
    COUNT          001     001     001     001     
 
 
-γ6,000001,p=1,v=6,"***+++6A","1=2-4=6-5=3-1",0,30,0,198,0,1566,
-   FAMILY EDGES   ***     
+γ6,000001,p=1,v=6,"1:||| A,6+++   ","1=2-4=6-5=3-1",0,30,0,198,0,1566,
+   FAMILY EDGES   |||     
    CYCLES ID      AAA     
    SIGNS          +++     
    COUNT          006     
-γ6,000002,p=1,v=6,"***---6A","1~~2~4~~6~5~~3~1",0,30,0,198,0,1566,
-   FAMILY EDGES   ***     
+γ6,000002,p=1,v=6,"1:||| A,6---   ","1~~2~4~~6~5~~3~1",0,30,0,198,0,1566,
+   FAMILY EDGES   |||     
    CYCLES ID      AAA     
    SIGNS          ---     
    COUNT          006     
-γ6,000003,p=1,v=6,"***(++-4 +++2)A","1=2~4=6-5=3~1",0,30,0,198,0,1566,
-   FAMILY EDGES       ***         
+γ6,000003,p=1,v=6,"2:2||| AA,4-++ 2+++   ","1=2~4=6-5=3~1",0,30,0,198,0,1566,
+   FAMILY EDGES       |||         
    CYCLES ID      AAA:::::AAA     
-   SIGNS          ++-     +++     
+   SIGNS          -++     +++     
    COUNT          004     002     
-γ6,000004,p=1,v=6,"***(+--4 +++2)A","1~~2-4=6-5~~3-1",0,30,0,198,0,1566,
-   FAMILY EDGES       ***         
+γ6,000004,p=1,v=6,"2:2||| AA,4--+ 2+++   ","1~~2-4=6-5~~3-1",0,30,0,198,0,1566,
+   FAMILY EDGES       |||         
    CYCLES ID      AAA:::::AAA     
-   SIGNS          +--     +++     
+   SIGNS          --+     +++     
    COUNT          004     002     
-γ6,000005,p=1,v=6,"***(---2 ++-4)A","1~~2~4=6~5=3~1",0,30,0,198,0,1566,
-   FAMILY EDGES       ***         
+γ6,000005,p=1,v=6,"2:2||| AA,2--- 4-++   ","1~~2~4=6~5=3~1",0,30,0,198,0,1566,
+   FAMILY EDGES       |||         
    CYCLES ID      AAA:::::AAA     
-   SIGNS          ---     ++-     
+   SIGNS          ---     -++     
    COUNT          002     004     
-γ6,000006,p=1,v=6,"***(---2 +--4)A","1~~2-4~~6-5~~3~1",0,30,0,198,0,1566,
-   FAMILY EDGES       ***         
+γ6,000006,p=1,v=6,"2:2||| AA,2--- 4--+   ","1~~2-4~~6-5~~3~1",0,30,0,198,0,1566,
+   FAMILY EDGES       |||         
    CYCLES ID      AAA:::::AAA     
-   SIGNS          ---     +--     
+   SIGNS          ---     --+     
    COUNT          002     004     
-γ6,000007,p=1,v=6,"***(+--2 ++-2 +++2)A","1=2~4=6-5~~3-1",0,30,0,198,0,1566,
-   FAMILY EDGES           ***             
+γ6,000007,p=1,v=6,"3:3||| AAA,2--+ 2-++ 2+++   ","1=2~4=6-5~~3-1",0,30,0,198,0,1566,
+   FAMILY EDGES           |||             
    CYCLES ID      AAA:::::AAA:::::AAA     
-   SIGNS          +--     ++-     +++     
+   SIGNS          --+     -++     +++     
    COUNT          002     002     002     
-γ6,000008,p=1,v=6,"***(---2 +--2 ++-2)A","1=2~4~~6-5~~3~1",0,30,0,198,0,1566,
-   FAMILY EDGES           ***             
+γ6,000008,p=1,v=6,"3:3||| AAA,2--- 2--+ 2-++   ","1=2~4~~6-5~~3~1",0,30,0,198,0,1566,
+   FAMILY EDGES           |||             
    CYCLES ID      AAA:::::AAA:::::AAA     
-   SIGNS          ---     +--     ++-     
+   SIGNS          ---     --+     -++     
    COUNT          002     002     002     
-γ6,000009,p=1,v=6,"***(--- +-- ++- +++3)A","1~~2-4=6-5=3~1",0,30,0,198,0,1566,
-   FAMILY EDGES               ***                 
+γ6,000009,p=1,v=6,"4:4||| AAAA,1--- 1--+ 1-++ 3+++   ","1~~2-4=6-5=3~1",0,30,0,198,0,1566,
+   FAMILY EDGES               |||                 
    CYCLES ID      AAA:::::AAA:::::AAA:::::AAA     
-   SIGNS          ---     +--     ++-     +++     
+   SIGNS          ---     --+     -++     +++     
    COUNT          001     001     001     003     
-γ6,000010,p=1,v=6,"***(---3 +-- ++- +++)A","1~~2~4=6-5~~3~1",0,30,0,198,0,1566,
-   FAMILY EDGES               ***                 
+γ6,000010,p=1,v=6,"4:4||| AAAA,3--- 1--+ 1-++ 1+++   ","1~~2~4=6-5~~3~1",0,30,0,198,0,1566,
+   FAMILY EDGES               |||                 
    CYCLES ID      AAA:::::AAA:::::AAA:::::AAA     
-   SIGNS          ---     +--     ++-     +++     
+   SIGNS          ---     --+     -++     +++     
    COUNT          003     001     001     001     
 
 
-γ8,000001,p=1,v=8,"***+++8A","1=2-4=6-8=7-5=3-1",0,40,0,264,0,1960,0,15624,
-   FAMILY EDGES   ***     
+γ8,000001,p=1,v=8,"1:||| A,8+++   ","1=2-4=6-8=7-5=3-1",0,40,0,264,0,1960,0,15624,
+   FAMILY EDGES   |||     
    CYCLES ID      AAA     
    SIGNS          +++     
    COUNT          008     
-γ8,000002,p=1,v=8,"***++-8A","1=2~4=6~8=7~5=3~1",0,40,0,264,0,1960,0,15624,
-   FAMILY EDGES   ***     
+γ8,000002,p=1,v=8,"1:||| A,8-++   ","1=2~4=6~8=7~5=3~1",0,40,0,264,0,1960,0,15624,
+   FAMILY EDGES   |||     
    CYCLES ID      AAA     
-   SIGNS          ++-     
+   SIGNS          -++     
    COUNT          008     
-γ8,000003,p=1,v=8,"***+--8A","1~~2-4~~6-8~~7-5~~3-1",0,40,0,264,0,1960,0,15624,
-   FAMILY EDGES   ***     
+γ8,000003,p=1,v=8,"1:||| A,8--+   ","1~~2-4~~6-8~~7-5~~3-1",0,40,0,264,0,1960,0,15624,
+   FAMILY EDGES   |||     
    CYCLES ID      AAA     
-   SIGNS          +--     
+   SIGNS          --+     
    COUNT          008     
-γ8,000004,p=1,v=8,"***---8A","1~~2~4~~6~8~~7~5~~3~1",0,40,0,264,0,1960,0,15624,
-   FAMILY EDGES   ***     
+γ8,000004,p=1,v=8,"1:||| A,8---   ","1~~2~4~~6~8~~7~5~~3~1",0,40,0,264,0,1960,0,15624,
+   FAMILY EDGES   |||     
    CYCLES ID      AAA     
    SIGNS          ---     
    COUNT          008     
-γ8,000005,p=1,v=8,"***(++-4 +++4)A","1=2~4=6-8=7-5=3~1",0,40,0,264,0,1960,0,15624,
-   FAMILY EDGES       ***         
+γ8,000005,p=1,v=8,"2:2||| AA,4-++ 4+++   ","1=2~4=6-8=7-5=3~1",0,40,0,264,0,1960,0,15624,
+   FAMILY EDGES       |||         
    CYCLES ID      AAA:::::AAA     
-   SIGNS          ++-     +++     
+   SIGNS          -++     +++     
    COUNT          004     004     
-γ8,000006,p=1,v=8,"***(+--4 +++4)A","1~~2-4=6-8=7-5~~3-1",0,40,0,264,0,1960,0,15624,
-   FAMILY EDGES       ***         
+γ8,000006,p=1,v=8,"2:2||| AA,4--+ 4+++   ","1~~2-4=6-8=7-5~~3-1",0,40,0,264,0,1960,0,15624,
+   FAMILY EDGES       |||         
    CYCLES ID      AAA:::::AAA     
-   SIGNS          +--     +++     
+   SIGNS          --+     +++     
    COUNT          004     004     
-γ8,000007,p=1,v=8,"***(---4 ++-4)A","1~~2~4=6~8=7~5~~3~1",0,40,0,264,0,1960,0,15624,
-   FAMILY EDGES       ***         
+γ8,000007,p=1,v=8,"2:2||| AA,4--- 4-++   ","1~~2~4=6~8=7~5~~3~1",0,40,0,264,0,1960,0,15624,
+   FAMILY EDGES       |||         
    CYCLES ID      AAA:::::AAA     
-   SIGNS          ---     ++-     
+   SIGNS          ---     -++     
    COUNT          004     004     
-γ8,000008,p=1,v=8,"***(---4 +--4)A","1~~2~4~~6-8~~7-5~~3~1",0,40,0,264,0,1960,0,15624,
-   FAMILY EDGES       ***         
+γ8,000008,p=1,v=8,"2:2||| AA,4--- 4--+   ","1~~2~4~~6-8~~7-5~~3~1",0,40,0,264,0,1960,0,15624,
+   FAMILY EDGES       |||         
    CYCLES ID      AAA:::::AAA     
-   SIGNS          ---     +--     
+   SIGNS          ---     --+     
    COUNT          004     004     
-γ8,000009,p=1,v=8,"***(+--2 ++-2 +++4)A","1=2~4=6-8=7-5~~3-1",0,40,0,264,0,1960,0,15624,
-   FAMILY EDGES           ***             
+γ8,000009,p=1,v=8,"3:3||| AAA,2--+ 2-++ 4+++   ","1=2~4=6-8=7-5~~3-1",0,40,0,264,0,1960,0,15624,
+   FAMILY EDGES           |||             
    CYCLES ID      AAA:::::AAA:::::AAA     
-   SIGNS          +--     ++-     +++     
+   SIGNS          --+     -++     +++     
    COUNT          002     002     004     
-γ8,000010,p=1,v=8,"***(---2 ++-4 +++2)A","1~~2~4=6-8=7~5=3~1",0,40,0,264,0,1960,0,15624,
-   FAMILY EDGES           ***             
+γ8,000010,p=1,v=8,"3:3||| AAA,2--- 4-++ 2+++   ","1~~2~4=6-8=7~5=3~1",0,40,0,264,0,1960,0,15624,
+   FAMILY EDGES           |||             
    CYCLES ID      AAA:::::AAA:::::AAA     
-   SIGNS          ---     ++-     +++     
+   SIGNS          ---     -++     +++     
    COUNT          002     004     002     
-γ8,000011,p=1,v=8,"***(---2 +--4 +++2)A","1~~2-4~~6-8=7-5~~3~1",0,40,0,264,0,1960,0,15624,
-   FAMILY EDGES           ***             
+γ8,000011,p=1,v=8,"3:3||| AAA,2--- 4--+ 2+++   ","1~~2-4~~6-8=7-5~~3~1",0,40,0,264,0,1960,0,15624,
+   FAMILY EDGES           |||             
    CYCLES ID      AAA:::::AAA:::::AAA     
-   SIGNS          ---     +--     +++     
+   SIGNS          ---     --+     +++     
    COUNT          002     004     002     
-γ8,000012,p=1,v=8,"***(---4 +--2 ++-2)A","1~~2-4~~6~8=7~5~~3~1",0,40,0,264,0,1960,0,15624,
-   FAMILY EDGES           ***             
+γ8,000012,p=1,v=8,"3:3||| AAA,4--- 2--+ 2-++   ","1~~2-4~~6~8=7~5~~3~1",0,40,0,264,0,1960,0,15624,
+   FAMILY EDGES           |||             
    CYCLES ID      AAA:::::AAA:::::AAA     
-   SIGNS          ---     +--     ++-     
+   SIGNS          ---     --+     -++     
    COUNT          004     002     002     
-γ8,000013,p=1,v=8,"***(--- +-- ++- +++5)A","1~~2-4=6-8=7-5=3~1",0,40,0,264,0,1960,0,15624,
-   FAMILY EDGES               ***                 
+γ8,000013,p=1,v=8,"4:4||| AAAA,1--- 1--+ 1-++ 5+++   ","1~~2-4=6-8=7-5=3~1",0,40,0,264,0,1960,0,15624,
+   FAMILY EDGES               |||                 
    CYCLES ID      AAA:::::AAA:::::AAA:::::AAA     
-   SIGNS          ---     +--     ++-     +++     
+   SIGNS          ---     --+     -++     +++     
    COUNT          001     001     001     005     
-γ8,000014,p=1,v=8,"***(--- +-- ++-5 +++)A","1=2~4~~6-8=7~5=3~1",0,40,0,264,0,1960,0,15624,
-   FAMILY EDGES               ***                 
+γ8,000014,p=1,v=8,"4:4||| AAAA,1--- 1--+ 5-++ 1+++   ","1=2~4~~6-8=7~5=3~1",0,40,0,264,0,1960,0,15624,
+   FAMILY EDGES               |||                 
    CYCLES ID      AAA:::::AAA:::::AAA:::::AAA     
-   SIGNS          ---     +--     ++-     +++     
+   SIGNS          ---     --+     -++     +++     
    COUNT          001     001     005     001     
-γ8,000015,p=1,v=8,"***(--- +--3 ++-3 +++)A","1~~2-4~~6-8=7~5=3~1",0,40,0,264,0,1960,0,15624,
-   FAMILY EDGES               ***                 
+γ8,000015,p=1,v=8,"4:4||| AAAA,1--- 3--+ 3-++ 1+++   ","1~~2-4~~6-8=7~5=3~1",0,40,0,264,0,1960,0,15624,
+   FAMILY EDGES               |||                 
    CYCLES ID      AAA:::::AAA:::::AAA:::::AAA     
-   SIGNS          ---     +--     ++-     +++     
+   SIGNS          ---     --+     -++     +++     
    COUNT          001     003     003     001     
-γ8,000016,p=1,v=8,"***(--- +--5 ++- +++)A","1~~2-4~~6-8=7~5~~3-1",0,40,0,264,0,1960,0,15624,
-   FAMILY EDGES               ***                 
+γ8,000016,p=1,v=8,"4:4||| AAAA,1--- 5--+ 1-++ 1+++   ","1~~2-4~~6-8=7~5~~3-1",0,40,0,264,0,1960,0,15624,
+   FAMILY EDGES               |||                 
    CYCLES ID      AAA:::::AAA:::::AAA:::::AAA     
-   SIGNS          ---     +--     ++-     +++     
+   SIGNS          ---     --+     -++     +++     
    COUNT          001     005     001     001     
-γ8,000017,p=1,v=8,"***(---2 +--2 ++-2 +++2)A","1=2~4~~6-8=7-5~~3~1",0,40,0,264,0,1960,0,15624,
-   FAMILY EDGES               ***                 
+γ8,000017,p=1,v=8,"4:4||| AAAA,2--- 2--+ 2-++ 2+++   ","1=2~4~~6-8=7-5~~3~1",0,40,0,264,0,1960,0,15624,
+   FAMILY EDGES               |||                 
    CYCLES ID      AAA:::::AAA:::::AAA:::::AAA     
-   SIGNS          ---     +--     ++-     +++     
+   SIGNS          ---     --+     -++     +++     
    COUNT          002     002     002     002     
-γ8,000018,p=1,v=8,"***(---3 +-- ++- +++3)A","1~~2~4=6-8=7-5~~3~1",0,40,0,264,0,1960,0,15624,
-   FAMILY EDGES               ***                 
+γ8,000018,p=1,v=8,"4:4||| AAAA,3--- 1--+ 1-++ 3+++   ","1~~2~4=6-8=7-5~~3~1",0,40,0,264,0,1960,0,15624,
+   FAMILY EDGES               |||                 
    CYCLES ID      AAA:::::AAA:::::AAA:::::AAA     
-   SIGNS          ---     +--     ++-     +++     
+   SIGNS          ---     --+     -++     +++     
    COUNT          003     001     001     003     
-γ8,000019,p=1,v=8,"***(---5 +-- ++- +++)A","1~~2~4~~6-8=7~5~~3~1",0,40,0,264,0,1960,0,15624,
-   FAMILY EDGES               ***                 
+γ8,000019,p=1,v=8,"4:4||| AAAA,5--- 1--+ 1-++ 1+++   ","1~~2~4~~6-8=7~5~~3~1",0,40,0,264,0,1960,0,15624,
+   FAMILY EDGES               |||                 
    CYCLES ID      AAA:::::AAA:::::AAA:::::AAA     
-   SIGNS          ---     +--     ++-     +++     
+   SIGNS          ---     --+     -++     +++     
    COUNT          005     001     001     001     
