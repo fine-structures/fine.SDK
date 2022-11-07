@@ -44,6 +44,7 @@ type graphState struct {
 	store  [256]byte
 }
 
+/*
 type EdgeGrouping byte
 
 const (
@@ -56,7 +57,6 @@ const (
 
 )
 
-/*
 type VtxEdgesType int8
 const (
 	TriLoop VtxEdgesType = 0 // (e, ~e, π, ~π), 0 edges (always v=1)
@@ -179,6 +179,7 @@ func (v *triVtx) familyEdgeOrd(ei int) uint8 {
 	}
 	return ord
 }
+
 func (v *triVtx) sortEdgeOrd(ei int) int {
 	cyclesID := v.edges[ei].GroupID()
 	ord := int(cyclesID) << 1
@@ -211,7 +212,6 @@ func (v *triVtx) printEdges(tri []byte) {
 	}
 }
 
-
 // pre: v.edges[].cyclesID has been determined and set
 func (v *triVtx) canonizeVtx() {
 
@@ -229,33 +229,32 @@ func (v *triVtx) canonizeVtx() {
 	})
 
 	/*
-	// At this point, the edges are canonic, so we can deterministically reorder any way we want.
-	// So let's be classy and symmetrical and ensure o|o or |o|, etc.
-	e0 := v.edges[0].LoopBit()
-	e1 := v.edges[1].LoopBit()
-	e2 := v.edges[2].LoopBit()
-	switch {
-	case (e1 == e2) && e0 != e1 && e0 != e2:
-		v.edges[0], v.edges[1] = v.edges[1], v.edges[0]
-	case (e0 == e1) && e2 != e1 && e2 != e0:
-		v.edges[1], v.edges[2] = v.edges[2], v.edges[1]
-	}
+		// At this point, the edges are canonic, so we can deterministically reorder any way we want.
+		// So let's be classy and symmetrical and ensure o|o or |o|, etc.
+		e0 := v.edges[0].LoopBit()
+		e1 := v.edges[1].LoopBit()
+		e2 := v.edges[2].LoopBit()
+		switch {
+		case (e1 == e2) && e0 != e1 && e0 != e2:
+			v.edges[0], v.edges[1] = v.edges[1], v.edges[0]
+		case (e0 == e1) && e2 != e1 && e2 != e0:
+			v.edges[1], v.edges[2] = v.edges[2], v.edges[1]
+		}
 	*/
 
-
 	/*
-	// With edge order now canonic, determine the grouping.
-	// Since we sort by edgeOrd, edges going to the same vertex are always consecutive and appear first
-	// This means we only need to check a small number of cases
-	if !v.edges[0].isLoop && v.edges[0].srcVtx == v.edges[1].srcVtx {
-		if v.edges[1].srcVtx == v.edges[2].srcVtx {
-			v.grouping = Grouping_111
+		// With edge order now canonic, determine the grouping.
+		// Since we sort by edgeOrd, edges going to the same vertex are always consecutive and appear first
+		// This means we only need to check a small number of cases
+		if !v.edges[0].isLoop && v.edges[0].GroupID() == v.edges[1].GroupID() {
+			if v.edges[1].GroupID() == v.edges[2].GroupID() {
+				v.grouping = Grouping_111
+			} else {
+				v.grouping = Grouping_112
+			}
 		} else {
-			v.grouping = Grouping_112
+			v.grouping = Grouping_Disjoint
 		}
-	} else {
-		v.grouping = Grouping_Disjoint
-	}
 	*/
 }
 
@@ -573,7 +572,7 @@ func (X *graphState) canonize() {
 	}
 
 	X.sortVtxGroups()
-	
+
 	// // reassign vertex IDs now that we're canonic
 	// for vi, v := range Xg {
 	// 	v.vtxID = byte(vi+1)
@@ -827,7 +826,7 @@ func (X *graphState) AppendGraphEncoding(io []byte, opts GraphEncodingOpts) []by
 
 type edgeTrait int
 
-const ( 
+const (
 	kVtxID = iota
 	kEdgeHomeGroup
 	kEdgeType
@@ -839,10 +838,10 @@ const (
 
 func (X *graphState) printEdgesDesc(vi int, trait edgeTrait, dst []byte) {
 	v := X.VtxGroups()[vi]
-	
+
 	switch trait {
 	case kVtxID:
-		vid := vi+1
+		vid := vi + 1
 		if vid > 9 {
 			dst[0] = '0' + byte(vid/10)
 			dst[1] = '0' + byte(vid%10)
@@ -874,11 +873,11 @@ func (X *graphState) PrintVtxGrouping(out io.Writer) {
 	X.canonize()
 
 	labels := []string{
-		"  VERTEX      ",
-		"  GROUP ID    ",
-		"  EDGE TYPES  ",
+		"      V       ",
+		"    GROUP     ",
+		"  EDGE TYPE   ",
 		"  EDGE FROM   ",
-		"  EDGE SIGNS  ",
+		"  EDGE SIGN   ",
 	}
 
 	Nv := int(X.vtxCount)
@@ -895,7 +894,6 @@ func (X *graphState) PrintVtxGrouping(out io.Writer) {
 	}
 
 	for li := 0; li < kNumLines; li++ {
-		// copy label
 		row := rows[li*bytesPerRow:]
 		copy(row, labels[li])
 		row = row[marginL:]
@@ -941,21 +939,6 @@ func (X *graphState) PrintVtxGrouping(out io.Writer) {
 
 			traitConst := true
 
-			// 	//groupChange := true
-			// 	vtxRunLen := 1
-
-			// for yi := 0; yi <= kEdgeHomeGroup; yi++ {
-			// 	row[vtxC] = '.'
-			// }
-			// // Vertical separator lines on the left and right
-			// if vj == vi || vj == vi + vtxRunLen - 1 {
-			// 	L := vtxL
-			// 	for yi := 0; yi <= kEdgeHomeGroup; yi++ {
-			// 		rows[L + yi*bytesPerRow] = ':'
-			// 	}
-
-			// }
-
 			X.printEdgesDesc(vi, edgeTrait(li), viEdges[:])
 
 			for vj := vi + 1; vj < Nv; vj++ {
@@ -981,13 +964,15 @@ func (X *graphState) PrintVtxGrouping(out io.Writer) {
 				row[runR] = ':'
 			}
 
-			if traitConst && (li == kEdgeFrom || li == kEdgeType || li == kEdgeSign) {
-				copy(row[runC-1:], viEdges[:])
-			} else {
+			traitRun := traitConst && (li == kEdgeFrom || li == kEdgeType || li == kEdgeSign)
+			
+			for vj := vi; vj < vi+vtxRunLen; vj++ {
 
-				for vj := vi; vj < vi+vtxRunLen; vj++ {
-					//vtxR := vtxWid*(vj+1)
-					vtxC := vtxWid*vj + vtxWid>>1
+				//vtxR := vtxWid*(vj+1)
+				vtxC := vtxWid*vj + vtxWid>>1
+				row[vtxC] = '.'
+						
+				if !traitRun {
 
 					switch li {
 					case kEdgeHomeGroup:
@@ -1000,6 +985,10 @@ func (X *graphState) PrintVtxGrouping(out io.Writer) {
 						copy(row[vtxC-1:], vjEdges[:])
 					}
 				}
+			}
+			
+			if traitRun {
+				copy(row[runC-1:], viEdges[:])
 			}
 
 			runL = runR
@@ -1278,7 +1267,7 @@ func (X *graphState) PrintCycleSpectrum(out io.Writer) {
 	Xg := X.VtxGroups()
 
 	for ci := int32(0); ci < Nv; ci++ {
-		fmt.Fprintf(out, "  T%d:%7d", ci+1, X.traces[ci])
+		fmt.Fprintf(out, "%8d C%-2d", X.traces[ci], ci+1)
 		for _, vi := range Xg {
 			fmt.Fprintf(out, " %8d   ", vi.cycles[ci])
 		}

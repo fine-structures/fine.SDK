@@ -107,8 +107,6 @@ type TriGroup struct {
 	CyclesID GroupID           // which cycles group this is
 	Edges    [3]GroupEdge      // cycle group connections
 	Counts   [NumTriSigns]int8 // instance counts
-
-	Grouping EdgeGrouping // Which edges are double or triple (needed???)
 }
 
 /*
