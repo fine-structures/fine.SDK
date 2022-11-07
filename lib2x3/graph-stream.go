@@ -97,7 +97,6 @@ func (stream *GraphStream) Print(
 			count++
 			fmt.Fprintf(&buf, "%06d,", count)
 			X.WriteAsString(&buf, opts)
-			buf.WriteByte('\n')
 			out.Write([]byte(buf.String()))
 			buf.Reset()
 			next.Outlet <- X

@@ -395,9 +395,10 @@ func (X *Graph) Println(prefix string) {
 }
 
 var (
-	quote = []byte("\"")
-	space = []byte(" ")
-	comma = []byte(",")
+	quote   = []byte("\"")
+	space   = []byte(" ")
+	comma   = []byte(",")
+	newline = []byte("\n")
 )
 
 // PrintOpts specifies what is printing when printing a graph
@@ -428,11 +429,17 @@ func (X *Graph) WriteAsString(out io.Writer, opts PrintOpts) {
 	if opts.NumTraces != 0 {
 		X.WriteTracesAsCSV(out, opts.NumTraces)
 	}
+	out.Write(newline)
+
 	if opts.Tricodes {
-		X.xstate.PrintTriCodes(out)
+		X.xstate.PrintVtxGrouping(out)
 	}
 	if opts.CycleSpec {
 		X.xstate.PrintCycleSpectrum(out)
+	}
+
+	if opts.Tricodes || opts.CycleSpec {
+		out.Write(newline)
 	}
 }
 
@@ -757,8 +764,6 @@ func (X *Graph) TriGraphExprStr() string {
 	X.Traces(0)
 	return X.xstate.TriGraphExprStr()
 }
-
-
 
 // PermuteVtxSigns emits a Graph for every possible vertex pole permutation of the given Graph.
 //

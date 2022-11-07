@@ -60,6 +60,8 @@ p.PhaseModes().Print("e- (electron)", **basic).Go()
 p = Graph("1-2--3")
 p.PhaseModes().Print("µ- (muon)    ", **basic).Go()
 
+Graph("1^^~2~~3^").PhaseModes().Print("~µ+ (anti-muon)    ", **basic).Go()
+
 p = Graph("1-2--3-4--5")
 p.PhaseModes().Print("τ  (tau)     ", **basic).Go()
 

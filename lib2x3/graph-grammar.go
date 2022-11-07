@@ -6,12 +6,53 @@ import (
 	"github.com/alecthomas/participle/v2"
 )
 
-// GGroup labels the senior-most group lexicography.
-// Here, a GColor is a one-based index representing a vertex "G" group.
+// GroupID is a one-based index representing a group (vertex ordinality)  ID.
 type GroupID byte
+
+func (g GroupID) GroupRune() byte {
+	if g > 0 {
+		return 'A' - 1 + byte(g)
+	}
+	return '?'
+}
 
 // GroupEdge expresses edge embedding an inlet group number, edge sign, and if the edge is a loop.
 type GroupEdge byte
+
+func (e GroupEdge) EdgeTypeRune() byte {
+	if e.IsLoop() {
+		if e.IsNeg() {
+			return '*'
+		} else {
+			return 'o'
+		}
+	} else if from := e.GroupID(); from > 0 {
+		return '|'
+	}
+	return '?'
+}
+
+func (e GroupEdge) GroupRune() byte {
+	return e.GroupID().GroupRune()
+}
+
+func (e GroupEdge) FromGroupRune() byte {
+	if e.IsLoop() {
+		return ' '
+	}
+	return e.GroupID().GroupRune()
+}
+
+func (e GroupEdge) SignRune() byte {
+	if e.IsNeg() {
+		return '-'
+	}
+	return '+'
+}
+
+func (e GroupEdge) IsLoop() bool {
+	return int(e)&(1<<kLoopBitShift) != 0
+}
 
 // Returns 1 if loop, 0 if edge (non-loop).
 func (e GroupEdge) LoopBit() int {
@@ -23,8 +64,12 @@ func (e GroupEdge) Sign() int {
 	return ((int(e) >> (kSignBitShift - 1)) & 0x2) - 1
 }
 
-func (e GroupEdge) GroupID() int {
-	return int(e) & kGroupID_Mask
+func (e GroupEdge) IsNeg() bool {
+	return int(e)&(1<<kSignBitShift) != 0
+}
+
+func (e GroupEdge) GroupID() GroupID {
+	return GroupID(e) & kGroupID_Mask
 }
 
 func FormGroupEdge(i GroupID, isLoop, isNeg bool) GroupEdge {
@@ -81,7 +126,7 @@ func (g *TriGroup) EdgesType() VtxEdgesType {
 func (g *TriGroup) EdgesCycleOrd() int {
 	ord := int(0)
 	for _, ei := range g.Edges {
-		ord = (ord << 8) | ei.GroupID()
+		ord = (ord << 8) | int(ei.GroupID())
 	}
 	return ord
 }
