@@ -95,12 +95,15 @@ const (
 
 const NumTriSigns = 8
 
-var TriSignStr = [NumTriSigns]string{
-	"+++", "++-", "+-+", "+--",
-	"-++", "-+-", "--+", "---",
-}
 
 type TriSign byte
+
+func (t TriSign) String() string {
+	return []string{
+		"+++", "++-", "+-+", "+--",
+		"-++", "-+-", "--+", "---",
+	}[t]
+}
 
 type TriGroup struct {
 	FamilyID GroupID           // which vtx family group this is
@@ -360,7 +363,7 @@ func (X *TriGraph) ExportGraphDesc(io []byte) []byte {
 					}
 					io = append(io, '0'+byte(ci%10))
 				}
-				io = append(io, TriSignStr[i]...)
+				io = append(io, TriSign(i).String()...)
 			}
 		}
 		if numSigns > 1 {

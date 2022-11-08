@@ -1,6 +1,7 @@
 package lib2x3
 
 import (
+	"bytes"
 	"errors"
 	"fmt"
 	"io"
@@ -30,12 +31,11 @@ const (
 )
 
 type graphState struct {
-	vtxCount       int32
-	vtxDimSz       int32
-	vtx            []*graphVtx // maps initial vertex index to cycle group vtx
-	vtxGroups      []*graphVtx // ordered list of vtx groups
-	numCycleGroups byte        // number of unique cycle vectors present
-	numVtxGroups   byte        // number of unique vertex groups present
+	vtxCount  int32
+	vtxDimSz  int32
+	vtxByID   []*graphVtx // vtx by initial vertex ID
+	vtx       []*graphVtx // ordered list of vtx groups
+	numGroups GroupID     // number of unique vertex groups present
 
 	curCi  int32
 	traces Traces
@@ -76,10 +76,10 @@ var VtxEdgesTypeDesc = []string{
 // triVtx starts as a vertex in a conventional "2x3" vertex+edge and used to derive a canonical LSM-friendly encoding (i.e. TriID)
 // El Shaddai's Grace abounds.  Emmanuel, God with us!  Yashua has come and victory has been sealed!
 type triVtx struct {
-	CyclesID GroupID      // which cycles group this is
-	count    byte         // Instances of this vtx type (signs and edges match exactly)
-	vtxID    byte         // Initial vertex ID (zero-based index)
-	edges    [3]groupEdge // Edges to other vertices
+	GroupID              // which group this is
+	GroupSz byte         // Instances of this vtx type (signs and edges match exactly) ---- REMOVE??
+	vtxID   byte         // Initial vertex ID (zero-based index)
+	edges   [3]groupEdge // Edges to other vertices
 }
 
 type groupEdge struct {
@@ -106,26 +106,17 @@ type graphVtx struct {
 	Ci1    []int64 // matrix row of X^(i+1) for this vtx,
 }
 
-func (v *triVtx) TriSign() TriSign {
+func (v *triVtx) TriSign(forceEdgesPositive bool) TriSign {
 	sign := byte(0)
-	for _, ei := range v.edges {
+	for _, e := range v.edges {
 		sign <<= 1
-		if ei.sign < 0 {
-			sign |= 1
+		if e.sign < 0 {
+			if e.isLoop || !forceEdgesPositive {
+				sign |= 1
+			}
 		}
 	}
 	return TriSign(sign)
-}
-
-func (v *triVtx) appendEdgeSigns(io []byte) []byte {
-	for _, e := range v.edges {
-		c := byte('+')
-		if e.sign < 0 {
-			c = '-'
-		}
-		io = append(io, c)
-	}
-	return io
 }
 
 /*
@@ -171,7 +162,7 @@ func (v *triVtx) familyEdgeOrd(ei int) uint8 {
 	e := &v.edges[ei]
 	cyclesID := e.GroupID()
 	ord := uint8(cyclesID)
-	if e.isLoop || cyclesID == v.CyclesID {
+	if e.isLoop || cyclesID == v.GroupID {
 		ord = 73 // 37 * 73 == 2701 Emmanuel!
 		if e.isLoop && e.sign < 0 {
 			ord--
@@ -186,7 +177,7 @@ func (v *triVtx) sortEdgeOrd(ei int) int {
 	switch {
 	case v.edges[ei].isLoop:
 		ord |= 0x200
-	case cyclesID == v.CyclesID:
+	case cyclesID == v.GroupID:
 		ord |= 0x100
 	}
 	if v.edges[ei].sign > 0 {
@@ -203,13 +194,62 @@ func (v *triVtx) printEdges(tri []byte) {
 			if e.sign < 0 {
 				c = '*'
 			}
-		} else if e.GroupID() == v.CyclesID {
+		} else if e.GroupID() == v.GroupID {
 			c = '|'
 		} else {
 			c = e.GroupRune()
 		}
 		tri[ei] = c
 	}
+}
+
+type VtxTrait int
+
+const (
+	VtxTrait_GroupID VtxTrait = iota
+	VtxTrait_EdgesOrigin
+	VtxTrait_InnateSign
+	VtxTrait_EdgesType
+	VtxTrait_ModulateSign
+)
+
+func (v *triVtx) appendTrait(io []byte, trait VtxTrait, ascii bool) []byte {
+	switch trait {
+	case VtxTrait_GroupID:
+		io = append(io, v.GroupRune())
+	case VtxTrait_EdgesOrigin:
+		for _, e := range v.edges {
+			io = append(io, e.GroupRune())
+		}
+	case VtxTrait_EdgesType: // Change to vtx symbol / type?
+		if ascii {
+			for _, e := range v.edges {
+				io = append(io, e.EdgeTypeRune())
+			}
+		} else {
+			ord := byte(0)
+			for _, e := range v.edges {
+				ord *= 3
+				typ := byte(1)
+				if e.isLoop {
+					typ = 2
+					if e.IsNeg() {
+						typ = 0
+					}
+				}
+				ord += typ
+			}
+			io = append(io, ord)
+		}
+	case VtxTrait_InnateSign, VtxTrait_ModulateSign:
+		triSign := v.TriSign(trait == VtxTrait_InnateSign)
+		if ascii {
+			io = append(io, triSign.String()...)
+		} else {
+			io = append(io, byte(triSign))
+		}
+	}
+	return io
 }
 
 // pre: v.edges[].cyclesID has been determined and set
@@ -281,7 +321,6 @@ func (v *graphVtx) AddEdge(from int32, edgeSign int8, isLoop bool) {
 }
 
 func (v *graphVtx) Init(vtxID byte) {
-	v.count = 1
 	v.vtxID = vtxID
 	v.edges[0].sign = 0
 	v.edges[1].sign = 0
@@ -292,9 +331,8 @@ func (X *graphState) reset(numVerts byte) {
 	Nv := int32(numVerts)
 
 	X.vtxCount = Nv
-	X.numVtxGroups = numVerts
+	X.numGroups = 0
 	X.curCi = 0
-	X.numCycleGroups = 0
 	X.triID = X.triID[:0]
 	X.status = newlyReset
 	if X.vtxDimSz >= Nv {
@@ -308,7 +346,7 @@ func (X *graphState) reset(numVerts byte) {
 	X.vtxDimSz = Nv
 
 	X.vtx = make([]*graphVtx, Nv, 2*Nv)
-	X.vtxGroups = X.vtx[Nv : 2*Nv]
+	X.vtxByID = X.vtx[Nv : 2*Nv]
 	if cap(X.triID) == 0 {
 		X.triID = X.store[:0]
 	}
@@ -319,8 +357,8 @@ func (X *graphState) reset(numVerts byte) {
 
 	for i := int32(0); i < Nv; i++ {
 		v := &graphVtx{}
+		X.vtxByID[i] = v
 		X.vtx[i] = v
-		X.vtxGroups[i] = v
 		v.Ci0, buf = chopBuf(buf, Nv)
 		v.Ci1, buf = chopBuf(buf, Nv)
 		v.cycles, buf = chopBuf(buf, Nv)
@@ -338,10 +376,10 @@ func (X *graphState) AssignGraph(Xsrc *Graph) error {
 	X.reset(Nv)
 
 	// Init vtx lookup map so we can find the group for a given initial vertex idx
-	Xv := X.Vtx()
+	Xv := X.VtxByID()
 	for i := byte(0); i < Nv; i++ {
 		Xv[i].Init(i + 1)
-		X.vtxGroups[i] = Xv[i]
+		X.vtx[i] = Xv[i]
 	}
 
 	// First, add edges that connect to the same vertex (loops and arrows)
@@ -377,7 +415,7 @@ func (X *graphState) AssignGraph(Xsrc *Graph) error {
 	for _, v := range Xv {
 		for _, ei := range v.edges {
 			if ei.sign != 0 {
-				Ne += v.count
+				Ne++
 			}
 		}
 	}
@@ -389,23 +427,29 @@ func (X *graphState) AssignGraph(Xsrc *Graph) error {
 	return nil
 }
 
-func (X *graphState) VtxGroups() []*graphVtx {
-	return X.vtxGroups[:X.numVtxGroups]
-}
-
 func (X *graphState) Vtx() []*graphVtx {
 	return X.vtx[:X.vtxCount]
 }
 
+func (X *graphState) VtxByID() []*graphVtx {
+	return X.vtxByID[:X.vtxCount]
+}
+
 func (X *graphState) sortVtxGroups() {
-	Xg := X.VtxGroups()
+	Xg := X.Vtx()
 
 	// With edges on vertices now canonic order, we now re-order to assert canonic order within each group.
 	sort.Slice(Xg, func(i, j int) bool {
 		vi := Xg[i]
 		vj := Xg[j]
 
-		if d := int(vi.CyclesID) - int(vj.CyclesID); d != 0 {
+		// Larger groups appear first
+		if d := int(vi.GroupSz) - int(vj.GroupSz); d != 0 {
+			return d > 0
+		}
+
+		// Keep groups together
+		if d := int(vi.GroupID) - int(vj.GroupID); d != 0 {
 			return d < 0
 		}
 
@@ -435,8 +479,7 @@ func (X *graphState) calcUpTo(numTraces int32) {
 		numTraces = Nv
 	}
 
-	Xv := X.Vtx()
-	Xg := X.VtxGroups()
+	Xv := X.VtxByID()
 
 	// Init C0
 	if X.status == newlyReset {
@@ -461,7 +504,7 @@ func (X *graphState) calcUpTo(numTraces int32) {
 		traces_ci := int64(0)
 
 		// Calculate Ci+1 by "flowing" the current state (Ci) through X's edges.
-		for _, vi := range Xg {
+		for _, vi := range Xv {
 
 			// Alternate which is the prev / next state store
 			Ci0, Ci1 := vi.Ci0, vi.Ci1
@@ -486,7 +529,7 @@ func (X *graphState) calcUpTo(numTraces int32) {
 			if ci < Nv {
 				vi.cycles[ci] = vi_cycles_ci
 			}
-			traces_ci += int64(vi.count) * vi_cycles_ci
+			traces_ci += vi_cycles_ci
 		}
 		X.traces[ci] = traces_ci
 	}
@@ -501,8 +544,23 @@ func (X *graphState) canonize() {
 	Nv := X.vtxCount
 	X.calcUpTo(Nv)
 
-	Xv := X.Vtx()
-	Xg := X.VtxGroups()
+	Xg := X.Vtx()
+
+	// Look for adjacent vtx that can be consolidated into an equivalent single cycle group
+	//  e.g.    1^-~2     => 1^-2^,
+	//          1^-~2-3=4 => 1^-2-3-4-2,1-4
+	{
+		// (1) Look for edge pairs on two adjacent vertices
+		{
+
+		}
+
+		// (2) If remaining edge points to the other vtx, then these two vtx are the same cycle group since B+XX + A+YY <=> 2(A'XY)
+		// This means the shared edge becomes a double edge in the new cycle group of these 2 vtx.
+		{
+
+		}
+	}
 
 	// Sort vertices by vertex's innate characteristics & cycle signature
 	{
@@ -525,20 +583,85 @@ func (X *graphState) canonize() {
 
 	// Now that vertices are sorted by cycle vector, assign each vertex the cycle group number now associated with its vertex index.
 	{
-		X.numCycleGroups = 1
+		var groupSz [MaxVtxID]byte
+		// var vtx [MaxVtxID]struct{
+		// 	grpID GroupID
+		// 	vi    byte
+		// }
+
+		X.numGroups = 1
 		var v_prev *graphVtx
+		//newGroup := true
 		for _, v := range Xg {
 			if v_prev != nil {
 				for ci := int32(0); ci < Nv; ci++ {
 					if v.cycles[ci] != v_prev.cycles[ci] {
-						X.numCycleGroups++
+						X.numGroups++
 						break
 					}
 				}
 			}
-			v.CyclesID = GroupID(X.numCycleGroups)
+			// if X.numGroups == 0 || newGroup {
+			// 	X.numGroups++
+			// 	groups[X.numGroups].groupID = X.numGroups
+			// }
+			// vtx[vi].grpID = GroupID(X.numGroups)
+			// vtx[vi].vi = byte(vi)
+			v.GroupID = X.numGroups
 			v_prev = v
+			groupSz[v.GroupID]++
 		}
+
+		// Assign group rank from total count of each cycle group
+		for _, v := range Xg {
+			v.GroupSz = groupSz[v.GroupID]
+		}
+
+		// Resort by group rank
+		sort.Slice(Xg, func(i, j int) bool {
+			vi := Xg[i]
+			vj := Xg[j]
+
+			if d := int(vi.GroupSz) - int(vj.GroupSz); d != 0 {
+				return d > 0
+			}
+			if d := int(vi.GroupID) - int(vj.GroupID); d != 0 {
+				return d < 0
+			}
+			return false
+		})
+
+		// grID := GroupID(0)
+		// prevID :=
+		// for _, v := range Xg {
+		// 	if v.GroupID != grID {
+
+		// }
+
+		// Reassign GroupIDs now that we are sorted by group cardinality
+		//groupSz := 0
+		grID := GroupID(0)
+		for vi := 0; vi < len(Xg); {
+			grID++
+			grSz := int(Xg[vi].GroupSz)
+			for j := 0; j < grSz; j++ {
+				Xg[vi].GroupID = grID
+				vi++
+			}
+		}
+
+		// // With group cardinality known, remap group IDs based on size
+		// {
+		// 	sort.Slice(groups[:Nv], func(i, j int) bool {
+		// 		return groups[i].groupSz > groups[j].groupSz
+		// 	})
+		// 	for vi, v := range Xg {
+		// 		v.GroupID = groups[v.GroupID].groupID
+		// 	}
+		// }
+
+		//for
+
 	}
 
 	//X.TriGraph.Canonize()
@@ -560,11 +683,13 @@ func (X *graphState) canonize() {
 		return tri
 	*/
 
+	Xv := X.VtxByID()
+
 	// With cycle group numbers assigned to each vertex, assign srcGroup to all edges and then finally order edges on each vertex canonically.
 	for _, v := range Xg {
 		for ei, e := range v.edges {
 			src_vi := Xv[e.srcVtx]
-			v.edges[ei].GroupEdge = FormGroupEdge(src_vi.CyclesID, e.isLoop, e.sign < 0)
+			v.edges[ei].GroupEdge = FormGroupEdge(src_vi.GroupID, e.isLoop, e.sign < 0)
 		}
 
 		// With each edge srcGroup now assigned, we can order the edges canonically
@@ -671,19 +796,19 @@ func (X *graphState) GraphTriID() GraphTriID {
 // }
 
 func (X *graphState) findGroupRuns(io []uint8) []uint8 {
-	Xg := X.VtxGroups()
+	Xg := X.Vtx()
 	N := uint8(len(Xg))
 	runLen := uint8(0)
 
 	for gi := uint8(0); gi < N; gi += runLen {
-		viGroup := Xg[gi].CyclesID
+		viGroup := Xg[gi].GroupID
 		runLen = 1
 		for gj := gi + 1; gj < N; gj++ {
-			vjGroup := Xg[gj].CyclesID
+			vjGroup := Xg[gj].GroupID
 			if viGroup != vjGroup {
 				break
 			}
-			runLen += Xg[gj].count
+			runLen++
 		}
 		io = append(io, runLen)
 	}
@@ -718,7 +843,158 @@ const (
 		|   |   |               |           |
   UTF8:	2   *AC 2  *^B 2 ...    BB. AC.     N--- N--+ N-+- N-++ N+-- N+-+ N++- N+++
   Bits: 6   666 2  666 6        66  66      6    6    6    6    6    6    6    6
+
+            Edge  Edge  Count  Edge
+            From  Type         Sign
+        2   AAC   *|o   1      +-+
+
+      V       :     1           2     :     3           4           5           6     :     7           8     :
+    FAMILY    ::::aaaaa:::::::aaaaa:::::::BBBBB:::::::BBBBB:::::::BBBBB:::::::BBBBB:::::::CCCCC:::::::CCCCC::::
+    GROUP     ::::AAAAA:::::::AAAAA:::::::BBBBB:::::::BBBBB:::::::BBBBB:::::::BBBBB:::::::CCCCC:::::::CCCCC::::
+  EDGE TYPE   :     .    ||*    .     :     .           .    |||    .           .     :     .    ||o    .     :
+  EDGE FROM   :     .    BB     .     :     .           .    ACB    .           .     :     .    BB     .     :
+  EDGE SIGN   :    ---         ++-    :    -++         -++         +++         +++    :     .    +++    .     :
+
+  (for each cycle group)
+    3 BBA ACB BBC 2 4 2   ||* ||| ||o 2 4 2     --- ++- -++2 +++3
+
+  T = vtx types (16 enums, 4 bits)
+
+  |||
+
+  ||o
+  ||*
+
+  |**
+  |*o
+  |o*
+  |oo
+
+  ***   o**
+  **o   o*o
+  *o*   oo*
+  *oo   ooo
+
+       Family edges in          Family      Vtx type (ordinal enum)      Vtx Type
+                                Counts      Counts                       Counts
+ascii:
+	3 +B+B-A  +A+C+B  +B+B+C    2 4 2       ||* ||| ||o                  2 4 2     --- ++- -++2 +++3
+
+
+LSM:  (families ranked by family cardinality)
+      edges from   counts  edge innate sign    count       edge type         edge sign modulate
+	3 BBA ACB BBC  2 4 2   ++- +++  +++        2 4 2       ||* ||| ||o        --- ++- -++2 +++3
+
+  maybe subsequently split runs by group *and* edge type ("group family")
+
+
+   e-
+   +A+A+A1 ooo1 +++1
+
+   ~e+
+   -A-A-A1 ***1 ---1
+
+
+
+   higgs
+   +A+A+A8 |||8 +++8
+   +A+A+A8 |||8 ---8
+   +A+A+A8 |||8 ---4 --+3 +++1
+
+
+   photon
+   +A+A+A1 |||2 +++2
+   +A+A+A1 |||2 ---2
+
+   tetra
+   +A+A+A4 |||4 +++4
+
+   sign RLE:
+   count + sign ord
+    5 bits   3 bits
+
+
+
 */
+
+func (X *graphState) getTraitRun(Xv []*graphVtx, vi int, trait VtxTrait) int { //(triID []byte, modes []byte) {
+	Nv := len(Xv)
+
+	var buf [8]byte
+
+	runLen := 1
+
+	viTr := Xv[vi].appendTrait(buf[:0], trait, false)
+
+	for vj := vi + 1; vj < Nv; vj++ {
+		vjTr := Xv[vj].appendTrait(buf[4:4], trait, false)
+		if !bytes.Equal(viTr, vjTr) {
+			break
+		}
+		runLen++
+	}
+
+	return runLen
+}
+
+/*
+
+	for vi := 0; vi < Nv; vi += runLen {
+		io = Xv[vi].appendTrait(io, trait, ascii)
+		runLen = 1
+		for vj := vi + 1; vj < Nv; vj++ {
+			if Xv[vi].CyclesID != Xv[vj].CyclesID {
+				break
+			}
+
+			same := false
+			vjTri = Xv[vj].appendTrait(vjTri[:0], trait, ascii)
+			if
+
+			runLen++
+		}
+	}
+
+}
+*/
+
+func (X *graphState) AppendGraphEncoding(io []byte, opts GraphEncodingOpts) []byte { //(triID []byte, modes []byte) {
+	// Generally, there's plenty of room (even accounting for adding spaces in ascii mode)
+	// enc := io[len(io):cap(io)]
+	// if len(enc) < GraphEncodingMaxSz {
+	// 	enc = make([]byte, len(io) + GraphEncodingMaxSz)
+	// 	copy(enc, io)
+	// }
+
+	var buf [32]byte
+
+	Xv := X.Vtx()
+	Nv := len(Xv)
+	ascii := opts&OutputAscii != 0
+
+	for ti := VtxTrait_EdgesOrigin; ti <= VtxTrait_ModulateSign; ti++ {
+
+		runLen := 0
+		RLE := buf[:0]
+		for vi := 0; vi < Nv; vi += runLen {
+			runLen = X.getTraitRun(Xv, vi, ti)
+			io = Xv[vi].appendTrait(io, ti, ascii)
+			if ascii {
+				io = append(io, ' ')
+				RLE = strconv.AppendInt(RLE, int64(runLen), 10)
+				RLE = append(RLE, ' ')
+			} else {
+				RLE = append(RLE, byte(runLen))
+			}
+		}
+
+		io = append(io, RLE...)
+	}
+
+	return io
+}
+
+/*
 func (X *graphState) AppendGraphEncoding(io []byte, opts GraphEncodingOpts) []byte { //(triID []byte, modes []byte) {
 	// Generally, there's plenty of room (even accounting for adding spaces in ascii mode)
 
@@ -734,17 +1010,51 @@ func (X *graphState) AppendGraphEncoding(io []byte, opts GraphEncodingOpts) []by
 	Xruns := X.findGroupRuns(runsBuf[:0])
 
 	Xg := X.VtxGroups()
+	Nv := len(Xg)
 
-	c := byte(len(Xg))
-	if ascii {
-		c += '0'
+	//
+	// 	3 BBA ACB BBC   ++- +++  +++        2 4 2       ||* ||| ||o        --- ++- -++2 +++3
+	//
+
+	runLen := 0
+	for vi := 0; vi < Nv; vi += runLen {
+		runLen = 1
+		for vj := vi + 1; vj < Nv; vj++ {
+			if Xg[vi].GroupID != Xg[vj].GroupID {
+				break
+			}
+			runLen++
+		}
 	}
-	io = append(io, c)
-	if ascii {
-		io = append(io, ':')
-	}
+	// c := byte(len(Xg))
+	// if ascii {
+	// 	c += '0'
+	// }
+	// io = append(io, c)
+	// if ascii {
+	// 	io = append(io, ':')
+	// }
 
 	var giTri [3]byte
+
+
+
+	// // EDGE FROM GROUP
+	// gi := byte(0)
+	// for _, runLen := range Xruns {
+	// 	g := Xg[gi]
+	// 	c := byte(g.CyclesID)
+	// 	if ascii {
+	// 		c += 'A' - 1
+	// 	}
+	// 	io = append(io, c)
+
+	// 	if ascii {
+	// 		io = append(io, g.CyclesID.GroupRune())
+	// 	} else {
+	// 		io = append(io, g.CyclesID)
+	// 	}
+	// }
 
 	// EDGE FAMILY GROUPS
 	gi := byte(0)
@@ -786,14 +1096,10 @@ func (X *graphState) AppendGraphEncoding(io []byte, opts GraphEncodingOpts) []by
 	for _, runLen := range Xruns {
 		for j := byte(0); j < runLen; j++ {
 			g := Xg[gi+j]
-			c := byte(g.CyclesID)
-			if ascii {
-				c += 'A' - 1
-			}
-			io = append(io, c)
+			io = g.appendTrait(io, VtxTrait_EdgesOrigin, ascii)
 		}
 		if ascii {
-			io = append(io, ',')
+			io = append(io, ' ')
 		}
 
 		gi += runLen
@@ -804,14 +1110,10 @@ func (X *graphState) AppendGraphEncoding(io []byte, opts GraphEncodingOpts) []by
 	for _, runLen := range Xruns {
 		for j := byte(0); j < runLen; j++ {
 			g := Xg[gi+j]
+
+			io = g.appendTrait(io, VtxTrait_ModulateSign, ascii)
 			if ascii {
-				if g.count > 1 {
-					io = strconv.AppendInt(io, int64(g.count), 10)
-				}
-				io = g.appendEdgeSigns(io)
 				io = append(io, ' ')
-			} else {
-				io = append(io, byte(g.TriSign()), g.count)
 			}
 		}
 		if ascii {
@@ -823,6 +1125,7 @@ func (X *graphState) AppendGraphEncoding(io []byte, opts GraphEncodingOpts) []by
 
 	return io
 }
+*/
 
 type edgeTrait int
 
@@ -836,8 +1139,7 @@ const (
 	kNumLines = 5
 )
 
-func (X *graphState) printEdgesDesc(vi int, trait edgeTrait, dst []byte) {
-	v := X.VtxGroups()[vi]
+func (v *triVtx) printEdgesDesc(vi int, trait edgeTrait, dst []byte) {
 
 	switch trait {
 	case kVtxID:
@@ -861,7 +1163,7 @@ func (X *graphState) printEdgesDesc(vi int, trait edgeTrait, dst []byte) {
 			case kEdgeSign:
 				r = e.SignRune()
 			case kEdgeHomeGroup:
-				r = v.CyclesID.GroupRune()
+				r = v.GroupRune()
 			}
 			dst[ei] = r
 		}
@@ -914,7 +1216,7 @@ func (X *graphState) PrintVtxGrouping(out io.Writer) {
 		row[totWid] = '\n'
 	}
 
-	Xv := X.VtxGroups()
+	Xv := X.Vtx()
 
 	//Xruns := X.findGroupRuns(make([]byte, 0, MaxVtxID))
 
@@ -922,31 +1224,20 @@ func (X *graphState) PrintVtxGrouping(out io.Writer) {
 
 	for li := 0; li < kNumLines; li++ {
 		row := rows[li*bytesPerRow+marginL:]
-
 		runL := 0
-		//grpL := 0
-
-		//startsGroup := true
-
-		//groupEnd := true
-		// vi := byte(0)
-		// for _, vtxRunLen := range Xruns {
-		// 	g := Xv[vi]
 
 		for vi := 0; vi < Nv; {
-
 			vtxRunLen := 1
-
 			traitConst := true
 
-			X.printEdgesDesc(vi, edgeTrait(li), viEdges[:])
+			Xv[vi].printEdgesDesc(vi, edgeTrait(li), viEdges[:])
 
 			for vj := vi + 1; vj < Nv; vj++ {
-				if Xv[vi].CyclesID != Xv[vj].CyclesID {
+				if Xv[vi].GroupID != Xv[vj].GroupID {
 					//groupChange = true
 					break
 				}
-				X.printEdgesDesc(vj, edgeTrait(li), vjEdges[:])
+				Xv[vj].printEdgesDesc(vj, edgeTrait(li), vjEdges[:])
 				if viEdges != vjEdges {
 					traitConst = false
 				}
@@ -965,28 +1256,29 @@ func (X *graphState) PrintVtxGrouping(out io.Writer) {
 			}
 
 			traitRun := traitConst && (li == kEdgeFrom || li == kEdgeType || li == kEdgeSign)
-			
-			for vj := vi; vj < vi+vtxRunLen; vj++ {
 
-				//vtxR := vtxWid*(vj+1)
+			for vj := vi; vj < vi+vtxRunLen; vj++ {
 				vtxC := vtxWid*vj + vtxWid>>1
-				row[vtxC] = '.'
-						
+
 				if !traitRun {
 
 					switch li {
 					case kEdgeHomeGroup:
-						c := Xv[vj].CyclesID.GroupRune()
-						for w := -vtxRad; w <= vtxRad; w++ {
-							row[vtxC+w] = c
-						}
 					default:
-						X.printEdgesDesc(vj, edgeTrait(li), vjEdges[:])
+						Xv[vj].printEdgesDesc(vj, edgeTrait(li), vjEdges[:])
 						copy(row[vtxC-1:], vjEdges[:])
 					}
 				}
 			}
-			
+
+			switch li {
+			case kEdgeHomeGroup:
+				c := Xv[vi].GroupRune()
+				for w := runL + 3; w <= runR-3; w++ {
+					row[w] = c
+				}
+			}
+
 			if traitRun {
 				copy(row[runC-1:], viEdges[:])
 			}
@@ -1264,11 +1556,11 @@ func (X *graphState) PrintCycleSpectrum(out io.Writer) {
 	X.canonize()
 
 	Nv := X.vtxCount
-	Xg := X.VtxGroups()
+	Xv := X.Vtx()
 
 	for ci := int32(0); ci < Nv; ci++ {
 		fmt.Fprintf(out, "%8d C%-2d", X.traces[ci], ci+1)
-		for _, vi := range Xg {
+		for _, vi := range Xv {
 			fmt.Fprintf(out, " %8d   ", vi.cycles[ci])
 		}
 		out.Write([]byte{'\n'})
