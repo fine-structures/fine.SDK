@@ -72,7 +72,7 @@ y6_K4 = K4_phases * 1 * K4n1_phases
 print("K4(%d) x e~e(%d) x K4~1(%d) combos: %d" % (K4_phases, 1, K4n1_phases, y6_K4))
 
 print('''
-Another decay mode of our v=10 system contains y6 with two arrows. 
+Another decay mode of our v=10 system contains y6 with two neg loops. 
 Let's verify that it doesn't have any prime modes or phases that would create lepton pairs:''')
 y4_2 = Graph("1-2^-3^-4=5-6=1")
 y4_2.PrimeModes().Print("y4_2 PRIME").Go()

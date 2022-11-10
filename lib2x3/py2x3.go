@@ -305,13 +305,13 @@ func ph_GraphStream_Print(self py.Object, args py.Tuple, kwargs py.StringDict) (
 	if opts.Label == "" {
 		py.LoadAttr(kwargs, "label", &opts.Label)
 	}
-	
+
 	// TODO: move this to the Workspace obj so output counter is within the workspace (vs global)
 	atomic.AddInt32(&gOutCount, 1)
 	if opts.Label == "" {
 		opts.Label = fmt.Sprintf("out[%d]", gOutCount)
 	}
-	
+
 	py.LoadAttr(kwargs, "traces", &opts.NumTraces)
 	py.LoadAttr(kwargs, "cycles", &opts.CycleSpec)
 	py.LoadAttr(kwargs, "codes", &opts.Tricodes)
@@ -530,8 +530,8 @@ func exportGraphInfo(graphInfo py.Object) GraphInfo {
 		NumVerts:     byteAttr(graphInfo, "verts"),
 		PosEdges:     byteAttr(graphInfo, "pos_edges"),
 		NegEdges:     byteAttr(graphInfo, "neg_edges"),
-		Loops:        byteAttr(graphInfo, "loops"),
-		Arrows:       byteAttr(graphInfo, "arrows"),
+		PosLoops:     byteAttr(graphInfo, "pos_loops"),
+		NegLoops:     byteAttr(graphInfo, "neg_loops"),
 	}
 	return info
 }

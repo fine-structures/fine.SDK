@@ -382,13 +382,13 @@ func (X *graphState) AssignGraph(Xsrc *Graph) error {
 		X.vtx[i] = Xv[i]
 	}
 
-	// First, add edges that connect to the same vertex (loops and arrows)
+	// First, add edges that connect to the same vertex (loops)
 	for i, vi := range Xv {
 		vtype := Xsrc.vtx[i]
-		for j := vtype.NumLoops(); j > 0; j-- {
+		for j := vtype.PosLoops(); j > 0; j-- {
 			vi.AddLoop(int32(i), +1)
 		}
-		for j := vtype.NumArrows(); j > 0; j-- {
+		for j := vtype.NegLoops(); j > 0; j-- {
 			vi.AddLoop(int32(i), -1)
 		}
 	}

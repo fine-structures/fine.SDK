@@ -111,16 +111,6 @@ class Graph:
         sel.traces = self
         sel.factor = True
         return prime_catalog.Select(sel)
-        
-    '''
-    Emits all canonically unique particle combinations for this Graph (having equal Traces).
-    '''
-    # def DecayModes(self, prime_catalog = None):
-    #     if prime_catalog == None:
-    #         prime_catalog = GetPrimeCatalog(self.NumVerts())
-                    
-    #     cat.Close()
-    #     pass
 
     def AllVtxSigns(self):
         return self._graph.Stream().AllVtxSigns()
@@ -140,8 +130,8 @@ class GraphInfo:
         self.verts = 0
         self.pos_edges = 0
         self.neg_edges = 0
-        self.loops = 0
-        self.arrows = 0
+        self.pos_loops = 0
+        self.neg_loops = 0
 
 
 def NewSelector(*parts):
@@ -171,15 +161,15 @@ class GraphSelector:
         self.min.verts = 1
         self.min.pos_edges = 0
         self.min.neg_edges = 0
-        self.min.loops  = 0
-        self.min.arrows = 0
+        self.min.pos_loops = 0
+        self.min.neg_loops = 0
 
         self.max.parts = MAX_VTX
         self.max.verts = MAX_VTX
         self.max.pos_edges = int(MAX_VTX*3/2)
         self.max.neg_edges = int(MAX_VTX*3/2)
-        self.max.loops  = MAX_VTX*3
-        self.max.arrows = MAX_VTX*3
+        self.max.pos_loops = MAX_VTX*3
+        self.max.neg_loops = MAX_VTX*3
         
     def SetTraces(self, X):
         self.traces = X.Traces()

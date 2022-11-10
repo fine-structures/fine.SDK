@@ -77,12 +77,20 @@ func (v VtxType) NumEdges() byte {
 	return [...]byte{0, 0, 0, 0, 0, 1, 1, 1, 2, 2, 3}[v]
 }
 
-func (v VtxType) NumLoops() byte {
+func (v VtxType) PosLoops() byte {
 	return [...]byte{0, 3, 0, 2, 1, 2, 0, 1, 1, 0, 0}[v]
 }
 
-func (v VtxType) NumArrows() byte {
+func (v VtxType) NegLoops() byte {
 	return [...]byte{0, 0, 3, 1, 2, 0, 2, 1, 0, 1, 0}[v]
+}
+
+func (v VtxType) TotalLoops() byte {
+	return [...]byte{0, 3, 3, 3, 3, 2, 2, 2, 1, 1, 0}[v]
+}
+
+func (v VtxType) NetLoops() int8 {
+	return [...]int8{0, 3, -3, 1, -1, 2, -2, 0, 1, -1, 0}[v]
 }
 
 func (v VtxType) VtxPerm() VtxPerm {
@@ -106,38 +114,42 @@ type VtxPerm struct {
 	Vtx [4]VtxType
 }
 
-// GetVtxType returns the VtxType that corresponds to the given number of arrows and edges.
+// GetVtxType returns the VtxType that corresponds to the given number of negative loops and total edges.
 //
-// If numArrows or numEdges are invalid, V_nil is returned
-func GetVtxType(numArrows, numEdges byte) VtxType {
+// If numNegLoops or numEdges are invalid, V_nil is returned
+func GetVtxType(numNegLoops, numEdges byte) VtxType {
 	v := V_nil
 	switch numEdges {
 	case 0:
-		if numArrows == 0 {
+		switch numNegLoops {
+		case 0:
 			v = V_e
-		} else if numArrows == 1 {
+		case 1:
 			v = V_π
-		} else if numArrows == 2 {
+		case 2:
 			v = V_π_bar
-		} else if numArrows == 3 {
+		case 3:
 			v = V_e_bar
 		}
 	case 1:
-		if numArrows == 0 {
+		switch numNegLoops {
+		case 0:
 			v = V_u
-		} else if numArrows == 1 {
+		case 1:
 			v = V_q
-		} else if numArrows == 2 {
+		case 2:
 			v = V_u_bar
 		}
 	case 2:
-		if numArrows == 0 {
+		switch numNegLoops {
+		case 0:
 			v = V_d
-		} else if numArrows == 1 {
+		case 1:
 			v = V_d_bar
 		}
 	case 3:
-		if numArrows == 0 {
+		switch numNegLoops {
+		case 0:
 			v = V_𝛾
 		}
 	}

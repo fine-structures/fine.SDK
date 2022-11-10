@@ -33,7 +33,7 @@ var (
 	ErrGraphBadEdge       = errors.New("bad graph edge")
 	ErrGraphBadEdgeType   = errors.New("bad graph edge type")
 	ErrGraphVtxExpected   = errors.New("vertex ID expected")
-	ErrGraphSitesExceeded = errors.New("number of arrows and edges exceeds 3")
+	ErrGraphSitesExceeded = errors.New("number of loops and edges exceeds 3")
 )
 
 var CompoundSeedVtxTypes = []VtxType{
@@ -56,8 +56,8 @@ func (V VtxList) Swap(i, j int)      { V[i], V[j] = V[j], V[i] }
 type GraphInfo struct {
 	NumParticles byte
 	NumVerts     byte
-	Arrows       byte
-	Loops        byte
+	NegLoops     byte
+	PosLoops     byte
 	NegEdges     byte
 	PosEdges     byte
 }
@@ -71,15 +71,16 @@ func (info *GraphInfo) AppendGraphEncodingHeader(prefix []byte) []byte {
 		info.NumParticles,
 		info.NumVerts,
 		info.NegEdges,
-		info.Arrows,
-		info.Loops,
+		info.NegLoops,
+		info.PosLoops,
 	)
 	return prefix
 }
 
-// ImpliedNumEdges returns the number of edges implied for a graph that has a given number of vertices, loops, and arrows.
-func ImpliedNumEdges(numVerts, numLoops, numArrows byte) byte {
-	return (3*numVerts - (numLoops + numArrows)) / 2
+// NumEdges returns the number of edges implied for a graph that has a given number of vertices and total loop count.
+func (info *GraphInfo) NumEdges() byte {
+	return (3*info.NumVerts - info.PosLoops - info.NegLoops) / 2
+
 }
 
 // GraphEncoding a fully serialized Graph. See initFromEncoding() for format info.
@@ -90,10 +91,10 @@ func (Xenc GraphEncoding) GetInfo() GraphInfo {
 		NumParticles: Xenc[0],
 		NumVerts:     Xenc[1],
 		NegEdges:     Xenc[2],
-		Arrows:       Xenc[3],
-		Loops:        Xenc[4],
+		NegLoops:     Xenc[3],
+		PosLoops:     Xenc[4],
 	}
-	info.PosEdges = ImpliedNumEdges(info.NumVerts, info.Loops, info.Arrows) - info.NegEdges
+	info.PosEdges = info.NumEdges() - info.NegEdges
 	return info
 }
 
@@ -250,18 +251,10 @@ func (X *Graph) NumVerts() byte {
 	return byte(X.vtxCount)
 }
 
-func (X *Graph) CountArrows() byte {
-	arrows := byte(0)
+func (X *Graph) CountLoops() (negLoops, posLoops byte) {
 	for _, vi := range X.Vtx() {
-		arrows += vi.NumArrows()
-	}
-	return arrows
-}
-
-func (X *Graph) CountLoopsAndArrows() (loops, arrows byte) {
-	for _, vi := range X.Vtx() {
-		loops += vi.NumLoops()
-		arrows += vi.NumArrows()
+		negLoops += vi.NegLoops()
+		posLoops += vi.PosLoops()
 	}
 	return
 }
@@ -276,7 +269,7 @@ func (X *Graph) CountEdges() (totalPos, totalNeg byte) {
 }
 
 func (X *Graph) GetInfo() GraphInfo {
-	loops, arrows := X.CountLoopsAndArrows()
+	negLoops, posLoops := X.CountLoops()
 	posEdges, negEdges := X.CountEdges()
 
 	return GraphInfo{
@@ -284,17 +277,10 @@ func (X *Graph) GetInfo() GraphInfo {
 		NumVerts:     X.NumVerts(),
 		NegEdges:     negEdges,
 		PosEdges:     posEdges,
-		Arrows:       arrows,
-		Loops:        loops,
+		NegLoops:     negLoops,
+		PosLoops:     posLoops,
 	}
 }
-
-// func (X *Graph) Canonicalize() {
-// 	// Rearrange vertices into canonical order
-// 	sort.Sort(X)
-// 	X.Edges().Canonicalize()
-// 	X.onGraphChanged()
-// }
 
 func (X *Graph) Init(Xsrc *Graph) {
 	if X == Xsrc {
@@ -459,7 +445,7 @@ func (X *Graph) WriteAsGraphExprStr(out io.Writer) {
 	negLoops := buf[:X.vtxCount]
 
 	for i := range negLoops {
-		negLoops[i] = X.vtx[i].NumArrows()
+		negLoops[i] = X.vtx[i].NegLoops()
 	}
 
 	printVtx := func(vi VtxID) {
@@ -545,7 +531,7 @@ func (X *Graph) WriteAsMatrixStr(out io.Writer) {
 	// Set matrix diagonal values from vertices
 	for i := int32(0); i < Nv; i++ {
 		v := X.vtx[i]
-		Xm[i+i*Nv] = int8(v.NumLoops() - v.NumArrows())
+		Xm[i+i*Nv] = v.NetLoops()
 	}
 
 	// Set edge values
@@ -620,7 +606,7 @@ var graphPool = sync.Pool{
 //      NumParticles
 //      NumVerts
 //      NumNegEdges
-//      NumArrows
+//      NumNegLoops
 //      NumLoops
 //      <1..NumVerts>
 //          byte(VtxType)
@@ -646,13 +632,13 @@ func (X *Graph) initFromEncoding(Xe GraphEncoding) error {
 			return ErrGraphBadEncoding
 		}
 		X.vtx[i] = v
-		info.Arrows -= v.NumArrows()
-		info.Loops -= v.NumLoops()
+		info.NegLoops -= v.NegLoops()
+		info.PosLoops -= v.PosLoops()
 		idx++
 	}
 
 	// consistency check
-	if info.Arrows != 0 || info.Loops != 0 {
+	if info.NegLoops != 0 || info.PosLoops != 0 {
 		return ErrGraphBadEncoding
 	}
 

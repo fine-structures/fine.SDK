@@ -26,7 +26,7 @@ sel = NewSelector()
 sel.min.verts = 3
 sel.max.verts = 3
 sel.min.loops = 3
-catA.Select(sel).Print("v=3 & loops > 3").Go()
+catA.Select(sel).Print("v=3 & loops > 2").Go()
 
 
 print('''
@@ -53,13 +53,13 @@ print("...so there's exactly *%d* particles in the pure matter catalog for v=1..
 
 print('''
 How about a catalog that includes anti-matter particles?  For that, we use AllVtxSigns().
-We call this the "mixed matter" catalog since contains it particles constructions with arrows (negative self-edges).''')
+We call this the "mixed matter" catalog since contains it particles constructions with negative loops (negative self-edges).''')
 mixed_matter = NewCatalog()
 pure_matter.Select().AllVtxSigns().AddTo(mixed_matter).Print("Mixed").Go()
 
 print('''
 Finally, let's include *all* possible particles using AllEdgeSigns().
-We call this the "complete" catalog since every possible particle (having any combination of arrows or negative edges).''')
+We call this the "complete" catalog since every possible particle (having any combination of negative edges).''')
 complete_catalog = NewCatalog()
 mixed_matter.Select().AllEdgeSigns().AddTo(complete_catalog).Print("Complete", file="learn/gold/My First Catalog.csv", matrix=True).Go()
 

@@ -95,7 +95,6 @@ const (
 
 const NumTriSigns = 8
 
-
 type TriSign byte
 
 func (t TriSign) String() string {
@@ -406,11 +405,11 @@ type Vtx struct {
 }
 
 type graphBuilder struct {
-	vtx0      VtxID // VtxID of the current Part
-	maxVtxID  VtxID
-	vtxEdges  [MaxVtxID]byte
-	vtxArrows [MaxVtxID]byte
-	edges     []EdgeID
+	vtx0        VtxID // VtxID of the current Part
+	maxVtxID    VtxID
+	vtxEdges    [MaxVtxID]byte
+	vtxNegLoops [MaxVtxID]byte
+	edges       []EdgeID
 }
 
 func (Xb *graphBuilder) applyPart(part *Part) error {
@@ -438,7 +437,7 @@ func (Xb *graphBuilder) tallyVtx(vtx *Vtx) error {
 
 	for _, r := range vtx.Kind {
 		if r == '^' {
-			Xb.vtxArrows[vtxID-1]++
+			Xb.vtxNegLoops[vtxID-1]++
 		}
 	}
 
@@ -496,10 +495,10 @@ func (X *Graph) InitFromString(graphExpr string) error {
 
 		// Determine vertex types and validate what we can
 		for vi := Xb.vtx0; vi < Xb.maxVtxID; vi++ {
-			v := GetVtxType(Xb.vtxArrows[vi], Xb.vtxEdges[vi])
+			v := GetVtxType(Xb.vtxNegLoops[vi], Xb.vtxEdges[vi])
 			if v == V_nil {
 				vi_local := vi + 1 - Xb.vtx0
-				return fmt.Errorf("error reading part #%d: arrows + edges at vertex %d exceeds 3", xi+1, vi_local)
+				return fmt.Errorf("error reading part #%d: loops + edges at vertex %d exceeds 3", xi+1, vi_local)
 			}
 			X.vtx[X.vtxCount] = v
 			X.vtxCount++
