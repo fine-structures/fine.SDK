@@ -103,7 +103,7 @@ This means an e~e pair can come from:
 qyd(4) x e~e(1) x K4~1(6) combos: 24
 K4(10) x e~e(1) x K4~1(6) combos: 60
 
-Another decay mode of our v=10 system contains y6 with two arrows. 
+Another decay mode of our v=10 system contains y6 with two neg loops. 
 Let's verify that it doesn't have any prime modes or phases that would create lepton pairs:
 y4_2 PRIME,000001,p=2,v=6,"DAA DDB ECC ABB CFF EEF 1 1 1 1 1 1 +-- ++- +-+ +++ 1 1 1 3 |** ||* |*o ||| ||o 1 1 1 2 1 +-- ++- +-+ +++ 1 1 1 3 ","1^-2=3 4^^-5=6^",-2,26,-14,166,-122,1226,
 y4_2 phase,000001,p=1,v=6,"BAA ACC BBC 2 2 2 ++- +++ 2 4 ||* ||| 2 4 ++- +++ 2 4 ","1^-2^-4=6-5=3-1",-2,26,-14,166,-122,1226,
