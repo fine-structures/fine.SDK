@@ -61,9 +61,9 @@ show("n0 (neutron)",    "1-2-3-4-2")
 print("\n   ======.   'EXOTIC'   ======.  \n")
 
 show("Z0 (neutral weak)",       "1^-2^")
-show("ve (electron neutrino)",  "1-2")
-show("vµ (muon neutrino)",      "1-2-3-4")
-show("vτ (tau neutrino)",       "1-2")
+show("νe (electron neutrino)",  "1-2")
+show("νµ (muon neutrino)",      "1-2-3-4")
+show("ντ (tau neutrino)",       "1-2")
 
 
 

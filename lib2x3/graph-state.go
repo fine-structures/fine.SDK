@@ -973,7 +973,6 @@ func (X *graphState) AppendGraphEncoding(io []byte, opts GraphEncodingOpts) []by
 	ascii := opts&OutputAscii != 0
 
 	for ti := VtxTrait_EdgesOrigin; ti <= VtxTrait_ModulateSign; ti++ {
-
 		runLen := 0
 		RLE := buf[:0]
 		for vi := 0; vi < Nv; vi += runLen {
@@ -1185,7 +1184,7 @@ func (X *graphState) PrintVtxGrouping(out io.Writer) {
 	Nv := int(X.vtxCount)
 
 	const vtxRad = 2
-	vtxWid := 1 + (3 + (2*vtxRad + 1) + 3)
+	vtxWid := 1 + (2 + (2*vtxRad + 1) + 2)
 	totWid := (int(X.vtxCount) * vtxWid) + 1
 
 	marginL := len(labels[0])
@@ -1217,8 +1216,6 @@ func (X *graphState) PrintVtxGrouping(out io.Writer) {
 	}
 
 	Xv := X.Vtx()
-
-	//Xruns := X.findGroupRuns(make([]byte, 0, MaxVtxID))
 
 	var viEdges, vjEdges [3]byte
 
@@ -1561,7 +1558,7 @@ func (X *graphState) PrintCycleSpectrum(out io.Writer) {
 	for ci := int32(0); ci < Nv; ci++ {
 		fmt.Fprintf(out, "%8d C%-2d", X.traces[ci], ci+1)
 		for _, vi := range Xv {
-			fmt.Fprintf(out, " %8d   ", vi.cycles[ci])
+			fmt.Fprintf(out, "%8d  ", vi.cycles[ci])
 		}
 		out.Write([]byte{'\n'})
 	}
