@@ -977,11 +977,19 @@ func (X *graphState) AppendGraphEncoding(io []byte, opts GraphEncodingOpts) []by
 		RLE := buf[:0]
 		for vi := 0; vi < Nv; vi += runLen {
 			runLen = X.getTraitRun(Xv, vi, ti)
+
+			// For readability, print the family count first in ascii mode (but for LSM it follows the edges)
+			if ascii {
+				if runLen == 1 {
+					io = append(io, ' ')
+				} else {
+					io = strconv.AppendInt(io, int64(runLen), 10)
+				}
+			}
+
 			io = Xv[vi].appendTrait(io, ti, ascii)
 			if ascii {
 				io = append(io, ' ')
-				RLE = strconv.AppendInt(RLE, int64(runLen), 10)
-				RLE = append(RLE, ' ')
 			} else {
 				RLE = append(RLE, byte(runLen))
 			}
@@ -1231,7 +1239,6 @@ func (X *graphState) PrintVtxGrouping(out io.Writer) {
 
 			for vj := vi + 1; vj < Nv; vj++ {
 				if Xv[vi].GroupID != Xv[vj].GroupID {
-					//groupChange = true
 					break
 				}
 				Xv[vj].printEdgesDesc(vj, edgeTrait(li), vjEdges[:])
@@ -1287,267 +1294,7 @@ func (X *graphState) PrintVtxGrouping(out io.Writer) {
 	}
 
 	out.Write(rows)
-
-	// buf := [MaxVtxID]byte{}
-	// Xruns := X.findVtxRuns(kEdgeHomeGroup, buf[:0])
-
-	// vi := byte(0)
-	// vtxIdx := 0
-	// for _, runLen := range Xruns {
-	// 	for j := byte(0); j < runLen; j++ {
-	// 		g := Xg[gi+j]
-
-	// 		vtxRunCount := int(runLen * g.count)
-	// 		cen := margin + (dWidth * vtxIdx) / (vtxRunCount + 1)
-
-	// 		for k := int(g.count); k > 0; k-- {
-
-	// 			// Edge signs
-	// 			for ei, e := range g.edges {
-	// 				s := byte('+')
-	// 				if e.sign < 0 {
-	// 					s = '-'
-	// 				}
-	// 				rowS[cen + ei - 1] = s
-	// 			}
-
-	// 			// Cycle Group IDs
-	// 			groupColor := byte('A' - 1 + g.CyclesID)
-	// 			for w := -2; w <= 2; w++ {
-	// 				rowC[cen + w] = groupColor
-	// 			}
-
-	// 			// Vertex IDs
-	// 			ID := vtxIdx
-	// 			if ID >= 10 {
-	// 				rowV[cen - 1] = byte('0' + ID / 10)
-	// 			}
-	// 			rowV[cen] = '0' + byte(ID % 10)
-
-	// 			vtxIdx++
-	// 		}
-
-	// 	}
-
-	// 	gi += runLen
-	// }
-
-	// buf := [MaxVtxID]byte{}
-	// Xruns := X.findGroupRuns(buf[:0])
-	/*
-
-		{
-			rowS := rows[2 * bytesPerRow:]
-			rowC := rows[3 * bytesPerRow:]
-			rowV := rows[4 * bytesPerRow:]
-
-
-			gi := byte(0)
-			vtxIdx := 0
-			for _, runLen := range Xruns {
-				for j := byte(0); j < runLen; j++ {
-					g := Xg[gi+j]
-
-					vtxRunCount := int(runLen * g.count)
-					cen := margin + (dWidth * vtxIdx) / (vtxRunCount + 1)
-
-					for k := int(g.count); k > 0; k-- {
-
-						// Edge signs
-						for ei, e := range g.edges {
-							s := byte('+')
-							if e.sign < 0 {
-								s = '-'
-							}
-							rowS[cen + ei - 1] = s
-						}
-
-						// Cycle Group IDs
-						groupColor := byte('A' - 1 + g.CyclesID)
-						for w := -2; w <= 2; w++ {
-							rowC[cen + w] = groupColor
-						}
-
-						// Vertex IDs
-						ID := vtxIdx
-						if ID >= 10 {
-							rowV[cen - 1] = byte('0' + ID / 10)
-						}
-						rowV[cen] = '0' + byte(ID % 10)
-
-						vtxIdx++
-					}
-
-
-				}
-
-				gi += runLen
-			}
-		}
-
-		{
-
-			rowS := rows[kEdgeFrom * bytesPerRow:]
-			rowT := rows[1 * bytesPerRow:]
-
-			gi := 0
-			pos := margin
-
-			for ri := 0; ri <= len(Xruns); ri++ {
-
-				// Vertical separator line
-				for yi := 0; yi < 3; yi++ {
-					rows[pos + yi*bytesPerRow] = ':'
-				}
-
-				runLen := 0
-				if ri < len(Xruns) {
-					runLen = int(Xruns[ri])
-				}
-
-				runWidth := (dWidth * runLen) / len(Xg)
-				for j := 0; j < runLen; j++ {
-					g := Xg[gi+j]
-					runC := pos + (runWidth * int(j) + runLen >>1) / runLen
-
-					// Edge source group IDs
-					for ei, e := range g.edges {
-						edgeType := byte('|')
-						if e.isLoop {
-							edgeType = 'o'
-							if e.sign < 0 {
-								edgeType = '*'
-							}
-						}
-						rowT[runC + ei] = edgeType
-						if !e.isLoop {
-							rowS[runC + ei] = byte('A' - 1 + e.srcGroup)
-						}
-
-						// else if e.srcGroup == v.CyclesID {
-						// 	c = '|'
-						// } else {
-						// 	c = 'A' + byte(e.srcGroup) - 1
-						// }
-						// tri[ei] = c
-					}
-
-
-				}
-
-				pos += runWidth
-				gi += runLen
-			}
-		}
-
-	*/
-
 }
-
-/*
-func (X *graphState) PrintTriCodes(out io.Writer) {
-	X.canonize()
-
-	Xg := X.VtxGroups()
-
-	var buf [256]byte
-	var giTri, gjTri [3]byte
-
-	// Vertex type str
-	for line := 0; line < 4; line++ {
-		fmt.Fprintf(out, "\n   %s  ", []string{
-			"FAMILY EDGES ",
-			"CYCLES ID    ",
-			"SIGNS        ",
-			"COUNT        ",
-		}[line])
-
-		for gi := 0; gi < len(Xg); {
-			g := Xg[gi]
-
-			// Calc col width based on grouping
-			groupCols := 1
-			g.printEdges(giTri[:])
-			for gj := gi + 1; gj < len(Xg); gj++ {
-				Xg[gj].printEdges(gjTri[:])
-				if gjTri != giTri {
-					break
-				}
-				groupCols++
-			}
-			col_ := buf[:3*groupCols+5*groupCols]
-			col := col_[:len(col_)-5]
-			for i := range col_ {
-				col_[i] = ' '
-			}
-
-			c := byte('?')
-
-			switch line {
-
-			//case 0: // FAMILY ID
-			// case 1: // EDGES  MASK
-			// 	for gi := 0; gi < groupCols; gi++ {
-			// 		v = Xg[vi+gi]
-			// 		for ii, e := range v.edges {
-			// 			if e.isLoop || e.srcGroup == v.CyclesID {
-			// 				c = 'o'
-			// 			} else {
-			// 				c = 'A' + byte(e.srcGroup) - 1
-			// 			}
-			// 			col[gi*8+ii] = c
-			// 		}
-			// 	}
-			case 0: // FAMILY EDGES
-				center := (len(col) - 3) / 2
-				copy(col[center:], giTri[:])
-
-			case 1: // CYCLES ID
-				for i := range col {
-					col[i] = ':'
-				}
-				{
-					for j := 0; j < groupCols; j++ {
-						g = Xg[gi+j]
-						c = 'A' + byte(g.CyclesID) - 1
-						for k := 0; k < 3; k++ {
-							col[j*8+k] = c
-						}
-					}
-				}
-
-			case 2: // SIGNS
-				for j := 0; j < groupCols; j++ {
-					g = Xg[gi+j]
-
-					for ei, e := range g.edges {
-						if e.sign < 0 {
-							c = '-'
-						} else {
-							c = '+'
-						}
-						col[j*8+ei] = c
-					}
-				}
-
-			case 3: // COUNT
-				for j := 0; j < groupCols; j++ {
-					g = Xg[gi+j]
-
-					NNN := 1 //g.count
-					for k := 2; k >= 0; k-- {
-						col[j*8+k] = '0' + byte(NNN%10)
-						NNN /= 10
-					}
-				}
-
-			}
-			out.Write(col_)
-			gi += groupCols
-		}
-	}
-
-}*/
 
 func (X *graphState) PrintCycleSpectrum(out io.Writer) {
 	X.canonize()
