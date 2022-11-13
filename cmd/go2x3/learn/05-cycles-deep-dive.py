@@ -1,9 +1,9 @@
 
 from py2x3 import *
 
-print("\n")
 
-verbose = {
+
+verboseOpts = {
     'graph':  True,
     'matrix': True,
     'codes':  True,
@@ -11,110 +11,84 @@ verbose = {
     'traces': 8,
 }
 
-basic = {
+basicOpts = {
     'codes':  True,
 }
 
-p = Graph("1")
-p.PhaseModes().Print("e- (electron)", **verbose).Go()
+def show(desc, Xstr):
+    X = Graph(Xstr)
+    X.Print(desc, **verboseOpts).Go()
+    
 
-p = Graph("1^^^")
-p.PhaseModes().Print("~e (positron)", **verbose).Go()
+def phases(desc, Xstr, verbose = False):
+    X = Graph(Xstr)
+    if verbose:
+        X.PhaseModes().Print(desc, **verboseOpts).Go()
+    else:
+        X.PhaseModes().Print(desc, **basicOpts).Go()
+        
+    
+higgs = "1-2-3-4-1-5-6-7-8-5, 2-6, 3-7, 4-8"
 
-p = Graph("1---2")
-p.PhaseModes().Print("γ0 (photon)", **verbose).Go()
-
-print("\n")
-
-p = Graph("1^")
-p.PhaseModes().Print("W+ (charged weak)", **verbose).Go()
-
-p = Graph("1^^")
-p.PhaseModes().Print("W- (charged weak)", **verbose).Go()
-
-p = Graph("1^-2^")
-p.PhaseModes().Print("Z0 (neutral weak)", **verbose).Go()
-
-
-print("\n")
-
-p = Graph("1")
-p.PhaseModes().Print("e-", **verbose).Go()
-
-p = Graph("1-2-3")
-p.PhaseModes().Print("p+", **verbose).Go()
-
-n = Graph("1-2-3-4-2")
-n.PhaseModes().Print("n0", **verbose).Go()
-
-print("\n")
-
-tetra = Graph("1-2-3-1-4-2, 4-3")
-tetra.PhaseModes().Print("tetra", **basic).Go()
-
-print("\n")
-
-p = Graph("1")
-p.PhaseModes().Print("e- (electron)", **basic).Go()
-
-p = Graph("1-2--3")
-p.PhaseModes().Print("µ- (muon)    ", **basic).Go()
-
-p = Graph("1-2--3-4--5")
-p.PhaseModes().Print("τ  (tau)     ", **basic).Go()
-
-print("\n")
-
-K4 = Graph("1-2-3^-4-1, 2-4")
-K4.PhaseModes().Print("K4", **verbose).Go()
-
-print("\n")
-Graph("1^=2-3-~4").PhaseModes().Print("tricky1", **verbose).Go()
-
-print("\n")
-Graph("1^-~2-3-~4").PhaseModes().Print("tricky2", **verbose).Go()
+    
+print("\n=================   v=1   =================  \n")
+show("e-  (electron)",      "1")
+show("W+  (charged weak)",  "1^")
+show("W-  (charged weak)",  "1^^")
+show("~e+ (positron)",      "1^^^")
 
 
-print("\n")
-
-K8 = Graph("1^-2-3-4-5^-6-7-8-1, 2-8, 4-6")
-K8.PhaseModes().Print("K8", **basic).Go()
-
-print("\n")
-
-higgs = Graph("1-2-3-4-1-5-6-7-8-5, 2-6, 3-7, 4-8")
-higgs.PhaseModes().Print("higgs", **basic).Go()
-
-print("\n")
-
-d4 = Graph("1-2-3-4-1")
-d4.PhaseModes().Print("d4", **basic).Go()
-
-print("\n")
-
-d5 = Graph("1-2-3-4-5-1")
-d5.PhaseModes().Print("d5", **basic).Go()
-
-print("\n")
-
-d6 = Graph("1-2-3-4-5-6-1")
-d6.PhaseModes().Print("d6", **basic).Go()
+print("\n=================   ELECTRON SERIES   =================  \n")
+show("e-  (electron) ",     "1")
+show("~e+ (positron) ",     "1^^^")
+show("µ-  (muon)     ",     "1-2--3")
+show("~µ+ (anti-muon)",     "1^^~2~~3^")
+show("τ-  (tau)      ",     "1-2--3-4--5")
+show("~τ- (anti-tau) ",     "1^^~2~~3~4~~5^")
 
 
-print("\n")
-
-y4 = Graph("1-2=3-4=1")
-y4.PhaseModes().Print("γ4", **basic).Go()
-
-print("\n")
-
-y6 = Graph("1-2=3-4=5-6=1")
-y6.PhaseModes().Print("γ6", **basic).Go()
-
-print("\n")
-
-y8 = Graph("1-2=3-4=5-6=7-8=1")
-y8.PhaseModes().Print("γ8", **basic).Go()
+print("\n=================   COMMON   =================  \n")
+show("e- (electron)",       "1")
+show("p+ (proton)",         "1-2-3")
+show("n0 (neutron)",        "1-2-3-4-2")
+show("e + p",               "1; 1-2-3")
+show("e + p + n"   ,        "1; 1-2-3; 1-2-3-4-2")
+show("γ  (photon)",         "1---2")
+show("~e e",                "1^^^; 1")
 
 
+print("\n=================   NEUTRINOS   =================  \n")
+show(" νe ( e neutrino)",   "1-2")
+show("~νe (~e neutrino)",   "1^^~2^^")
+show(" νµ ( µ neutrino)",   "1-2-3-4")
+show("~νµ (~µ neutrino)",   "1^^~2^~3^~4^^")
+show(" ντ ( τ neutrino)",   "1-2-3-4-5-6")
+show("~ντ (~τ neutrino)",   "1^^~2^~3^~4^~5^~6^^")
 
+
+print("\n=================   BOSONS   =================  \n")
+show("γ0 (photon)",         "1---2")
+show("Z0 (neutral weak)",   "1^-2^")
+show("tetra",               "1-2-3-1-4-2, 4-3")
+show("H  (higgs)",          "1-2-3-4-1-5-6-7-8-5, 2-6, 3-7, 4-8")
+show("~H (higgs)",          "1~2~3~4~1~5~6~7~8~5, 2~6, 3~7, 4~8")
+
+print("\n===============================================  \n")
+phases("photon",           "1---2",             True)
+phases("higgs",             higgs)
+phases("tricky_bravo",      "1^=2-3-~4",        True)
+phases("tricky_whiskey",    "1^-~2-3-~4",       True)
+phases("K4",                "1-2-3^-4-1, 2-4",  True)
+phases("K8",                "1^-2-3-4-5^-6-7-8-1, 2-8, 4-6")
+
+
+print("\n=================   Dn   =================  \n")
+phases("d4", "1-2-3-4-1"    )
+phases("d5", "1-2-3-4-5-1"  )
+phases("d6", "1-2-3-4-5-6-1")
+
+
+print("\n=================   γn   =================  \n")
+phases("γ4", "1-2=3-4=1"        )
+phases("γ6", "1-2=3-4=5-6=1"    )
+phases("γ8", "1-2=3-4=5-6=7-8=1")

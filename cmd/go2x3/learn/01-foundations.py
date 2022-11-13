@@ -23,10 +23,10 @@ print("Our friend the proton: ", proton)
 # Vertices that are double or triple connected use multiple dashes. 
 photon = NewGraph("1---2")
 
-# When a caret ('^') appears after a vertex, it means to replace a loop with an arrow.
+# When a caret ('^') appears after a vertex, it means a negative loop.
 positron = NewGraph("1^^^")
 
-# A Z0 boson has two vertices, each with a loop and an arrow.
+# A Z0 boson has two vertices, each with a positive and negative loop.
 # Also, for convenience, using "Graph()" is equivalent to "NewGraph()""
 z_boson = Graph("1^-2^")
 
@@ -61,13 +61,13 @@ proton.Stream().Print("Hello proton!").Go()
 
 # Some commands "fan out", meaning for each given graph, they output multiple graphs
 # Two of these are AllVtxSigns() and AllEdgeSigns()...
-# AllVtxSigns() emits all possible loops & arrows permutations for each input particle.
+# AllVtxSigns() emits all possible +/- loops permutations for each input particle.
 print('''
-For each particle that AllVtxSigns() takes in, it sends out all possible permutations of loops and arrows:''')
+For each particle that AllVtxSigns() takes in, it sends out all possible permutations of loop signs:''')
 electron.AllVtxSigns().Print("electron.AllVtxSigns").Go()
 
 print('''
-The more loops and arrows that are present, the more permutations that are possible:''')
+The more loops that are present, the more permutations that are possible:''')
 proton.AllVtxSigns().Print("proton.AllVtxSigns").Go()
 
 print('''
@@ -126,19 +126,19 @@ sel.max.verts = 2
 EnumPureParticles(1,3).Select(sel).Print().Go()
 
 print('''
-We can select by loops (or arrows):''')
+We can select by + or - loops:''')
 sel.Init()
-sel.min.loops = 2
-sel.max.loops = 3
+sel.min.pos_loops = 2
+sel.max.pos_loops = 3
 EnumPureParticles(1,3).Select(sel).Print().Go()
 
 print('''
-We can select by loops AND arrows:''')
+We can select by + or - loops:''')
 sel.Init()
-sel.min.loops = 2
-sel.max.loops = 3
-sel.min.arrows = 1
-sel.max.arrows = 100
+sel.min.pos_loops = 2
+sel.max.pos_loops = 3
+sel.min.neg_loops = 1
+sel.max.neg_loops = 100
 proton.AllVtxSigns().Select(sel).Print().Go()
 
 
