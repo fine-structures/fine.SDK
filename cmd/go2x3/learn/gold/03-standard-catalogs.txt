@@ -16,5 +16,5 @@
 ##  v= 5:         6066 graphs         470 traces         356 primes   ##
 ##  v= 6:        52384 graphs        1737 traces        1117 primes   ##
 ##  v= 7:       482206 graphs        8488 traces        6460 primes   ##
-##  v= 8:      4775538 graphs       38408 traces       27708 primes   ##
+##  v= 8:      4775530 graphs       38408 traces       27708 primes   ##
 ########################################################################
