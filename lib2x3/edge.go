@@ -4,6 +4,82 @@ import (
 	"sort"
 )
 
+// GroupEdge expresses edge embedding an inlet group number, edge sign, and if the edge is a loop.
+type GroupEdge byte
+
+func (e GroupEdge) EdgeTypeRune() byte {
+	if e.IsLoop() {
+		if e.IsNeg() {
+			return '*'
+		} else {
+			return 'o'
+		}
+	} else if from := e.GroupID(); from > 0 {
+		return '|'
+	}
+	return '?'
+}
+
+func (e GroupEdge) GroupRune() byte {
+	return e.GroupID().GroupRune()
+}
+
+func (e GroupEdge) FromGroupRune() byte {
+	if e.IsLoop() {
+		return ' '
+	}
+	return e.GroupID().GroupRune()
+}
+
+func (e GroupEdge) SignRune() byte {
+	if e.IsNeg() {
+		return '-'
+	}
+	return '+'
+}
+
+func (e GroupEdge) IsLoop() bool {
+	return int(e)&(1<<kLoopBitShift) != 0
+}
+
+// Returns 1 if loop, 0 if edge (non-loop).
+func (e GroupEdge) LoopBit() int {
+	return (int(e) >> kLoopBitShift) & 1
+}
+
+// Returns -1 or 1
+func (e GroupEdge) Sign() int {
+	return ((int(e) >> (kSignBitShift - 1)) & 0x2) - 1
+}
+
+func (e GroupEdge) IsNeg() bool {
+	return int(e)&(1<<kSignBitShift) != 0
+}
+
+func (e GroupEdge) GroupID() GroupID {
+	return GroupID(e) & kGroupID_Mask
+}
+
+func FormGroupEdge(i GroupID, isLoop, isNeg bool) GroupEdge {
+	e := GroupEdge(i)
+	if isLoop {
+		e |= 1 << kLoopBitShift
+	}
+	if isNeg {
+		e |= 1 << kSignBitShift
+	}
+	return e
+}
+
+const (
+	GroupID_nil GroupID = 0
+
+	kGroupID_Bits = 6
+	kGroupID_Mask = (1 << kGroupID_Bits) - 1
+	kLoopBitShift = 6 // When bit is set, edge is a loop
+	kSignBitShift = 7 // When bit is set, edge sign is negative
+)
+
 // EdgeID constains a two VtxIDs and an EdgeType
 // (Va << 9) | (Vb << 2) | (EdgeType), where Va < Vb
 type EdgeID uint16

@@ -411,7 +411,7 @@ func (X *Graph) WriteAsString(out io.Writer, opts PrintOpts) {
 	}
 
 	if opts.Tricodes {
-		X.xstate.PrintTriCodes(out)
+		X.xstate.PrintVtxGrouping(out)
 	}
 	if opts.CycleSpec {
 		X.xstate.PrintCycleSpectrum(out)
@@ -737,7 +737,7 @@ func (X *Graph) GraphTriID() GraphTriID {
 
 func (X *Graph) TriGraphExprStr() string {
 	X.Traces(0)
-	return X.GraphTriID().String()
+	return X.xstate.TriGraphExprStr()
 }
 
 // PermuteVtxSigns emits a Graph for every possible vertex pole permutation of the given Graph.

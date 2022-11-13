@@ -21,6 +21,7 @@ Explore or run any of the tutorial scripts:
 % ./go2x3 learn/04-neutron-decay.py
 % ./go2x3 learn/05-cycles-deep-dive.py
 % ./go2x3 learn/06-lepton-non-universality.py
+% ./go2x3 learn/07-factors-of-light.py
 ```
 
 Or skip the above and go directly to the [learn](https://github.com/2x3systems/go2x3/tree/main/cmd/go2x3/learn) scripts and their "[gold](https://github.com/2x3systems/go2x3/tree/main/cmd/go2x3/learn/gold)" output.
@@ -36,3 +37,5 @@ This project is a library & demonstration toolkit for [3x2 Particle Theory](http
 |:---------:|:-------------------------------------------------------------------------------------------------|
 | v1.2022.1 | - traces-based particle catalog index  <br/> - conventional (non-canonic) vertex-based graph encoding  <br/> - introducing early tricodes   |
 | v1.2022.2 | - refactor graph canonicalization  <br/> - refactor tricode console output |
+| v1.2022.3 | - tricode ascii art <br/> - revised graph tricode encoding |
+
