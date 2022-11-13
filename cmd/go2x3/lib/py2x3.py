@@ -17,22 +17,6 @@ print('''
 =================================================================
 ''' % (_py2x3.LIB2x3_VERSION))
 
-V_nil    = int(0)
-V_e      = int(1)
-V_e_bar  = int(2)
-V_π      = int(3)
-V_pi     = int(3)
-V_π_bar  = int(4)
-V_pi_bar = int(4)
-V_u      = int(5)
-V_u_bar  = int(6)
-V_q      = int(7)
-V_d      = int(8)
-V_d_bar  = int(9)
-V_𝛾      = int(10)
-V_y      = int(10)
-
-
 def EnumPureParticles(v_lo, v_hi):
     return _py2x3.EnumPureParticles(v_lo, v_hi)
 
