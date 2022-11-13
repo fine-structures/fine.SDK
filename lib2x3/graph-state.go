@@ -57,27 +57,13 @@ const (
 
 )
 
-type VtxEdgesType int8
-const (
-	TriLoop VtxEdgesType = 0 // (e, ~e, π, ~π), 0 edges (always v=1)
-	TwoLoop VtxEdgesType = 1 // "u" vertex; single edge
-	OneLoop VtxEdgesType = 2 // "d" vertex; single loop
-	NoLoops VtxEdgesType = 3 // "y" vertex, no loops, three edges
-)
-
-var VtxEdgesTypeDesc = []string{
-	"***",
-	"|**",
-	"||*",
-	"|||",
-}
 */
 
 // triVtx starts as a vertex in a conventional "2x3" vertex+edge and used to derive a canonical LSM-friendly encoding (i.e. TriID)
 // El Shaddai's Grace abounds.  Emmanuel, God with us!  Yashua has come and victory has been sealed!
 type triVtx struct {
 	GroupID              // which group this is
-	GroupSz byte         // Instances of this vtx type (signs and edges match exactly) ---- REMOVE??
+	VtxType              // which type of vertex this is
 	vtxID   byte         // Initial vertex ID (zero-based index)
 	edges   [3]groupEdge // Edges to other vertices
 }
@@ -157,50 +143,33 @@ func (v *triVtx) familyEdgesOrd() int {
 }
 */
 
-// The purpose of the "family" edge reduction is to produce and edge mapping that funnels edges resulting in the same cycles ID to a the same edge edge code.
-func (v *triVtx) familyEdgeOrd(ei int) uint8 {
-	e := &v.edges[ei]
-	cyclesID := e.GroupID()
-	ord := uint8(cyclesID)
-	if e.isLoop || cyclesID == v.GroupID {
-		ord = 73 // 37 * 73 == 2701 Emmanuel!
-		if e.isLoop && e.sign < 0 {
-			ord--
-		}
-	}
-	return ord
-}
-
 func (v *triVtx) sortEdgeOrd(ei int) int {
-	cyclesID := v.edges[ei].GroupID()
-	ord := int(cyclesID) << 1
-	switch {
-	case v.edges[ei].isLoop:
-		ord |= 0x200
-	case cyclesID == v.GroupID:
-		ord |= 0x100
-	}
-	if v.edges[ei].sign > 0 {
-		ord |= 0x1
-	}
-	return ord
-}
+	grID := v.edges[ei].GroupID()
+	ord := 0
 
-func (v *triVtx) printEdges(tri []byte) {
-	for ei, e := range v.edges {
-		c := byte('?')
-		if e.isLoop {
-			c = 'o'
-			if e.sign < 0 {
-				c = '*'
-			}
-		} else if e.GroupID() == v.GroupID {
-			c = '|'
-		} else {
-			c = e.GroupRune()
-		}
-		tri[ei] = c
+	// GroupID
+	ord = (ord << 8) | int(grID)
+
+	// loop bit
+	ord <<= 1
+	if v.edges[ei].isLoop {
+		ord |= 1
 	}
+
+	// group loop bit -- note that loops are also "group edges"
+	isGroupEdge := grID == v.GroupID
+	ord <<= 1
+	if isGroupEdge {
+		ord |= 1
+	}
+
+	// sign
+	ord <<= 1
+	if v.edges[ei].sign > 0 {
+		ord |= 1
+	}
+
+	return ord
 }
 
 type VtxTrait int
@@ -250,52 +219,6 @@ func (v *triVtx) appendTrait(io []byte, trait VtxTrait, ascii bool) []byte {
 		}
 	}
 	return io
-}
-
-// pre: v.edges[].cyclesID has been determined and set
-func (v *triVtx) canonizeVtx() {
-
-	// Canonically order edges by edge type then by edge sign & groupID
-	// Note that we ignore edge grouping, which means graphs with double edges will encode onto graphs having a non-double edge equivalent.
-	// For v=6, this turns out to be 4% less graph encodings (52384 vs 50664) and for v=8 about 2% less encodings (477k vs 467k).
-	// If we figure out we need these encodings back (so they count as valid state modes), we can just export the grouping info.
-	//
-	// A fundamental mystery is: what ARE these particle "sign modes" anyway??
-	// Are they perhaps vibration modes of a membrane (and so all are valid)?
-	// Or are Griggs-style graphs merely a stepping stone to understanding the underlying symbolic representation of God's particles that
-	//     are not bound to the ways a human-conceived graph framework can construct graphs that reduces to a particular particle representation.
-	sort.Slice(v.edges[:], func(i, j int) bool {
-		return v.sortEdgeOrd(i) < v.sortEdgeOrd(j)
-	})
-
-	/*
-		// At this point, the edges are canonic, so we can deterministically reorder any way we want.
-		// So let's be classy and symmetrical and ensure o|o or |o|, etc.
-		e0 := v.edges[0].LoopBit()
-		e1 := v.edges[1].LoopBit()
-		e2 := v.edges[2].LoopBit()
-		switch {
-		case (e1 == e2) && e0 != e1 && e0 != e2:
-			v.edges[0], v.edges[1] = v.edges[1], v.edges[0]
-		case (e0 == e1) && e2 != e1 && e2 != e0:
-			v.edges[1], v.edges[2] = v.edges[2], v.edges[1]
-		}
-	*/
-
-	/*
-		// With edge order now canonic, determine the grouping.
-		// Since we sort by edgeOrd, edges going to the same vertex are always consecutive and appear first
-		// This means we only need to check a small number of cases
-		if !v.edges[0].isLoop && v.edges[0].GroupID() == v.edges[1].GroupID() {
-			if v.edges[1].GroupID() == v.edges[2].GroupID() {
-				v.grouping = Grouping_111
-			} else {
-				v.grouping = Grouping_112
-			}
-		} else {
-			v.grouping = Grouping_Disjoint
-		}
-	*/
 }
 
 func (v *graphVtx) AddLoop(from int32, edgeSign int8) {
@@ -407,21 +330,28 @@ func (X *graphState) AssignGraph(Xsrc *Graph) error {
 		}
 	}
 
-	// Count edges to see if we have a valid graph
-	Ne := byte(0)
-
 	// Calculate and assign siblings for every edge
 	// This ensures we can sort (group) edges first by co-connectedness
 	for _, v := range Xv {
-		for _, ei := range v.edges {
-			if ei.sign != 0 {
+		negLoops := byte(0)
+		numEdges := byte(0)
+		Ne := byte(0)
+		for _, e := range v.edges {
+			if e.sign != 0 {
 				Ne++
+				if e.isLoop {
+					if e.sign < 0 {
+						negLoops++
+					}
+				} else {
+					numEdges++
+				}
 			}
 		}
-	}
-
-	if Ne != 3*Nv {
-		return ErrBadEdges
+		v.VtxType = GetVtxType(negLoops, numEdges)
+		if Ne != 3 || v.VtxType == V_nil {
+			return ErrBadEdges
+		}
 	}
 
 	return nil
@@ -443,19 +373,17 @@ func (X *graphState) sortVtxGroups() {
 		vi := Xg[i]
 		vj := Xg[j]
 
-		// Larger groups appear first
-		if d := int(vi.GroupSz) - int(vj.GroupSz); d != 0 {
-			return d > 0
-		}
+		// if d := vi.VtxType - vj.VtxType; d != 0 {
+		// 	return d < 0
+		// }
 
 		// Keep groups together
 		if d := int(vi.GroupID) - int(vj.GroupID); d != 0 {
 			return d < 0
 		}
 
-		// Sort by family edge only since we sort by sign below
 		for e := range vi.edges {
-			if d := int(vi.familyEdgeOrd(e)) - int(vj.familyEdgeOrd(e)); d != 0 {
+			if d := vi.sortEdgeOrd(e) - vj.sortEdgeOrd(e); d != 0 {
 				return d < 0
 			}
 		}
@@ -549,8 +477,10 @@ func (X *graphState) canonize() {
 	// Look for adjacent vtx that can be consolidated into an equivalent single cycle group
 	//  e.g.    1^-~2     => 1^-2^,
 	//          1^-~2-3=4 => 1^-2-3-4-2,1-4
+	// X=1-2=Y   => X-1-Y, X-2-Y,
 	{
 		// (1) Look for edge pairs on two adjacent vertices
+		// The conversion we're looking for is two vertices that, when combined,
 		{
 
 		}
@@ -583,15 +513,8 @@ func (X *graphState) canonize() {
 
 	// Now that vertices are sorted by cycle vector, assign each vertex the cycle group number now associated with its vertex index.
 	{
-		var groupSz [MaxVtxID]byte
-		// var vtx [MaxVtxID]struct{
-		// 	grpID GroupID
-		// 	vi    byte
-		// }
-
 		X.numGroups = 1
 		var v_prev *graphVtx
-		//newGroup := true
 		for _, v := range Xg {
 			if v_prev != nil {
 				for ci := int32(0); ci < Nv; ci++ {
@@ -601,66 +524,9 @@ func (X *graphState) canonize() {
 					}
 				}
 			}
-			// if X.numGroups == 0 || newGroup {
-			// 	X.numGroups++
-			// 	groups[X.numGroups].groupID = X.numGroups
-			// }
-			// vtx[vi].grpID = GroupID(X.numGroups)
-			// vtx[vi].vi = byte(vi)
 			v.GroupID = X.numGroups
 			v_prev = v
-			groupSz[v.GroupID]++
 		}
-
-		// Assign group rank from total count of each cycle group
-		for _, v := range Xg {
-			v.GroupSz = groupSz[v.GroupID]
-		}
-
-		// Resort by group rank
-		sort.Slice(Xg, func(i, j int) bool {
-			vi := Xg[i]
-			vj := Xg[j]
-
-			if d := int(vi.GroupSz) - int(vj.GroupSz); d != 0 {
-				return d > 0
-			}
-			if d := int(vi.GroupID) - int(vj.GroupID); d != 0 {
-				return d < 0
-			}
-			return false
-		})
-
-		// grID := GroupID(0)
-		// prevID :=
-		// for _, v := range Xg {
-		// 	if v.GroupID != grID {
-
-		// }
-
-		// Reassign GroupIDs now that we are sorted by group cardinality
-		//groupSz := 0
-		grID := GroupID(0)
-		for vi := 0; vi < len(Xg); {
-			grID++
-			grSz := int(Xg[vi].GroupSz)
-			for j := 0; j < grSz; j++ {
-				Xg[vi].GroupID = grID
-				vi++
-			}
-		}
-
-		// // With group cardinality known, remap group IDs based on size
-		// {
-		// 	sort.Slice(groups[:Nv], func(i, j int) bool {
-		// 		return groups[i].groupSz > groups[j].groupSz
-		// 	})
-		// 	for vi, v := range Xg {
-		// 		v.GroupID = groups[v.GroupID].groupID
-		// 	}
-		// }
-
-		//for
 
 	}
 
@@ -693,7 +559,21 @@ func (X *graphState) canonize() {
 		}
 
 		// With each edge srcGroup now assigned, we can order the edges canonically
-		v.canonizeVtx()
+		//
+		// Canonically order edges by edge type then by edge sign & groupID
+		// Note that we ignore edge grouping, which means graphs with double edges will encode onto graphs having a non-double edge equivalent.
+		// For v=6, this turns out to be 4% less graph encodings (52384 vs 50664) and for v=8 about 2% less encodings (477k vs 467k).
+		// If we figure out we need these encodings back (so they count as valid state modes), we can just export the grouping info.
+		//
+		// A fundamental mystery is: what ARE these particle "sign modes" anyway??
+		// Are they perhaps vibration modes of a membrane (and so all are valid)?
+		// Or are Griggs-style graphs merely a stepping stone to understanding the underlying symbolic representation of God's particles that
+		//     are not bound to the ways a human-conceived graph framework can construct graphs that reduces to a particular particle representation.
+		sort.Slice(v.edges[:], func(i, j int) bool {
+			d := v.sortEdgeOrd(i) - v.sortEdgeOrd(j)
+			return d < 0
+		})
+
 	}
 
 	X.sortVtxGroups()
