@@ -83,8 +83,8 @@ var DefaultGraphSelector = GraphSelector{
 		NumVerts:     MaxVtxID,
 		NegEdges:     MaxEdges,
 		PosEdges:     MaxEdges,
-		Loops:        3 * MaxVtxID,
-		Arrows:       3 * MaxVtxID,
+		PosLoops:     3 * MaxVtxID,
+		NegLoops:     3 * MaxVtxID,
 	},
 }
 
@@ -103,10 +103,10 @@ type GraphSelector struct {
 // AllowGraph is a convenience function used to see if a Graph is selected according to a GraphSelector.
 func (sel *GraphSelector) AllowGraph(X *Graph) bool {
 	info := X.GetInfo()
-	if info.NumParticles < sel.Min.NumParticles || info.NumVerts < sel.Min.NumVerts || info.Loops < sel.Min.Loops || info.Arrows < sel.Min.Arrows || info.PosEdges < sel.Min.PosEdges || info.NegEdges < sel.Min.NegEdges {
+	if info.NumParticles < sel.Min.NumParticles || info.NumVerts < sel.Min.NumVerts || info.PosLoops < sel.Min.PosLoops || info.NegLoops < sel.Min.NegLoops || info.PosEdges < sel.Min.PosEdges || info.NegEdges < sel.Min.NegEdges {
 		return false
 	}
-	if info.NumParticles > sel.Max.NumParticles || info.NumVerts > sel.Max.NumVerts || info.Loops > sel.Max.Loops || info.Arrows > sel.Max.Arrows || info.PosEdges > sel.Max.PosEdges || info.NegEdges > sel.Max.NegEdges {
+	if info.NumParticles > sel.Max.NumParticles || info.NumVerts > sel.Max.NumVerts || info.PosLoops > sel.Max.PosLoops || info.NegLoops > sel.Max.NegLoops || info.PosEdges > sel.Max.PosEdges || info.NegEdges > sel.Max.NegEdges {
 		return false
 	}
 	return true

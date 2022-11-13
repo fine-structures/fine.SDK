@@ -227,10 +227,10 @@ func (X *graphState) AssignGraph(Xsrc *Graph) error {
 	// First, add edges that connect to the same vertex (loops and arrows)
 	for i, vi := range Xv {
 		vtype := Xsrc.vtx[i]
-		for j := vtype.NumLoops(); j > 0; j-- {
+		for j := vtype.PosLoops(); j > 0; j-- {
 			vi.AddLoop(int32(i), +1)
 		}
-		for j := vtype.NumArrows(); j > 0; j-- {
+		for j := vtype.NegLoops(); j > 0; j-- {
 			vi.AddLoop(int32(i), -1)
 		}
 	}
@@ -656,7 +656,7 @@ func (X *graphState) PrintTriCodes(out io.Writer) {
 
 	// Vertex type str
 	for line := 0; line < 4; line++ {
-		fmt.Fprintf(out, "\n   %s          ", labels[line])
+		fmt.Fprintf(out, "   %s          ", labels[line])
 
 		for vi := 0; vi < len(Xg); {
 
@@ -729,6 +729,7 @@ func (X *graphState) PrintTriCodes(out io.Writer) {
 			out.Write(col_)
 			vi += groupCols
 		}
+		out.Write([]byte("\n"))
 	}
 
 }
@@ -740,10 +741,11 @@ func (X *graphState) PrintCycleSpectrum(out io.Writer) {
 	Xg := X.VtxGroups()
 
 	for ci := int32(0); ci < Nv; ci++ {
-		fmt.Fprintf(out, "\n   T%d:%-7d", ci+1, X.traces[ci])
+		fmt.Fprintf(out, "   T%d:%-7d", ci+1, X.traces[ci])
 		for _, vi := range Xg {
 			fmt.Fprintf(out, "%8d", vi.cycles[ci])
 		}
+		out.Write([]byte{'\n'})
 	}
 }
 

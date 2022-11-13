@@ -3,33 +3,19 @@ import _py2x3
 # Global variables
 MAX_VTX = _py2x3.MAX_VTX
 
-
+'''
+|    WHERE WERE YOU WHEN I LAID THE FOUNDATION OF THE EARTH?    |
+|               TELL ME, IF YOU HAVE UNDERSTANDING.             |
+|               TELL ME, IF YOU KNOW ALL THIS.                  |
+'''
 print('''
 =================================================================
 |                       go2x3 (%s)                       |
 |                      https://2x3.systems                      |
 |                                                               |
-|    WHERE WERE YOU WHEN I LAID THE FOUNDATION OF THE EARTH?    |
-|               TELL ME, IF YOU HAVE UNDERSTANDING.             |
-|               TELL ME, IF YOU KNOW ALL THIS.                  |
+|       "OH LET ME BEHOLD YOUR PRESENCE”  EXODUS 33:2x3x3       |
 =================================================================
 ''' % (_py2x3.LIB2x3_VERSION))
-
-V_nil    = int(0)
-V_e      = int(1)
-V_e_bar  = int(2)
-V_π      = int(3)
-V_pi     = int(3)
-V_π_bar  = int(4)
-V_pi_bar = int(4)
-V_u      = int(5)
-V_u_bar  = int(6)
-V_q      = int(7)
-V_d      = int(8)
-V_d_bar  = int(9)
-V_𝛾      = int(10)
-V_y      = int(10)
-
 
 def EnumPureParticles(v_lo, v_hi):
     return _py2x3.EnumPureParticles(v_lo, v_hi)
@@ -109,16 +95,6 @@ class Graph:
         sel.traces = self
         sel.factor = True
         return prime_catalog.Select(sel)
-        
-    '''
-    Emits all canonically unique particle combinations for this Graph (having equal Traces).
-    '''
-    # def DecayModes(self, prime_catalog = None):
-    #     if prime_catalog == None:
-    #         prime_catalog = GetPrimeCatalog(self.NumVerts())
-                    
-    #     cat.Close()
-    #     pass
 
     def AllVtxSigns(self):
         return self._graph.Stream().AllVtxSigns()
@@ -138,8 +114,8 @@ class GraphInfo:
         self.verts = 0
         self.pos_edges = 0
         self.neg_edges = 0
-        self.loops = 0
-        self.arrows = 0
+        self.pos_loops = 0
+        self.neg_loops = 0
 
 
 def NewSelector(*parts):
@@ -169,15 +145,15 @@ class GraphSelector:
         self.min.verts = 1
         self.min.pos_edges = 0
         self.min.neg_edges = 0
-        self.min.loops  = 0
-        self.min.arrows = 0
+        self.min.pos_loops = 0
+        self.min.neg_loops = 0
 
         self.max.parts = MAX_VTX
         self.max.verts = MAX_VTX
         self.max.pos_edges = int(MAX_VTX*3/2)
         self.max.neg_edges = int(MAX_VTX*3/2)
-        self.max.loops  = MAX_VTX*3
-        self.max.arrows = MAX_VTX*3
+        self.max.pos_loops = MAX_VTX*3
+        self.max.neg_loops = MAX_VTX*3
         
     def SetTraces(self, X):
         self.traces = X.Traces()
