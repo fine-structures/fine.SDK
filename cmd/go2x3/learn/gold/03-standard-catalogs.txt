@@ -7,7 +7,7 @@
 =================================================================
 
 ########################################################################
-##        On-Demand Prime Particle Catalog Generation to v=6          ##
+##        On-Demand Prime Particle Catalog Generation to v=8          ##
 ##____________________________________________________________________##
 ##  v= 1:            4 graphs           4 traces           4 primes   ##
 ##  v= 2:           25 graphs          11 traces           3 primes   ##
@@ -15,4 +15,6 @@
 ##  v= 4:          823 graphs         103 traces          42 primes   ##
 ##  v= 5:         6066 graphs         470 traces         356 primes   ##
 ##  v= 6:        52384 graphs        1737 traces        1117 primes   ##
+##  v= 7:       482206 graphs        8488 traces        6460 primes   ##
+##  v= 8:      4775530 graphs       38408 traces       27708 primes   ##
 ########################################################################
