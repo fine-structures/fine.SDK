@@ -17,43 +17,53 @@ def diffTraces(Nv, a, b):
         Tsum[i] = Ta[i] - Tb[i]
     return Tsum
     
+
+
+n0     = Graph("1-2-3-1-4")
+proton = Graph("1-2-3")
+qdq    = Graph("1^-2-3^")
+W      = Graph("1^^") # W- (charged weak)
+e      = Graph("1")
+gamma  = Graph("1---2")
+anti_v = Graph("1^^-2^^")
+
 print('''
 ---------------------------------------------------------
 Beta Decay:
 
-Our friend the neutron:''')
-n0 = Graph("1-2-3-1-4")
-print("n0  ", n0)
+The actors:''')
+n0.Print("neutron",     codes=True, traces=5).Go()
+proton.Print("proton",  codes=True, traces=5).Go()
+W.Print("W-",           codes=True, traces=5).Go()
+gamma.Print("gamma",    codes=True, traces=5).Go()
+e.Print("e",            codes=True, traces=5).Go()
+anti_v.Print("~ve",     codes=True, traces=5).Go()
 
 print('''
 Commonly known n0 beta decay products (note equal n0 Traces):''')
 
-proton = Graph("1-2-3")
-qdq    = Graph("1^-2-3^")
-pion   = Graph("1^^")
-elec   = Graph("1")
-gamma  = Graph("1---2")
 
-pion_proton = Graph(pion, proton)
-print("~π +  p:  ", pion_proton)
 
-e_qdq = Graph(elec, qdq)
-print(" e + qdq: ", e_qdq)
+W_proton = Graph(W, proton)
+print("W- +  p:  ", W_proton)
+
+e_qdq = Graph(e, qdq)
+print("e- + qdq: ", e_qdq)
 
 print('''
 Let's verify that the Traces all add up as expected:''')
 
-print("sum(~π + p):   ", sumTraces(4, pion, proton))
-print("sum( e + qdq): ", sumTraces(4, elec, qdq))
+print("sum(W- + p):  ", sumTraces(4, W, proton))
+print("sum(e + qdq): ", sumTraces(4, e, qdq))
 
 
 print('''
 So, does a neutron only have 2 decay modes??
-We can use PrimeModes() to analyze a given Traces set and performs a "particle prime" factorization, 
-yielding ALL possible sets of primes that produce the given "target" Traces:''')
+We can use PrimeModes() to analyze a given Traces set and performs a particle "prime" factorization, 
+yielding all possible sets of primes that produce the Traces in question:''')
 n0.PrimeModes().Print("n0 prime mode").Go()
 
-print('''...sure enough, there are only 2 decay modes!''')
+print('''...so yes, there are only 2 decay modes.''')
 
 print('''
 What if a photon interacts with a neutron??''')
@@ -61,27 +71,26 @@ n0_gamma = Graph(n0, "1---2")
 print("n0 + γ :", n0_gamma)
 
 print('''
-Let's use PrimeModes() to see what this v=6 system now factors into!
-We know we should see at least the above 2 (with an additional e ~e pair from the gamma)...''')
+Let's use PrimeModes() to see what this v=6 system now factors into.
+We should see *at least* the above 2 (with an additional e ~e pair from the gamma)...''')
 n0_gamma.PrimeModes().Print("n0 + γ prime mode").Go()
 
 print('''
 Behold, there is a THIRD prime factorization!
 It turns out this particle prime is of the few v=3 primes that only has forms with one or more negative edges.
 We can verify this by adding all the Traces up in any order...''')
-e_e_pion_ydy1 = Graph(elec, elec, pion, "1^-2=3~1")
-print("e + e + ~π + y~dy: ", e_e_pion_ydy1)
-e_e_pion_ydy2 = Graph("1^-2=3~1", elec, pion, elec)
-print("y~dy + e + ~π + e: ", e_e_pion_ydy2)
-e_e_pion_ydy3 = Graph(pion, elec, "1^-2=3~1", elec)
-print("~π + e + y~dy + e: ", e_e_pion_ydy3)
+e_e_W_ydy1 = Graph(e, e, W, "1^-2=3~1")
+print("e + e + W- + y~dy: ", e_e_W_ydy1)
+e_e_W_ydy2 = Graph("1^-2=3~1", e, W, e)
+print("y~dy + e + W- + e: ", e_e_W_ydy2)
+e_e_W_ydy3 = Graph(W, e, "1^-2=3~1", e)
+print("W- + e + y~dy + e: ", e_e_W_ydy3)
 
 print('''
-Note how ~π and e together form the antineutreno, implying that a gamma is required for conventionally understood neutron decay to occur:''')
-antineutreno = Graph("1^^-2^^")
-antineutreno.Print("~ve ", traces=10).Go()
-Graph("1^^; 1^^^").Print("~π+e", traces=10).Go()
-#antineutreno.PrimeModes().Print("~ve PRIMES", None, 10).Go() # This can be used instead to demonstrate that a ~ve is composed of ~π+e
+Note how W- + e- => anti-neutrino, implying that a gamma is consumed during neutron decay:''')
+anti_v.Print("~ve ", traces=8).Go()
+Graph("1^^; 1^^^").Print("W- + e", traces=8).Go()
+#antineutreno.PrimeModes().Print("~ve PRIMES", None, 10).Go() # This can be used instead to demonstrate that a ~ve is composed of W- + e
 
 
 print('''
@@ -101,5 +110,5 @@ Number of phase modes for each possible n0+γ product:
     proton: %d
     
 And since other particles in the products are v=1, they only have one possible mode, meaning
-the above values precisely predict the ratios of the 3 possible n0+γ products.  Not too shabby!
+the above values predict the ratios of the 3 possible n0+γ products.
 ''' % (N_ydy, N_qdq, N_p))
