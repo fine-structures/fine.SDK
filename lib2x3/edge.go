@@ -15,13 +15,13 @@ const (
 	NilEdge       EdgeType = 0
 	PosEdge       EdgeType = (1 << 2)
 	NegEdge       EdgeType = (1 << 2) | 1
-	// PosPosEdge    EdgeType = (2 << 2)
-	// PosNegEdge    EdgeType = (2 << 2) | 1
-	// NegNegEdge    EdgeType = (2 << 2) | 2
-	// PosPosPosEdge EdgeType = (3 << 2)
-	// PosPosNegEdge EdgeType = (3 << 2) | 1
-	// PosNegNegEdge EdgeType = (3 << 2) | 2
-	// NegNegNegEdge EdgeType = (3 << 2) | 3
+	PosPosEdge    EdgeType = (2 << 2)
+	PosNegEdge    EdgeType = (2 << 2) | 1
+	NegNegEdge    EdgeType = (2 << 2) | 2
+	PosPosPosEdge EdgeType = (3 << 2)
+	PosPosNegEdge EdgeType = (3 << 2) | 1
+	PosNegNegEdge EdgeType = (3 << 2) | 2
+	NegNegNegEdge EdgeType = (3 << 2) | 3
 
 	EdgeTypeToEdgeIDShift byte   = 12
 	EdgeTypeMask          EdgeID = 0xF000 // high 4 bits

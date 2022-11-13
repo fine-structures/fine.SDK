@@ -21,7 +21,7 @@ type GraphStream struct {
 }
 
 func EnumPureParticles(v_min, v_max int, method string) *GraphStream {
-	gw, err := NewGraphWalker(CompoundSeedVtxTypes)
+	gw, err := NewGraphWalker()
 	if err != nil {
 		log.Fatal(err)
 	}

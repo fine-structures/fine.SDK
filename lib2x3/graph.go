@@ -36,16 +36,6 @@ var (
 	ErrGraphSitesExceeded = errors.New("number of loops and edges exceeds 3")
 )
 
-var CompoundSeedVtxTypes = []VtxType{
-	V_u, V_d, V_𝛾,
-}
-var SeedVtxTypes = []VtxType{
-	V_d, V_𝛾,
-}
-var SeedBasisVtxTypes = []VtxType{
-	V_𝛾,
-}
-
 // VtxList is an ordered sequence of VtxTypes
 type VtxList []VtxType
 
@@ -201,7 +191,7 @@ func (X *Graph) NumParticles() byte {
 	}
 
 	// We find number of total partitions.  Start by assuming each vertex its own partition.
-	// Each time we connect two vertices with an edge, propigate their connectedness.
+	// Each time we connect two vertices with an edge, propagate their connectedness.
 	var vtxBuf [MaxVtxID]VtxID
 	Nv := VtxID(X.vtxCount)
 	vtx := vtxBuf[:Nv]
@@ -628,7 +618,7 @@ func (X *Graph) initFromEncoding(Xe GraphEncoding) error {
 	// read VtxTypes
 	for i := int32(0); i < X.vtxCount; i++ {
 		v := VtxType(Xe[idx])
-		if v < V_e || v > V_𝛾 {
+		if v <= 0 || v > V_𝛾 {
 			return ErrGraphBadEncoding
 		}
 		X.vtx[i] = v
@@ -899,19 +889,14 @@ type GraphWalker struct {
 	emitted        TracesSet
 }
 
-func NewGraphWalker(vtxTypes []VtxType) (*GraphWalker, error) {
+func NewGraphWalker() (*GraphWalker, error) {
 
 	gw := &GraphWalker{
 		EnumStream: &GraphStream{
 			Outlet: make(chan *Graph, 1),
 		},
-		emitted: NewTracesSet(),
-	}
-
-	if len(vtxTypes) == 0 {
-		gw.vtxChoices = []VtxType{V_u, V_d, V_𝛾}
-	} else {
-		gw.vtxChoices = vtxTypes
+		emitted:    NewTracesSet(),
+		vtxChoices: []VtxType{V_u, V_d, V_𝛾},
 	}
 
 	return gw, nil
