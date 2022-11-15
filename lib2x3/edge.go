@@ -10,22 +10,22 @@ type GroupEdge byte
 type EdgeTypeOrd byte
 
 const (
-	NonGroupEdge_Neg EdgeTypeOrd = 0
-	NonGroupEdge_Pos EdgeTypeOrd = 1
-	GroupEdge_Neg    EdgeTypeOrd = 2
-	GroupEdge_Pos    EdgeTypeOrd = 3
-	LocalEdge_Neg    EdgeTypeOrd = 4
-	LocalEdge_Pos    EdgeTypeOrd = 5
-	NumEdgeTypes                 = 6
+	BasicEdge_Pos EdgeTypeOrd = 0
+	BasicEdge_Neg EdgeTypeOrd = 1
+	GroupEdge_Pos EdgeTypeOrd = 2
+	GroupEdge_Neg EdgeTypeOrd = 3
+	LocalLoop_Pos EdgeTypeOrd = 4
+	LocalLoop_Neg EdgeTypeOrd = 5
+	NumEdgeTypes              = 6
 )
 
 func (e GroupEdge) EdgeTypeOrd() EdgeTypeOrd {
 	ord := EdgeTypeOrd(0)
 
 	if e&kVtxLoopBit != 0 {
-		ord += LocalEdge_Neg
+		ord += LocalLoop_Pos
 	} else if e&kGroupLoopBit != 0 {
-		ord += GroupEdge_Neg
+		ord += GroupEdge_Pos
 	}
 	if e&kEdgeSignBit != 0 {
 		ord += 1
