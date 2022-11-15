@@ -37,5 +37,5 @@ This project is a library & demonstration toolkit for [3x2 Particle Theory](http
 |:---------:|:-------------------------------------------------------------------------------------------------|
 | v1.2022.1 | - traces-based particle catalog index  <br/> - conventional (non-canonic) vertex-based graph encoding  <br/> - introducing early tricodes   |
 | v1.2022.2 | - refactor graph canonicalization  <br/> - refactor tricode console output |
-| v1.2022.3 | - tricode ascii art <br/> - revised graph tricode encoding |
+| v1.2022.3 | - tricode ascii art <br/> - refactor tricode encoding |
 
