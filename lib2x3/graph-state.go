@@ -603,9 +603,9 @@ func (tg *tracesGroupComponent) tracesCoeffs() (loopNet, groupNet, edgeAbs int8)
 	}
 	
 	edgeAbs = tg.count[BasicEdge_Pos] - tg.count[BasicEdge_Neg]
-	// if edgeAbs < 0 {
-	// 	edgeAbs = -edgeAbs
-	// }
+	if edgeAbs < 0 {
+		edgeAbs = -edgeAbs
+	}
 	
 	return
 }
@@ -646,7 +646,7 @@ func (X *graphState) appendGraphEncoding(io []byte, opts GraphEncodingOpts) []by
 		}
 	}
 		
-	if opts&EncodeProperties != 0 {
+	if (opts & EncodeProperties) != 0 {
 		for gi, g := range Tg {
 			loopNet, groupNet, edgeAbs := g.tracesCoeffs()
 			if ascii {
@@ -676,7 +676,7 @@ func (X *graphState) appendGraphEncoding(io []byte, opts GraphEncodingOpts) []by
 		// )
 	}
 
-	if opts&EncodeState != 0 {
+	if (opts & EncodeState) != 0 {
 		// traits = append(traits,
 		// 	VtxTrait_EdgesType,
 		// 	VtxTrait_EdgesSign,
