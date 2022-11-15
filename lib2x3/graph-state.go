@@ -551,32 +551,6 @@ LSM:  (families ranked by family cardinality)
   maybe subsequently split runs by group *and* edge type ("group family")
 
 
-   e-
-   +A+A+A1 ooo1 +++1
-
-   ~e+
-   -A-A-A1 ***1 ---1
-
-
-
-   higgs
-   +A+A+A8 |||8 +++8
-   +A+A+A8 |||8 ---8
-   +A+A+A8 |||8 ---4 --+3 +++1
-
-
-   photon
-   +A+A+A1 |||2 +++2
-   +A+A+A1 |||2 ---2
-
-   tetra
-   +A+A+A4 |||4 +++4
-
-   sign RLE:
-   count + sign ord
-    5 bits   3 bits
-
-
 
 */
 
@@ -630,10 +604,63 @@ func (X *graphState) appendGraphEncoding(io []byte, opts GraphEncodingOpts) []by
 	traits := make([]VtxTrait, 0, 4)
 
 	if opts&EncodeProperties != 0 {
-		traits = append(traits,
-			VtxTrait_EdgesFrom,
-			VtxTrait_EdgesSign,
-		)
+
+		type tracesGroupComponent struct {
+			count [NumEdgeTypes]byte
+		}
+	
+		// Tally all components (all edge classes and signs; 3 types, 2 signs => 6 total)
+		Tg := make([]tracesGroupComponent, X.numGroups)
+		for _, v := range Xv {
+			for _, e := range v.edges { 
+				compType := e.EdgeTypeOrd()
+				if e.GroupID() == 0 {
+					panic("unassigned edge group")
+				}
+				Tg[e.GroupID()-1].count[compType]++
+			}
+		}
+		
+		for gi, g := range Tg {
+			if ascii {
+				io = append(io, '(')
+				if c := g.count[LocalLoop_Pos]; c > 0 {
+					io = append(io, '0' + c)
+				}
+				if c := g.count[LocalLoop_Neg]; c > 0 {
+					io = append(io, '-', '0' + c)
+				}
+				io = append(io, ',')
+				
+				if c := g.count[GroupEdge_Pos]; c > 0 {
+					io = append(io, '0' + c)
+				}
+				if c := g.count[GroupEdge_Neg]; c > 0 {
+					io = append(io, '-', '0' + c)
+				}
+
+				io = append(io, ',')
+
+				if c := g.count[BasicEdge_Pos]; c > 0 {
+					io = append(io, '0' + c)
+				}
+				if c := g.count[BasicEdge_Neg]; c > 0 {
+					io = append(io, '-', '0' + c)
+				}
+				
+				io = append(io, ')', 'A' + byte(gi), ' ')
+			} else {
+				io = append(io,
+					g.count[LocalLoop_Neg],
+					g.count[LocalLoop_Pos],
+					g.count[GroupEdge_Neg] + g.count[GroupEdge_Pos] + 
+					g.count[BasicEdge_Neg] + g.count[BasicEdge_Pos])
+			}
+		}
+		// traits = append(traits,
+		// 	VtxTrait_EdgesFrom,
+		// 	VtxTrait_EdgesSign,
+		// )
 	}
 
 	if opts&EncodeState != 0 {
