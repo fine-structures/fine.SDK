@@ -70,7 +70,7 @@ type triVtx struct {
 
 type groupEdge struct {
 	GroupEdge      // Baked sign, edge type, and source group ID (known after canonicalization via cycle spectrum sort)
-	srcVtx    byte // initial source vertex index
+	srcVtx    byte // initial source vertex index (zero-based)
 	isLoop    bool // true if this edge is a loop
 	sign      int8 // +1 or -1
 }
@@ -323,7 +323,7 @@ func (X *graphState) sortVtxGroups() {
 }
 
 // For the currently assigned Graph, this calculates its cycles and traces up to a given level.
-func (X *graphState) calcUpTo(numTraces int32) {
+func (X *graphState) calcCyclesUpTo(numTraces int32) {
 	Nv := X.vtxCount
 
 	if numTraces < Nv {
@@ -349,7 +349,6 @@ func (X *graphState) calcUpTo(numTraces int32) {
 
 	// This loop effectively calculates each successive graph matrix power.
 	for ; X.curCi < numTraces; X.curCi++ {
-
 		ci := X.curCi
 		odd := (ci & 1) != 0
 		traces_ci := int64(0)
@@ -392,37 +391,37 @@ func (X *graphState) canonize() {
 		return
 	}
 
-	Nv := X.vtxCount
-	X.calcUpTo(Nv)
-
-	Xg := X.Vtx()
-
-	// Two major sub steps:
-	//    I)  Edge normalization: turn pos+neg loop pairs into group edges wherever possible
-	//    II) Vertex-pair normalization: for every edge, normalize to factor complimentary group IDs from
-	// Look for adjacent vtx that can be consolidated into an equivalent single cycle group
-	//  e.g.    1^-~2     => 1^-2^,
-	//          1^-~2-3=4 => 1^-2-3-4-2,1-4
-	// X=1-2=Y   => X-1-Y, X-2-Y,
 	{
-		// (1) Look for edge pairs on two adjacent vertices
-		// The conversion we're looking for is two vertices that, when combined,
-		{
+		Nv := X.vtxCount
+		X.calcCyclesUpTo(Nv)
 
+		Xv := X.Vtx()
+
+		// Two major sub steps:
+		//    I)  Edge normalization: turn pos+neg loop pairs into group edges wherever possible
+		//    II) Vertex-pair normalization: for every edge, normalize to factor complimentary group IDs from
+		// Look for adjacent vtx that can be consolidated into an equivalent single cycle group
+		//  e.g.    1^-~2     => 1^-2^,
+		//          1^-~2-3=4 => 1^-2-3-4-2,1-4
+		// X=1-2=Y   => X-1-Y, X-2-Y,
+		{
+			// (1) Look for edge pairs on two adjacent vertices
+			// The conversion we're looking for is two vertices that, when combined,
+			{
+
+			}
+
+			// (2) If remaining edge points to the other vtx, then these two vtx are the same cycle group since B+XX + A+YY <=> 2(A'XY)
+			// This means the shared edge becomes a double edge in the new cycle group of these 2 vtx.
+			{
+
+			}
 		}
 
-		// (2) If remaining edge points to the other vtx, then these two vtx are the same cycle group since B+XX + A+YY <=> 2(A'XY)
-		// This means the shared edge becomes a double edge in the new cycle group of these 2 vtx.
-		{
-
-		}
-	}
-
-	// Sort vertices by vertex's innate characteristics & cycle signature
-	{
-		sort.Slice(Xg, func(i, j int) bool {
-			vi := Xg[i]
-			vj := Xg[j]
+		// Sort vertices by vertex's innate characteristics & cycle signature
+		sort.Slice(Xv, func(i, j int) bool {
+			vi := Xv[i]
+			vj := Xv[j]
 
 			// Sort by cycle count first and foremost
 			// The cycle count vector (an integer sequence of size Nv) is what characterizes a vertex.
@@ -432,16 +431,13 @@ func (X *graphState) canonize() {
 					return d < 0
 				}
 			}
-
 			return false
 		})
-	}
 
-	// Now that vertices are sorted by cycle vector, assign each vertex the cycle group number now associated with its vertex index.
-	{
+		// Now that vertices are sorted by cycle vector, assign each vertex the cycle group number now associated with its vertex index.
 		X.numGroups = 1
 		var v_prev *graphVtx
-		for _, v := range Xg {
+		for _, v := range Xv {
 			if v_prev != nil {
 				for ci := int32(0); ci < Nv; ci++ {
 					if v.cycles[ci] != v_prev.cycles[ci] {
@@ -454,84 +450,34 @@ func (X *graphState) canonize() {
 			v_prev = v
 		}
 
-	}
+		XvByID := X.VtxByID()
 
-	Xv := X.VtxByID()
+		// With cycle group numbers assigned to each vertex, assign srcGroup to all edges and then finally order edges on each vertex canonically.
+		for _, v := range Xv {
+			for ei, e := range v.edges {
+				src_vi := XvByID[e.srcVtx]
+				v.edges[ei].GroupEdge = FormGroupEdge(src_vi.GroupID, src_vi.GroupID == v.GroupID, e.isLoop, e.sign < 0)
+			}
 
-	// With cycle group numbers assigned to each vertex, assign srcGroup to all edges and then finally order edges on each vertex canonically.
-	for _, v := range Xg {
-		for ei, e := range v.edges {
-			src_vi := Xv[e.srcVtx]
-			v.edges[ei].GroupEdge = FormGroupEdge(src_vi.GroupID, src_vi.GroupID == v.GroupID, e.isLoop, e.sign < 0)
+			// With each edge srcGroup now assigned, we can order the edges canonically
+			//
+			// Canonically order edges by edge type then by edge sign & groupID
+			// Note that we ignore edge grouping, which means graphs with double edges will encode onto graphs having a non-double edge equivalent.
+			// For v=6, this turns out to be 4% less graph encodings (52384 vs 50664) and for v=8 about 2% less encodings (477k vs 467k).
+			// If we figure out we need these encodings back (so they count as valid state modes), we can just export the grouping info.
+			//
+			// A fundamental mystery is: what ARE these particle "sign modes" anyway??
+			// Are they perhaps vibration modes of a membrane (and so all are valid)?
+			// Or are Griggs-style graphs merely a stepping stone to understanding the underlying symbolic representation of God's particles that
+			//     are not bound to the ways a human-conceived graph framework can construct graphs that reduces to a particular particle representation.
+			sort.Slice(v.edges[:], func(i, j int) bool {
+				d := v.edges[i].Ord() - v.edges[j].Ord()
+				return d < 0
+			})
 		}
 
-		// With each edge srcGroup now assigned, we can order the edges canonically
-		//
-		// Canonically order edges by edge type then by edge sign & groupID
-		// Note that we ignore edge grouping, which means graphs with double edges will encode onto graphs having a non-double edge equivalent.
-		// For v=6, this turns out to be 4% less graph encodings (52384 vs 50664) and for v=8 about 2% less encodings (477k vs 467k).
-		// If we figure out we need these encodings back (so they count as valid state modes), we can just export the grouping info.
-		//
-		// A fundamental mystery is: what ARE these particle "sign modes" anyway??
-		// Are they perhaps vibration modes of a membrane (and so all are valid)?
-		// Or are Griggs-style graphs merely a stepping stone to understanding the underlying symbolic representation of God's particles that
-		//     are not bound to the ways a human-conceived graph framework can construct graphs that reduces to a particular particle representation.
-		sort.Slice(v.edges[:], func(i, j int) bool {
-			d := v.edges[i].Ord() - v.edges[j].Ord()
-			return d < 0
-		})
-
+		X.sortVtxGroups()
 	}
-
-	X.sortVtxGroups()
-
-	// // reassign vertex IDs now that we're canonic
-	// for vi, v := range Xg {
-	// 	v.vtxID = byte(vi+1)
-	// 	X.
-	// }
-
-	// {
-	// 	// At this point, vertices are sorted via tricode (using group numbering via canonic ranking of cycle vectors)
-	// 	// Here we collapse consecutive vertices with the same tricode into a "super" group
-	// 	// As we collapse tricodes, we must reassign new groupIDs
-	// 	X.TriGraph.Clear(len(Xg))
-	// 	for i, vi := range Xg {
-	// 		X.TriGraph.Groups[i] = vi.ExportTriGroup()
-	// 	}
-	// 	X.TriGraph.Consolidate()
-	// }
-
-	// Last but not least, we do an RLE-style compression of the now-canonic vertex series.
-	// Note that doing so invalidates edge.srvVtx values, so lets zero them out for safety.
-	// Work right to left
-	/*
-		{
-			L := byte(0)
-			for R := int32(1); R < Nv; R++ {
-				XgL := Xg[L]
-				XgR := Xg[R]
-				identical := false
-				if XgL.CyclesID == XgR.CyclesID && XgL.familyEdgesOrd() == XgR.familyEdgesOrd() {
-					identical = true
-					for ei := range XgL.edges {
-						if XgL.edges[ei].srcGroup != XgR.edges[ei].srcGroup || XgL.edges[ei].sign != XgR.edges[ei].sign {
-							identical = false
-							break
-						}
-					}
-				}
-
-				// If exact match, absorb R into L, otherwise advance L (old R becomes new L)
-				if identical {
-					XgL.count += XgR.count
-				} else {
-					L++
-					Xg[L], Xg[R] = Xg[R], Xg[L]
-				}
-			}
-			X.numVtxGroups = L + 1
-		}*/
 
 	X.status = canonized
 }
@@ -907,6 +853,6 @@ func (X *graphState) Traces(numTraces int) Traces {
 		numTraces = int(X.vtxCount)
 	}
 
-	X.calcUpTo(int32(numTraces))
+	X.calcCyclesUpTo(int32(numTraces))
 	return X.traces[:numTraces]
 }

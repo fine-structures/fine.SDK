@@ -15,7 +15,7 @@ print('''
 |                                                               |
 |       "OH LET ME BEHOLD YOUR PRESENCE”  EXODUS 33:2x3x3       |
 =================================================================
-''' % (_py2x3.LIB2x3_VERSION))
+''' % (_py2x3.LIB2X3_VERSION))
 
 def EnumPureParticles(v_lo, v_hi):
     return _py2x3.EnumPureParticles(v_lo, v_hi)
