@@ -104,7 +104,7 @@ const (
 
 	kGroupID_Bits  = 5
 	kGroupID_Shift = 8 - kGroupID_Bits
-	kGroupID_Mask  = (1 << kGroupID_Shift) - 1
+	kGroupID_Mask  = (1 << kGroupID_Bits) - 1
 	kGroupLoopBit  = 1 << 2 // When bit is set, edge connect to vertex within the same group
 	kVtxLoopBit    = 1 << 1 // When bit is set, edge is a loop
 	kEdgeSignBit   = 1 << 0 // When bit is set, edge sign is negative
