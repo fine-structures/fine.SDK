@@ -2,7 +2,6 @@ package main
 
 import (
 	"io"
-	"io/ioutil"
 	"log"
 	"os"
 	"path"
@@ -19,7 +18,7 @@ func TestGolden(t *testing.T) {
 	}
 
 	scriptDir := "learn/"
-	files, err := ioutil.ReadDir(scriptDir)
+	files, err := os.ReadDir(scriptDir)
 	if err != nil {
 		log.Fatal(err)
 	}

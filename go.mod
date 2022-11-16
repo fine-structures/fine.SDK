@@ -30,7 +30,7 @@ require (
 	github.com/klauspost/compress v1.15.12 // indirect
 	github.com/mattn/go-runewidth v0.0.14 // indirect
 	github.com/peterh/liner v1.2.2 // indirect
-	github.com/rivo/uniseg v0.4.2 // indirect
+	github.com/rivo/uniseg v0.4.3 // indirect
 	go.opencensus.io v0.24.0 // indirect
 	golang.org/x/net v0.2.0 // indirect
 	golang.org/x/sys v0.2.0 // indirect
