@@ -141,9 +141,9 @@ func (v *triVtx) appendTrait(io []byte, trait VtxTrait, ascii bool) []byte {
 				io = append(io, sign)
 			} else {
 				ord *= 3
-				if sign == '+' {
+				if sign == '-' {
 					ord += 1
-				} else if sign == '-' {
+				} else if sign == '+' {
 					ord += 2
 				}
 			}
@@ -456,6 +456,9 @@ func (X *graphState) canonize() {
 		for _, v := range Xv {
 			for ei, e := range v.edges {
 				src_vi := XvByID[e.srcVtx]
+				if src_vi.GroupID == 0 {
+					panic("src_vi.GroupID == 0")
+				}
 				v.edges[ei].GroupEdge = FormGroupEdge(src_vi.GroupID, src_vi.GroupID == v.GroupID, e.isLoop, e.sign < 0)
 			}
 
@@ -587,6 +590,34 @@ func (X *graphState) AppendGraphEncoding(io []byte, opts GraphEncodingOpts) []by
 	return X.appendGraphEncoding(io, opts)
 }
 
+type tracesGroupComponent struct {
+	count [NumEdgeTypes]int8
+}
+
+func (tg *tracesGroupComponent) tracesCoeffs() (loopNet, groupNet, edgeAbs int8) {
+	loopNet = tg.count[LocalLoop_Pos] - tg.count[LocalLoop_Neg]
+	
+	groupNet = tg.count[GroupEdge_Pos] - tg.count[GroupEdge_Neg]
+	if groupNet < 0 {
+		groupNet = -groupNet
+	}
+	
+	edgeAbs = tg.count[BasicEdge_Pos] - tg.count[BasicEdge_Neg]
+	if edgeAbs < 0 {
+		edgeAbs = -edgeAbs
+	}
+	
+	return
+}
+
+func (tg *tracesGroupComponent) Init() (sum int8) {
+	for i := range tg.count {
+		tg.count[i] = 0
+	}
+	return
+}
+
+
 func (X *graphState) appendGraphEncoding(io []byte, opts GraphEncodingOpts) []byte { //(triID []byte, modes []byte) {
 	// Generally, there's plenty of room (even accounting for adding spaces in ascii mode)
 	// enc := io[len(io):cap(io)]
@@ -595,66 +626,48 @@ func (X *graphState) appendGraphEncoding(io []byte, opts GraphEncodingOpts) []by
 	// 	copy(enc, io)
 	// }
 
-	var buf [32]byte
+	//var buf [32]byte
 
 	Xv := X.Vtx()
-	Nv := len(Xv)
+	//Nv := len(Xv)
 	ascii := (opts & EncodeHumanReadable) != 0
 
-	traits := make([]VtxTrait, 0, 4)
-
-	if opts&EncodeProperties != 0 {
-
-		type tracesGroupComponent struct {
-			count [NumEdgeTypes]byte
-		}
+	//traits := make([]VtxTrait, 0, 4)
 	
-		// Tally all components (all edge classes and signs; 3 types, 2 signs => 6 total)
-		Tg := make([]tracesGroupComponent, X.numGroups)
-		for _, v := range Xv {
-			for _, e := range v.edges { 
-				compType := e.EdgeTypeOrd()
-				if e.GroupID() == 0 {
-					panic("unassigned edge group")
-				}
-				Tg[e.GroupID()-1].count[compType]++
+	// Tally all components (all edge classes and signs; 3 types, 2 signs => 6 total)
+	Tg := make([]tracesGroupComponent, X.numGroups)
+	for _, v := range Xv {
+		for _, e := range v.edges { 
+			compType := e.EdgeTypeOrd()
+			if e.GroupID() == 0 {
+				panic("unassigned edge group")
 			}
+			Tg[e.GroupID()-1].count[compType]++
 		}
+	}
 		
+	if (opts & EncodeProperties) != 0 {
 		for gi, g := range Tg {
+			loopNet, groupNet, edgeAbs := g.tracesCoeffs()
 			if ascii {
 				io = append(io, '(')
-				if c := g.count[LocalLoop_Pos]; c > 0 {
-					io = append(io, '0' + c)
-				}
-				if c := g.count[LocalLoop_Neg]; c > 0 {
-					io = append(io, '-', '0' + c)
+				if loopNet != 0 {
+					io = strconv.AppendInt(io, int64(loopNet), 10)
 				}
 				io = append(io, ',')
-				
-				if c := g.count[GroupEdge_Pos]; c > 0 {
-					io = append(io, '0' + c)
+				if groupNet != 0 {
+					io = strconv.AppendInt(io, int64(groupNet), 10)
 				}
-				if c := g.count[GroupEdge_Neg]; c > 0 {
-					io = append(io, '-', '0' + c)
-				}
-
 				io = append(io, ',')
-
-				if c := g.count[BasicEdge_Pos]; c > 0 {
-					io = append(io, '0' + c)
+				if edgeAbs != 0 {
+					io = strconv.AppendInt(io, int64(edgeAbs), 10)
 				}
-				if c := g.count[BasicEdge_Neg]; c > 0 {
-					io = append(io, '-', '0' + c)
-				}
-				
 				io = append(io, ')', 'A' + byte(gi), ' ')
 			} else {
 				io = append(io,
-					g.count[LocalLoop_Neg],
-					g.count[LocalLoop_Pos],
-					g.count[GroupEdge_Neg] + g.count[GroupEdge_Pos] + 
-					g.count[BasicEdge_Neg] + g.count[BasicEdge_Pos])
+					MaxVtxID + byte(loopNet),
+					MaxVtxID + byte(groupNet),
+					MaxVtxID + byte(edgeAbs))
 			}
 		}
 		// traits = append(traits,
@@ -663,38 +676,73 @@ func (X *graphState) appendGraphEncoding(io []byte, opts GraphEncodingOpts) []by
 		// )
 	}
 
-	if opts&EncodeState != 0 {
-		traits = append(traits,
-			VtxTrait_EdgesType,
-			VtxTrait_EdgesSign,
-		)
-	}
-
-	for _, ti := range traits {
-		runLen := 0
-		RLE := buf[:0]
-		for vi := 0; vi < Nv; vi += runLen {
-			runLen = X.getTraitRun(Xv, vi, ti)
-
-			// For readability, print the family count first in ascii mode (but for LSM it follows the edges)
+	if (opts & EncodeState) != 0 {
+		// traits = append(traits,
+		// 	VtxTrait_EdgesType,
+		// 	VtxTrait_EdgesSign,
+		// )
+		
+		for gi, g := range Tg {
 			if ascii {
-				if runLen == 1 {
-					io = append(io, ' ')
-				} else {
-					io = strconv.AppendInt(io, int64(runLen), 10)
+				io = append(io, '(')
+				if c := g.count[LocalLoop_Pos]; c > 0 {
+					io = strconv.AppendInt(io, int64(c), 10)
+				}
+				if c := g.count[LocalLoop_Neg]; c > 0 {
+					io = strconv.AppendInt(io, int64(-c), 10)
+				}
+				io = append(io, ',')
+				
+				if c := g.count[GroupEdge_Pos]; c > 0 {
+					io = strconv.AppendInt(io, int64(c), 10)
+				}
+				if c := g.count[GroupEdge_Neg]; c > 0 {
+					io = strconv.AppendInt(io, int64(-c), 10)
+				}
+
+				io = append(io, ',')
+
+				if c := g.count[BasicEdge_Pos]; c > 0 {
+					io = strconv.AppendInt(io, int64(c), 10)
+				}
+				if c := g.count[BasicEdge_Neg]; c > 0 {
+					io = strconv.AppendInt(io, int64(-c), 10)
+				}
+				
+				io = append(io, ')', 'A' + byte(gi), ' ')
+			} else {
+				for _, c := range g.count {
+					io = append(io, byte(c))
 				}
 			}
-
-			io = Xv[vi].appendTrait(io, ti, ascii)
-			if ascii {
-				io = append(io, ' ')
-			} else {
-				RLE = append(RLE, byte(runLen))
-			}
 		}
-
-		io = append(io, RLE...)
 	}
+
+	// for _, ti := range traits {
+	// 	runLen := 0
+	// 	RLE := buf[:0]
+	// 	for vi := 0; vi < Nv; vi += runLen {
+	// 		runLen = X.getTraitRun(Xv, vi, ti)
+
+	// 		// For readability, print the family count first in ascii mode (but for LSM it follows the edges)
+	// 		if ascii {
+	// 			if runLen == 1 {
+	// 				io = append(io, ' ')
+	// 			} else {
+	// 				io = strconv.AppendInt(io, int64(runLen), 10)
+	// 			}
+	// 		}
+
+	// 		io = Xv[vi].appendTrait(io, ti, ascii)
+	// 		if ascii {
+	// 			io = append(io, ' ')
+	// 		} else {
+	// 			RLE = append(RLE, byte(runLen))
+	// 		}
+	// 	}
+
+	// 	io = append(io, RLE...)
+	// }
 
 	return io
 }
