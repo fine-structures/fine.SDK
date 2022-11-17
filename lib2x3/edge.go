@@ -22,12 +22,12 @@ const (
 func (e GroupEdge) EdgeTypeOrd() EdgeTypeOrd {
 	ord := EdgeTypeOrd(0)
 
-	if e&kVtxLoopBit != 0 {
+	if (e & kVtxLoopBit) != 0 {
 		ord += LocalLoop_Pos
-	} else if e&kGroupLoopBit != 0 {
+	} else if (e & kGroupLoopBit) != 0 {
 		ord += GroupEdge_Pos
 	}
-	if e&kEdgeSignBit != 0 {
+	if (e & kEdgeSignBit) != 0 {
 		ord += 1
 	}
 
@@ -66,15 +66,15 @@ func (e GroupEdge) SignRune(innate bool) byte {
 }
 
 func (e GroupEdge) IsVtxLoop() bool {
-	return e&kVtxLoopBit != 0
+	return (e & kVtxLoopBit) != 0
 }
 
 func (e GroupEdge) IsGroupLoop() bool {
-	return e&kGroupLoopBit != 0
+	return (e & kGroupLoopBit) != 0
 }
 
 func (e GroupEdge) IsNeg() bool {
-	return e&kEdgeSignBit != 0
+	return (e & kEdgeSignBit) != 0
 }
 
 func (e GroupEdge) GroupID() GroupID {
