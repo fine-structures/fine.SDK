@@ -11,19 +11,19 @@
 
   ===   gamma phases  === 
 
-gamma phase,000001,p=1,v=2,"2AAA 2--- ","2VVV 2--- ","1~~~2","{{0,-3},{-3,0}}",0,18,
-      V       :    1         2    :
-    GROUP     :::AAAAAAAAAAAAAAA:::
-  EDGE TYPE   :        VVV        :
-  EDGE FROM   :                   :
-  EDGE SIGN   :        ---        :
-
-gamma phase,000002,p=1,v=2,"2AAA 2+++ ","2UUU 2+++ ","1---2","{{0,3},{3,0}}",0,18,
+gamma phase,000001,p=1,v=2,"2AAA 2+++ ","2UUU 2+++ ","1---2","{{0,3},{3,0}}",0,18,
       V       :    1         2    :
     GROUP     :::AAAAAAAAAAAAAAA:::
   EDGE TYPE   :        UUU        :
   EDGE FROM   :                   :
   EDGE SIGN   :        +++        :
+
+gamma phase,000002,p=1,v=2,"2AAA 2--- ","2VVV 2--- ","1~~~2","{{0,-3},{-3,0}}",0,18,
+      V       :    1         2    :
+    GROUP     :::AAAAAAAAAAAAAAA:::
+  EDGE TYPE   :        VVV        :
+  EDGE FROM   :                   :
+  EDGE SIGN   :        ---        :
 
 
   ===   gamma prime factors  === 
@@ -38,12 +38,12 @@ gamma prime factors,000001,p=2,v=2," AAA  BBB  ---  +++ "," vvv  uuu  ---  +++ "
 
   ===   tetra phases  === 
 
-tetra phase,000001,p=1,v=4,"4AAA 4+-- ","4UVV 4+-- ","1-2~3~1~4~2 3-4","{{0,1,-1,-1},{1,0,-1,-1},{-1,-1,0,1},{-1,-1,1,0}}",0,12,24,84,
+tetra phase,000001,p=1,v=4,"4AAA 4+++ ","4UUU 4+++ ","1-2-3-1-4-2 3-4","{{0,1,1,1},{1,0,1,1},{1,1,0,1},{1,1,1,0}}",0,12,24,84,
       V       :    1         2         3         4    :
     GROUP     :::AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA:::
-  EDGE TYPE   :                  UVV                  :
+  EDGE TYPE   :                  UUU                  :
   EDGE FROM   :                                       :
-  EDGE SIGN   :                  +--                  :
+  EDGE SIGN   :                  +++                  :
 
 tetra phase,000002,p=1,v=4,"4AAA 3++-  --- ","3UUV  VVV 3++-  --- ","1~2-3~1~4-2 3-4","{{0,-1,-1,-1},{-1,0,1,1},{-1,1,0,1},{-1,1,1,0}}",0,12,24,84,
       V       :    1         2         3         4    :
@@ -52,12 +52,12 @@ tetra phase,000002,p=1,v=4,"4AAA 3++-  --- ","3UUV  VVV 3++-  --- ","1~2-3~1~4-2
   EDGE FROM   :                                       :
   EDGE SIGN   :   ++-       ++-       ++-       ---   :
 
-tetra phase,000003,p=1,v=4,"4AAA 4+++ ","4UUU 4+++ ","1-2-3-1-4-2 3-4","{{0,1,1,1},{1,0,1,1},{1,1,0,1},{1,1,1,0}}",0,12,24,84,
+tetra phase,000003,p=1,v=4,"4AAA 4+-- ","4UVV 4+-- ","1-2~3~1~4~2 3-4","{{0,1,-1,-1},{1,0,-1,-1},{-1,-1,0,1},{-1,-1,1,0}}",0,12,24,84,
       V       :    1         2         3         4    :
     GROUP     :::AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA:::
-  EDGE TYPE   :                  UUU                  :
+  EDGE TYPE   :                  UVV                  :
   EDGE FROM   :                                       :
-  EDGE SIGN   :                  +++                  :
+  EDGE SIGN   :                  +--                  :
 
 
   ===   tetra prime factors  === 
@@ -72,19 +72,19 @@ tetra prime factors,000001,p=4,v=4,"3AAA  BBB 3+--  +++ ","3uvv  uuu 3+--  +++ "
 
   ===   y4 phases  === 
 
-y4 phase,000001,p=1,v=4,"4AAA 4--- ","4VVV 4--- ","1~~2~4~~3~1","{{0,-2,-1,0},{-2,0,0,-1},{-1,0,0,-2},{0,-1,-2,0}}",0,20,0,164,
+y4 phase,000001,p=1,v=4,"4AAA 4+++ ","4UUU 4+++ ","1=2-4=3-1","{{0,2,1,0},{2,0,0,1},{1,0,0,2},{0,1,2,0}}",0,20,0,164,
       V       :    1         2         3         4    :
     GROUP     :::AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA:::
-  EDGE TYPE   :                  VVV                  :
+  EDGE TYPE   :                  UUU                  :
   EDGE FROM   :                                       :
-  EDGE SIGN   :                  ---                  :
+  EDGE SIGN   :                  +++                  :
 
-y4 phase,000002,p=1,v=4,"4AAA 4+-- ","4UVV 4+-- ","1~~2-4~~3-1","{{0,-2,1,0},{-2,0,0,1},{1,0,0,-2},{0,1,-2,0}}",0,20,0,164,
+y4 phase,000002,p=1,v=4,"4AAA  +++  ++-  +--  --- "," UUU  UUV  UVV  VVV  +++  ++-  +--  --- ","1~~2-4=3~1","{{0,-2,-1,0},{-2,0,0,1},{-1,0,0,2},{0,1,2,0}}",0,20,0,164,
       V       :    1         2         3         4    :
     GROUP     :::AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA:::
-  EDGE TYPE   :                  UVV                  :
+  EDGE TYPE   :   UUU       UUV       UVV       VVV   :
   EDGE FROM   :                                       :
-  EDGE SIGN   :                  +--                  :
+  EDGE SIGN   :   +++       ++-       +--       ---   :
 
 y4 phase,000003,p=1,v=4,"4AAA 4++- ","4UUV 4++- ","1=2~4=3~1","{{0,2,-1,0},{2,0,0,-1},{-1,0,0,2},{0,-1,2,0}}",0,20,0,164,
       V       :    1         2         3         4    :
@@ -93,19 +93,19 @@ y4 phase,000003,p=1,v=4,"4AAA 4++- ","4UUV 4++- ","1=2~4=3~1","{{0,2,-1,0},{2,0,
   EDGE FROM   :                                       :
   EDGE SIGN   :                  ++-                  :
 
-y4 phase,000004,p=1,v=4,"4AAA 4+++ ","4UUU 4+++ ","1=2-4=3-1","{{0,2,1,0},{2,0,0,1},{1,0,0,2},{0,1,2,0}}",0,20,0,164,
+y4 phase,000004,p=1,v=4,"4AAA 4+-- ","4UVV 4+-- ","1~~2-4~~3-1","{{0,-2,1,0},{-2,0,0,1},{1,0,0,-2},{0,1,-2,0}}",0,20,0,164,
       V       :    1         2         3         4    :
     GROUP     :::AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA:::
-  EDGE TYPE   :                  UUU                  :
+  EDGE TYPE   :                  UVV                  :
   EDGE FROM   :                                       :
-  EDGE SIGN   :                  +++                  :
+  EDGE SIGN   :                  +--                  :
 
-y4 phase,000005,p=1,v=4,"4AAA  +++  ++-  +--  --- "," UUU  UUV  UVV  VVV  +++  ++-  +--  --- ","1~~2-4=3~1","{{0,-2,-1,0},{-2,0,0,1},{-1,0,0,2},{0,1,2,0}}",0,20,0,164,
+y4 phase,000005,p=1,v=4,"4AAA 4--- ","4VVV 4--- ","1~~2~4~~3~1","{{0,-2,-1,0},{-2,0,0,-1},{-1,0,0,-2},{0,-1,-2,0}}",0,20,0,164,
       V       :    1         2         3         4    :
     GROUP     :::AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA:::
-  EDGE TYPE   :   UUU       UUV       UVV       VVV   :
+  EDGE TYPE   :                  VVV                  :
   EDGE FROM   :                                       :
-  EDGE SIGN   :   +++       ++-       +--       ---   :
+  EDGE SIGN   :                  ---                  :
 
 
   ===   y4 prime factors  === 
@@ -120,40 +120,40 @@ y4 prime factors,000001,p=4,v=4," AAA  BBB  CCC  DDD  ---  +--  ++-  +++ "," vvv
 
   ===   y6 phases  === 
 
-y6 phase,000001,p=1,v=6,"6AAA 6--- ","6VVV 6--- ","1~~2~4~~6~5~~3~1","{{0,-2,-1,0,0,0},{-2,0,0,-1,0,0},{-1,0,0,0,-2,0},{0,-1,0,0,0,-2},{0,0,-2,0,0,-1},{0,0,0,-2,-1,0}}",0,30,0,198,0,1566,
-      V       :    1         2         3         4         5         6    :
-    GROUP     :::AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA:::
-  EDGE TYPE   :                            VVV                            :
-  EDGE FROM   :                                                           :
-  EDGE SIGN   :                            ---                            :
-
-y6 phase,000002,p=1,v=6,"6AAA 4+-- 2--- ","4UVV 2VVV 4+-- 2--- ","1~~2-4~~6-5~~3~1","{{0,-2,-1,0,0,0},{-2,0,0,1,0,0},{-1,0,0,0,-2,0},{0,1,0,0,0,-2},{0,0,-2,0,0,1},{0,0,0,-2,1,0}}",0,30,0,198,0,1566,
-      V       :    1         2         3         4         5         6    :
-    GROUP     :::AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA:::
-  EDGE TYPE   :   UVV       UVV       UVV       UVV       VVV       VVV   :
-  EDGE FROM   :                                                           :
-  EDGE SIGN   :   +--       +--       +--       +--       ---       ---   :
-
-y6 phase,000003,p=1,v=6,"6AAA 4++- 2--- ","4UUV 2VVV 4++- 2--- ","1~~2~4=6~5=3~1","{{0,-2,-1,0,0,0},{-2,0,0,-1,0,0},{-1,0,0,0,2,0},{0,-1,0,0,0,2},{0,0,2,0,0,-1},{0,0,0,2,-1,0}}",0,30,0,198,0,1566,
-      V       :    1         2         3         4         5         6    :
-    GROUP     :::AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA:::
-  EDGE TYPE   :   UUV       UUV       UUV       UUV       VVV       VVV   :
-  EDGE FROM   :                                                           :
-  EDGE SIGN   :   ++-       ++-       ++-       ++-       ---       ---   :
-
-y6 phase,000004,p=1,v=6,"6AAA 2++- 2+-- 2--- ","2UUV 2UVV 2VVV 2++- 2+-- 2--- ","1=2~4~~6-5~~3~1","{{0,2,-1,0,0,0},{2,0,0,-1,0,0},{-1,0,0,0,-2,0},{0,-1,0,0,0,-2},{0,0,-2,0,0,1},{0,0,0,-2,1,0}}",0,30,0,198,0,1566,
-      V       :    1         2         3         4         5         6    :
-    GROUP     :::AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA:::
-  EDGE TYPE   :   UUV       UUV       UVV       UVV       VVV       VVV   :
-  EDGE FROM   :                                                           :
-  EDGE SIGN   :   ++-       ++-       +--       +--       ---       ---   :
-
-y6 phase,000005,p=1,v=6,"6AAA 6+++ ","6UUU 6+++ ","1=2-4=6-5=3-1","{{0,2,1,0,0,0},{2,0,0,1,0,0},{1,0,0,0,2,0},{0,1,0,0,0,2},{0,0,2,0,0,1},{0,0,0,2,1,0}}",0,30,0,198,0,1566,
+y6 phase,000001,p=1,v=6,"6AAA 6+++ ","6UUU 6+++ ","1=2-4=6-5=3-1","{{0,2,1,0,0,0},{2,0,0,1,0,0},{1,0,0,0,2,0},{0,1,0,0,0,2},{0,0,2,0,0,1},{0,0,0,2,1,0}}",0,30,0,198,0,1566,
       V       :    1         2         3         4         5         6    :
     GROUP     :::AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA:::
   EDGE TYPE   :                            UUU                            :
   EDGE FROM   :                                                           :
   EDGE SIGN   :                            +++                            :
+
+y6 phase,000002,p=1,v=6,"6AAA 2+++ 4++- ","2UUU 4UUV 2+++ 4++- ","1=2~4=6-5=3~1","{{0,2,-1,0,0,0},{2,0,0,-1,0,0},{-1,0,0,0,2,0},{0,-1,0,0,0,2},{0,0,2,0,0,1},{0,0,0,2,1,0}}",0,30,0,198,0,1566,
+      V       :    1         2         3         4         5         6    :
+    GROUP     :::AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA:::
+  EDGE TYPE   :   UUU       UUU       UUV       UUV       UUV       UUV   :
+  EDGE FROM   :                                                           :
+  EDGE SIGN   :   +++       +++       ++-       ++-       ++-       ++-   :
+
+y6 phase,000003,p=1,v=6,"6AAA 2+++ 2++- 2+-- ","2UUU 2UUV 2UVV 2+++ 2++- 2+-- ","1=2~4=6-5~~3-1","{{0,2,1,0,0,0},{2,0,0,-1,0,0},{1,0,0,0,-2,0},{0,-1,0,0,0,2},{0,0,-2,0,0,1},{0,0,0,2,1,0}}",0,30,0,198,0,1566,
+      V       :    1         2         3         4         5         6    :
+    GROUP     :::AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA:::
+  EDGE TYPE   :   UUU       UUU       UUV       UUV       UVV       UVV   :
+  EDGE FROM   :                                                           :
+  EDGE SIGN   :   +++       +++       ++-       ++-       +--       +--   :
+
+y6 phase,000004,p=1,v=6,"6AAA  +++  ++-  +-- 3--- "," UUU  UUV  UVV 3VVV  +++  ++-  +-- 3--- ","1~~2~4=6-5~~3~1","{{0,-2,-1,0,0,0},{-2,0,0,-1,0,0},{-1,0,0,0,-2,0},{0,-1,0,0,0,2},{0,0,-2,0,0,1},{0,0,0,2,1,0}}",0,30,0,198,0,1566,
+      V       :    1         2         3         4         5         6    :
+    GROUP     :::AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA:::
+  EDGE TYPE   :   UUU       UUV       UVV       VVV       VVV       VVV   :
+  EDGE FROM   :                                                           :
+  EDGE SIGN   :   +++       ++-       +--       ---       ---       ---   :
+
+y6 phase,000005,p=1,v=6,"6AAA 3+++  ++-  +--  --- ","3UUU  UUV  UVV  VVV 3+++  ++-  +--  --- ","1~~2-4=6-5=3~1","{{0,-2,-1,0,0,0},{-2,0,0,1,0,0},{-1,0,0,0,2,0},{0,1,0,0,0,2},{0,0,2,0,0,1},{0,0,0,2,1,0}}",0,30,0,198,0,1566,
+      V       :    1         2         3         4         5         6    :
+    GROUP     :::AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA:::
+  EDGE TYPE   :   UUU       UUU       UUU       UUV       UVV       VVV   :
+  EDGE FROM   :                                                           :
+  EDGE SIGN   :   +++       +++       +++       ++-       +--       ---   :
 
 y6 phase,000006,p=1,v=6,"6AAA 2+++ 4+-- ","2UUU 4UVV 2+++ 4+-- ","1~~2-4=6-5~~3-1","{{0,-2,1,0,0,0},{-2,0,0,1,0,0},{1,0,0,0,-2,0},{0,1,0,0,0,2},{0,0,-2,0,0,1},{0,0,0,2,1,0}}",0,30,0,198,0,1566,
       V       :    1         2         3         4         5         6    :
@@ -162,123 +162,123 @@ y6 phase,000006,p=1,v=6,"6AAA 2+++ 4+-- ","2UUU 4UVV 2+++ 4+-- ","1~~2-4=6-5~~3-
   EDGE FROM   :                                                           :
   EDGE SIGN   :   +++       +++       +--       +--       +--       +--   :
 
-y6 phase,000007,p=1,v=6,"6AAA 2+++ 4++- ","2UUU 4UUV 2+++ 4++- ","1=2~4=6-5=3~1","{{0,2,-1,0,0,0},{2,0,0,-1,0,0},{-1,0,0,0,2,0},{0,-1,0,0,0,2},{0,0,2,0,0,1},{0,0,0,2,1,0}}",0,30,0,198,0,1566,
+y6 phase,000007,p=1,v=6,"6AAA 2++- 2+-- 2--- ","2UUV 2UVV 2VVV 2++- 2+-- 2--- ","1=2~4~~6-5~~3~1","{{0,2,-1,0,0,0},{2,0,0,-1,0,0},{-1,0,0,0,-2,0},{0,-1,0,0,0,-2},{0,0,-2,0,0,1},{0,0,0,-2,1,0}}",0,30,0,198,0,1566,
       V       :    1         2         3         4         5         6    :
     GROUP     :::AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA:::
-  EDGE TYPE   :   UUU       UUU       UUV       UUV       UUV       UUV   :
+  EDGE TYPE   :   UUV       UUV       UVV       UVV       VVV       VVV   :
   EDGE FROM   :                                                           :
-  EDGE SIGN   :   +++       +++       ++-       ++-       ++-       ++-   :
+  EDGE SIGN   :   ++-       ++-       +--       +--       ---       ---   :
 
-y6 phase,000008,p=1,v=6,"6AAA 2+++ 2++- 2+-- ","2UUU 2UUV 2UVV 2+++ 2++- 2+-- ","1=2~4=6-5~~3-1","{{0,2,1,0,0,0},{2,0,0,-1,0,0},{1,0,0,0,-2,0},{0,-1,0,0,0,2},{0,0,-2,0,0,1},{0,0,0,2,1,0}}",0,30,0,198,0,1566,
+y6 phase,000008,p=1,v=6,"6AAA 4++- 2--- ","4UUV 2VVV 4++- 2--- ","1~~2~4=6~5=3~1","{{0,-2,-1,0,0,0},{-2,0,0,-1,0,0},{-1,0,0,0,2,0},{0,-1,0,0,0,2},{0,0,2,0,0,-1},{0,0,0,2,-1,0}}",0,30,0,198,0,1566,
       V       :    1         2         3         4         5         6    :
     GROUP     :::AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA:::
-  EDGE TYPE   :   UUU       UUU       UUV       UUV       UVV       UVV   :
+  EDGE TYPE   :   UUV       UUV       UUV       UUV       VVV       VVV   :
   EDGE FROM   :                                                           :
-  EDGE SIGN   :   +++       +++       ++-       ++-       +--       +--   :
+  EDGE SIGN   :   ++-       ++-       ++-       ++-       ---       ---   :
 
-y6 phase,000009,p=1,v=6,"6AAA  +++  ++-  +-- 3--- "," UUU  UUV  UVV 3VVV  +++  ++-  +-- 3--- ","1~~2~4=6-5~~3~1","{{0,-2,-1,0,0,0},{-2,0,0,-1,0,0},{-1,0,0,0,-2,0},{0,-1,0,0,0,2},{0,0,-2,0,0,1},{0,0,0,2,1,0}}",0,30,0,198,0,1566,
+y6 phase,000009,p=1,v=6,"6AAA 4+-- 2--- ","4UVV 2VVV 4+-- 2--- ","1~~2-4~~6-5~~3~1","{{0,-2,-1,0,0,0},{-2,0,0,1,0,0},{-1,0,0,0,-2,0},{0,1,0,0,0,-2},{0,0,-2,0,0,1},{0,0,0,-2,1,0}}",0,30,0,198,0,1566,
       V       :    1         2         3         4         5         6    :
     GROUP     :::AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA:::
-  EDGE TYPE   :   UUU       UUV       UVV       VVV       VVV       VVV   :
+  EDGE TYPE   :   UVV       UVV       UVV       UVV       VVV       VVV   :
   EDGE FROM   :                                                           :
-  EDGE SIGN   :   +++       ++-       +--       ---       ---       ---   :
+  EDGE SIGN   :   +--       +--       +--       +--       ---       ---   :
 
-y6 phase,000010,p=1,v=6,"6AAA 3+++  ++-  +--  --- ","3UUU  UUV  UVV  VVV 3+++  ++-  +--  --- ","1~~2-4=6-5=3~1","{{0,-2,-1,0,0,0},{-2,0,0,1,0,0},{-1,0,0,0,2,0},{0,1,0,0,0,2},{0,0,2,0,0,1},{0,0,0,2,1,0}}",0,30,0,198,0,1566,
+y6 phase,000010,p=1,v=6,"6AAA 6--- ","6VVV 6--- ","1~~2~4~~6~5~~3~1","{{0,-2,-1,0,0,0},{-2,0,0,-1,0,0},{-1,0,0,0,-2,0},{0,-1,0,0,0,-2},{0,0,-2,0,0,-1},{0,0,0,-2,-1,0}}",0,30,0,198,0,1566,
       V       :    1         2         3         4         5         6    :
     GROUP     :::AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA:::
-  EDGE TYPE   :   UUU       UUU       UUU       UUV       UVV       VVV   :
+  EDGE TYPE   :                            VVV                            :
   EDGE FROM   :                                                           :
-  EDGE SIGN   :   +++       +++       +++       ++-       +--       ---   :
+  EDGE SIGN   :                            ---                            :
 
 
   ===   y6 prime factors  === 
 
-y6 prime factors,000001,p=3,v=6," AAA 2BCC 2BBC  DDD  ---  -+-  ---  +-+  --+  +++ "," vvv  v||  v||  ||u  ||u  uuu  ---  -+-  ---  +-+  --+  +++ ","1^^^ 2 3~4^~6-5^~3","{{-3,0,0,0,0,0},{0,3,0,0,0,0},{0,0,1,-1,-1,0},{0,0,-1,-1,0,-1},{0,0,-1,0,-1,1},{0,0,0,-1,1,1}}",0,30,0,198,0,1566,
+y6 prime factors,000001,p=3,v=6," AAA 2BCC 2BBC  DDD  ---  -++  -+-  +++  +-+  +++ "," vvv  v||  v||  ||u  ||u  uuu  ---  -++  -+-  +++  +-+  +++ ","1^^^ 2 3~4^-6-5^-3","{{-3,0,0,0,0,0},{0,3,0,0,0,0},{0,0,1,-1,1,0},{0,0,-1,-1,0,1},{0,0,1,0,-1,1},{0,0,0,1,1,1}}",0,30,0,198,0,1566,
       V       :    1    :    2         3    :    4         5    :    6    :
     GROUP     :::AAAAA:::::BBBBBBBBBBBBBBB:::::CCCCCCCCCCCCCCC:::::DDDDD:::
   EDGE TYPE   :   vvv   :        v||        :        ||u        :   uuu   :
   EDGE FROM   :         :         CC        :        BB         :         :
-  EDGE SIGN   :   ---   :   -+-       ---   :   +-+       --+   :   +++   :
+  EDGE SIGN   :   ---   :   -++       -+-   :   +++       +-+   :   +++   :
 
-y6 prime factors,000002,p=2,v=6," AAC  BCC  ABB  EEF  DDE  DFF 4---  --+  -++ "," vv|  v|| 2|||  ||u  |uu 4---  --+  -++ ","1^^~2~~3^ 4~5~~6","{{-2,-1,0,0,0,0},{-1,0,-2,0,0,0},{0,-2,-1,0,0,0},{0,0,0,2,-1,0},{0,0,0,-1,0,-2},{0,0,0,0,-2,1}}",0,30,0,198,0,1566,
+y6 prime factors,000002,p=2,v=6," AAC  BCC  ABB  EEF  DDE  DFF  --+  -++ 4+++ "," vv|  v|| 2|||  ||u  |uu  --+  -++ 4+++ ","1^^-2=3^ 4-5=6","{{-2,1,0,0,0,0},{1,0,2,0,0,0},{0,2,-1,0,0,0},{0,0,0,2,1,0},{0,0,0,1,0,2},{0,0,0,0,2,1}}",0,30,0,198,0,1566,
       V       :    1    :    2    :    3    :    4    :    5    :    6    :
     GROUP     :::AAAAA:::::BBBBB:::::CCCCC:::::DDDDD:::::EEEEE:::::FFFFF:::
   EDGE TYPE   :   vv|   :   v||   :   |||   :   |||   :   ||u   :   |uu   :
   EDGE FROM   :     C   :    CC   :   ABB   :   EEF   :   DD    :   D     :
-  EDGE SIGN   :   ---   :   ---   :   ---   :   ---   :   --+   :   -++   :
+  EDGE SIGN   :   --+   :   -++   :   +++   :   +++   :   +++   :   +++   :
 
 
   ===   y8 phases  === 
 
-y8 phase,000001,p=1,v=8,"8AAA 8--- ","8VVV 8--- ","1~~2~4~~6~8~~7~5~~3~1","{{0,-2,-1,0,0,0,0,0},{-2,0,0,-1,0,0,0,0},{-1,0,0,0,-2,0,0,0},{0,-1,0,0,0,-2,0,0},{0,0,-2,0,0,0,-1,0},{0,0,0,-2,0,0,0,-1},{0,0,0,0,-1,0,0,-2},{0,0,0,0,0,-1,-2,0}}",0,40,0,264,0,1960,0,15624,
-      V       :    1         2         3         4         5         6         7         8    :
-    GROUP     :::AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA:::
-  EDGE TYPE   :                                      VVV                                      :
-  EDGE FROM   :                                                                               :
-  EDGE SIGN   :                                      ---                                      :
-
-y8 phase,000002,p=1,v=8,"8AAA 8+-- ","8UVV 8+-- ","1~~2-4~~6-8~~7-5~~3-1","{{0,-2,1,0,0,0,0,0},{-2,0,0,1,0,0,0,0},{1,0,0,0,-2,0,0,0},{0,1,0,0,0,-2,0,0},{0,0,-2,0,0,0,1,0},{0,0,0,-2,0,0,0,1},{0,0,0,0,1,0,0,-2},{0,0,0,0,0,1,-2,0}}",0,40,0,264,0,1960,0,15624,
-      V       :    1         2         3         4         5         6         7         8    :
-    GROUP     :::AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA:::
-  EDGE TYPE   :                                      UVV                                      :
-  EDGE FROM   :                                                                               :
-  EDGE SIGN   :                                      +--                                      :
-
-y8 phase,000003,p=1,v=8,"8AAA 4+-- 4--- ","4UVV 4VVV 4+-- 4--- ","1~~2~4~~6-8~~7-5~~3~1","{{0,-2,-1,0,0,0,0,0},{-2,0,0,-1,0,0,0,0},{-1,0,0,0,-2,0,0,0},{0,-1,0,0,0,-2,0,0},{0,0,-2,0,0,0,1,0},{0,0,0,-2,0,0,0,1},{0,0,0,0,1,0,0,-2},{0,0,0,0,0,1,-2,0}}",0,40,0,264,0,1960,0,15624,
-      V       :    1         2         3         4         5         6         7         8    :
-    GROUP     :::AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA:::
-  EDGE TYPE   :   UVV       UVV       UVV       UVV       VVV       VVV       VVV       VVV   :
-  EDGE FROM   :                                                                               :
-  EDGE SIGN   :   +--       +--       +--       +--       ---       ---       ---       ---   :
-
-y8 phase,000004,p=1,v=8,"8AAA 8++- ","8UUV 8++- ","1=2~4=6~8=7~5=3~1","{{0,2,-1,0,0,0,0,0},{2,0,0,-1,0,0,0,0},{-1,0,0,0,2,0,0,0},{0,-1,0,0,0,2,0,0},{0,0,2,0,0,0,-1,0},{0,0,0,2,0,0,0,-1},{0,0,0,0,-1,0,0,2},{0,0,0,0,0,-1,2,0}}",0,40,0,264,0,1960,0,15624,
-      V       :    1         2         3         4         5         6         7         8    :
-    GROUP     :::AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA:::
-  EDGE TYPE   :                                      UUV                                      :
-  EDGE FROM   :                                                                               :
-  EDGE SIGN   :                                      ++-                                      :
-
-y8 phase,000005,p=1,v=8,"8AAA 4++- 4--- ","4UUV 4VVV 4++- 4--- ","1~~2~4=6~8=7~5~~3~1","{{0,-2,-1,0,0,0,0,0},{-2,0,0,-1,0,0,0,0},{-1,0,0,0,-2,0,0,0},{0,-1,0,0,0,2,0,0},{0,0,-2,0,0,0,-1,0},{0,0,0,2,0,0,0,-1},{0,0,0,0,-1,0,0,2},{0,0,0,0,0,-1,2,0}}",0,40,0,264,0,1960,0,15624,
-      V       :    1         2         3         4         5         6         7         8    :
-    GROUP     :::AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA:::
-  EDGE TYPE   :   UUV       UUV       UUV       UUV       VVV       VVV       VVV       VVV   :
-  EDGE FROM   :                                                                               :
-  EDGE SIGN   :   ++-       ++-       ++-       ++-       ---       ---       ---       ---   :
-
-y8 phase,000006,p=1,v=8,"8AAA 2++- 2+-- 4--- ","2UUV 2UVV 4VVV 2++- 2+-- 4--- ","1~~2-4~~6~8=7~5~~3~1","{{0,-2,-1,0,0,0,0,0},{-2,0,0,1,0,0,0,0},{-1,0,0,0,-2,0,0,0},{0,1,0,0,0,-2,0,0},{0,0,-2,0,0,0,-1,0},{0,0,0,-2,0,0,0,-1},{0,0,0,0,-1,0,0,2},{0,0,0,0,0,-1,2,0}}",0,40,0,264,0,1960,0,15624,
-      V       :    1         2         3         4         5         6         7         8    :
-    GROUP     :::AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA:::
-  EDGE TYPE   :   UUV       UUV       UVV       UVV       VVV       VVV       VVV       VVV   :
-  EDGE FROM   :                                                                               :
-  EDGE SIGN   :   ++-       ++-       +--       +--       ---       ---       ---       ---   :
-
-y8 phase,000007,p=1,v=8,"8AAA 8+++ ","8UUU 8+++ ","1=2-4=6-8=7-5=3-1","{{0,2,1,0,0,0,0,0},{2,0,0,1,0,0,0,0},{1,0,0,0,2,0,0,0},{0,1,0,0,0,2,0,0},{0,0,2,0,0,0,1,0},{0,0,0,2,0,0,0,1},{0,0,0,0,1,0,0,2},{0,0,0,0,0,1,2,0}}",0,40,0,264,0,1960,0,15624,
+y8 phase,000001,p=1,v=8,"8AAA 8+++ ","8UUU 8+++ ","1=2-4=6-8=7-5=3-1","{{0,2,1,0,0,0,0,0},{2,0,0,1,0,0,0,0},{1,0,0,0,2,0,0,0},{0,1,0,0,0,2,0,0},{0,0,2,0,0,0,1,0},{0,0,0,2,0,0,0,1},{0,0,0,0,1,0,0,2},{0,0,0,0,0,1,2,0}}",0,40,0,264,0,1960,0,15624,
       V       :    1         2         3         4         5         6         7         8    :
     GROUP     :::AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA:::
   EDGE TYPE   :                                      UUU                                      :
   EDGE FROM   :                                                                               :
   EDGE SIGN   :                                      +++                                      :
 
-y8 phase,000008,p=1,v=8,"8AAA 4+++ 4+-- ","4UUU 4UVV 4+++ 4+-- ","1~~2-4=6-8=7-5~~3-1","{{0,-2,1,0,0,0,0,0},{-2,0,0,1,0,0,0,0},{1,0,0,0,-2,0,0,0},{0,1,0,0,0,2,0,0},{0,0,-2,0,0,0,1,0},{0,0,0,2,0,0,0,1},{0,0,0,0,1,0,0,2},{0,0,0,0,0,1,2,0}}",0,40,0,264,0,1960,0,15624,
-      V       :    1         2         3         4         5         6         7         8    :
-    GROUP     :::AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA:::
-  EDGE TYPE   :   UUU       UUU       UUU       UUU       UVV       UVV       UVV       UVV   :
-  EDGE FROM   :                                                                               :
-  EDGE SIGN   :   +++       +++       +++       +++       +--       +--       +--       +--   :
-
-y8 phase,000009,p=1,v=8,"8AAA 2+++ 4+-- 2--- ","2UUU 4UVV 2VVV 2+++ 4+-- 2--- ","1~~2-4~~6-8=7-5~~3~1","{{0,-2,-1,0,0,0,0,0},{-2,0,0,1,0,0,0,0},{-1,0,0,0,-2,0,0,0},{0,1,0,0,0,-2,0,0},{0,0,-2,0,0,0,1,0},{0,0,0,-2,0,0,0,1},{0,0,0,0,1,0,0,2},{0,0,0,0,0,1,2,0}}",0,40,0,264,0,1960,0,15624,
-      V       :    1         2         3         4         5         6         7         8    :
-    GROUP     :::AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA:::
-  EDGE TYPE   :   UUU       UUU       UVV       UVV       UVV       UVV       VVV       VVV   :
-  EDGE FROM   :                                                                               :
-  EDGE SIGN   :   +++       +++       +--       +--       +--       +--       ---       ---   :
-
-y8 phase,000010,p=1,v=8,"8AAA 4+++ 4++- ","4UUU 4UUV 4+++ 4++- ","1=2~4=6-8=7-5=3~1","{{0,2,-1,0,0,0,0,0},{2,0,0,-1,0,0,0,0},{-1,0,0,0,2,0,0,0},{0,-1,0,0,0,2,0,0},{0,0,2,0,0,0,1,0},{0,0,0,2,0,0,0,1},{0,0,0,0,1,0,0,2},{0,0,0,0,0,1,2,0}}",0,40,0,264,0,1960,0,15624,
+y8 phase,000002,p=1,v=8,"8AAA 4+++ 4++- ","4UUU 4UUV 4+++ 4++- ","1=2~4=6-8=7-5=3~1","{{0,2,-1,0,0,0,0,0},{2,0,0,-1,0,0,0,0},{-1,0,0,0,2,0,0,0},{0,-1,0,0,0,2,0,0},{0,0,2,0,0,0,1,0},{0,0,0,2,0,0,0,1},{0,0,0,0,1,0,0,2},{0,0,0,0,0,1,2,0}}",0,40,0,264,0,1960,0,15624,
       V       :    1         2         3         4         5         6         7         8    :
     GROUP     :::AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA:::
   EDGE TYPE   :   UUU       UUU       UUU       UUU       UUV       UUV       UUV       UUV   :
   EDGE FROM   :                                                                               :
   EDGE SIGN   :   +++       +++       +++       +++       ++-       ++-       ++-       ++-   :
+
+y8 phase,000003,p=1,v=8,"8AAA 4+++ 2++- 2+-- ","4UUU 2UUV 2UVV 4+++ 2++- 2+-- ","1=2~4=6-8=7-5~~3-1","{{0,2,1,0,0,0,0,0},{2,0,0,-1,0,0,0,0},{1,0,0,0,-2,0,0,0},{0,-1,0,0,0,2,0,0},{0,0,-2,0,0,0,1,0},{0,0,0,2,0,0,0,1},{0,0,0,0,1,0,0,2},{0,0,0,0,0,1,2,0}}",0,40,0,264,0,1960,0,15624,
+      V       :    1         2         3         4         5         6         7         8    :
+    GROUP     :::AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA:::
+  EDGE TYPE   :   UUU       UUU       UUU       UUU       UUV       UUV       UVV       UVV   :
+  EDGE FROM   :                                                                               :
+  EDGE SIGN   :   +++       +++       +++       +++       ++-       ++-       +--       +--   :
+
+y8 phase,000004,p=1,v=8,"8AAA  +++  ++-  +-- 5--- "," UUU  UUV  UVV 5VVV  +++  ++-  +-- 5--- ","1~~2~4~~6-8=7~5~~3~1","{{0,-2,-1,0,0,0,0,0},{-2,0,0,-1,0,0,0,0},{-1,0,0,0,-2,0,0,0},{0,-1,0,0,0,-2,0,0},{0,0,-2,0,0,0,-1,0},{0,0,0,-2,0,0,0,1},{0,0,0,0,-1,0,0,2},{0,0,0,0,0,1,2,0}}",0,40,0,264,0,1960,0,15624,
+      V       :    1         2         3         4         5         6         7         8    :
+    GROUP     :::AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA:::
+  EDGE TYPE   :   UUU       UUV       UVV       VVV       VVV       VVV       VVV       VVV   :
+  EDGE FROM   :                                                                               :
+  EDGE SIGN   :   +++       ++-       +--       ---       ---       ---       ---       ---   :
+
+y8 phase,000005,p=1,v=8,"8AAA  +++  ++- 5+--  --- "," UUU  UUV 5UVV  VVV  +++  ++- 5+--  --- ","1~~2-4~~6-8=7~5~~3-1","{{0,-2,1,0,0,0,0,0},{-2,0,0,1,0,0,0,0},{1,0,0,0,-2,0,0,0},{0,1,0,0,0,-2,0,0},{0,0,-2,0,0,0,-1,0},{0,0,0,-2,0,0,0,1},{0,0,0,0,-1,0,0,2},{0,0,0,0,0,1,2,0}}",0,40,0,264,0,1960,0,15624,
+      V       :    1         2         3         4         5         6         7         8    :
+    GROUP     :::AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA:::
+  EDGE TYPE   :   UUU       UUV       UVV       UVV       UVV       UVV       UVV       VVV   :
+  EDGE FROM   :                                                                               :
+  EDGE SIGN   :   +++       ++-       +--       +--       +--       +--       +--       ---   :
+
+y8 phase,000006,p=1,v=8,"8AAA  +++ 3++- 3+--  --- "," UUU 3UUV 3UVV  VVV  +++ 3++- 3+--  --- ","1~~2-4~~6-8=7~5=3~1","{{0,-2,-1,0,0,0,0,0},{-2,0,0,1,0,0,0,0},{-1,0,0,0,2,0,0,0},{0,1,0,0,0,-2,0,0},{0,0,2,0,0,0,-1,0},{0,0,0,-2,0,0,0,1},{0,0,0,0,-1,0,0,2},{0,0,0,0,0,1,2,0}}",0,40,0,264,0,1960,0,15624,
+      V       :    1         2         3         4         5         6         7         8    :
+    GROUP     :::AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA:::
+  EDGE TYPE   :   UUU       UUV       UUV       UUV       UVV       UVV       UVV       VVV   :
+  EDGE FROM   :                                                                               :
+  EDGE SIGN   :   +++       ++-       ++-       ++-       +--       +--       +--       ---   :
+
+y8 phase,000007,p=1,v=8,"8AAA  +++ 5++-  +--  --- "," UUU 5UUV  UVV  VVV  +++ 5++-  +--  --- ","1=2~4~~6-8=7~5=3~1","{{0,2,-1,0,0,0,0,0},{2,0,0,-1,0,0,0,0},{-1,0,0,0,2,0,0,0},{0,-1,0,0,0,-2,0,0},{0,0,2,0,0,0,-1,0},{0,0,0,-2,0,0,0,1},{0,0,0,0,-1,0,0,2},{0,0,0,0,0,1,2,0}}",0,40,0,264,0,1960,0,15624,
+      V       :    1         2         3         4         5         6         7         8    :
+    GROUP     :::AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA:::
+  EDGE TYPE   :   UUU       UUV       UUV       UUV       UUV       UUV       UVV       VVV   :
+  EDGE FROM   :                                                                               :
+  EDGE SIGN   :   +++       ++-       ++-       ++-       ++-       ++-       +--       ---   :
+
+y8 phase,000008,p=1,v=8,"8AAA 2+++ 2++- 2+-- 2--- ","2UUU 2UUV 2UVV 2VVV 2+++ 2++- 2+-- 2--- ","1=2~4~~6-8=7-5~~3~1","{{0,2,-1,0,0,0,0,0},{2,0,0,-1,0,0,0,0},{-1,0,0,0,-2,0,0,0},{0,-1,0,0,0,-2,0,0},{0,0,-2,0,0,0,1,0},{0,0,0,-2,0,0,0,1},{0,0,0,0,1,0,0,2},{0,0,0,0,0,1,2,0}}",0,40,0,264,0,1960,0,15624,
+      V       :    1         2         3         4         5         6         7         8    :
+    GROUP     :::AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA:::
+  EDGE TYPE   :   UUU       UUU       UUV       UUV       UVV       UVV       VVV       VVV   :
+  EDGE FROM   :                                                                               :
+  EDGE SIGN   :   +++       +++       ++-       ++-       +--       +--       ---       ---   :
+
+y8 phase,000009,p=1,v=8,"8AAA 3+++  ++-  +-- 3--- ","3UUU  UUV  UVV 3VVV 3+++  ++-  +-- 3--- ","1~~2~4=6-8=7-5~~3~1","{{0,-2,-1,0,0,0,0,0},{-2,0,0,-1,0,0,0,0},{-1,0,0,0,-2,0,0,0},{0,-1,0,0,0,2,0,0},{0,0,-2,0,0,0,1,0},{0,0,0,2,0,0,0,1},{0,0,0,0,1,0,0,2},{0,0,0,0,0,1,2,0}}",0,40,0,264,0,1960,0,15624,
+      V       :    1         2         3         4         5         6         7         8    :
+    GROUP     :::AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA:::
+  EDGE TYPE   :   UUU       UUU       UUU       UUV       UVV       VVV       VVV       VVV   :
+  EDGE FROM   :                                                                               :
+  EDGE SIGN   :   +++       +++       +++       ++-       +--       ---       ---       ---   :
+
+y8 phase,000010,p=1,v=8,"8AAA 5+++  ++-  +--  --- ","5UUU  UUV  UVV  VVV 5+++  ++-  +--  --- ","1~~2-4=6-8=7-5=3~1","{{0,-2,-1,0,0,0,0,0},{-2,0,0,1,0,0,0,0},{-1,0,0,0,2,0,0,0},{0,1,0,0,0,2,0,0},{0,0,2,0,0,0,1,0},{0,0,0,2,0,0,0,1},{0,0,0,0,1,0,0,2},{0,0,0,0,0,1,2,0}}",0,40,0,264,0,1960,0,15624,
+      V       :    1         2         3         4         5         6         7         8    :
+    GROUP     :::AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA:::
+  EDGE TYPE   :   UUU       UUU       UUU       UUU       UUU       UUV       UVV       VVV   :
+  EDGE FROM   :                                                                               :
+  EDGE SIGN   :   +++       +++       +++       +++       +++       ++-       +--       ---   :
 
 y8 phase,000011,p=1,v=8,"8AAA 2+++ 4++- 2--- ","2UUU 4UUV 2VVV 2+++ 4++- 2--- ","1~~2~4=6-8=7~5=3~1","{{0,-2,-1,0,0,0,0,0},{-2,0,0,-1,0,0,0,0},{-1,0,0,0,2,0,0,0},{0,-1,0,0,0,2,0,0},{0,0,2,0,0,0,-1,0},{0,0,0,2,0,0,0,1},{0,0,0,0,-1,0,0,2},{0,0,0,0,0,1,2,0}}",0,40,0,264,0,1960,0,15624,
       V       :    1         2         3         4         5         6         7         8    :
@@ -287,172 +287,172 @@ y8 phase,000011,p=1,v=8,"8AAA 2+++ 4++- 2--- ","2UUU 4UUV 2VVV 2+++ 4++- 2--- ",
   EDGE FROM   :                                                                               :
   EDGE SIGN   :   +++       +++       ++-       ++-       ++-       ++-       ---       ---   :
 
-y8 phase,000012,p=1,v=8,"8AAA 4+++ 2++- 2+-- ","4UUU 2UUV 2UVV 4+++ 2++- 2+-- ","1=2~4=6-8=7-5~~3-1","{{0,2,1,0,0,0,0,0},{2,0,0,-1,0,0,0,0},{1,0,0,0,-2,0,0,0},{0,-1,0,0,0,2,0,0},{0,0,-2,0,0,0,1,0},{0,0,0,2,0,0,0,1},{0,0,0,0,1,0,0,2},{0,0,0,0,0,1,2,0}}",0,40,0,264,0,1960,0,15624,
+y8 phase,000012,p=1,v=8,"8AAA 4+++ 4+-- ","4UUU 4UVV 4+++ 4+-- ","1~~2-4=6-8=7-5~~3-1","{{0,-2,1,0,0,0,0,0},{-2,0,0,1,0,0,0,0},{1,0,0,0,-2,0,0,0},{0,1,0,0,0,2,0,0},{0,0,-2,0,0,0,1,0},{0,0,0,2,0,0,0,1},{0,0,0,0,1,0,0,2},{0,0,0,0,0,1,2,0}}",0,40,0,264,0,1960,0,15624,
       V       :    1         2         3         4         5         6         7         8    :
     GROUP     :::AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA:::
-  EDGE TYPE   :   UUU       UUU       UUU       UUU       UUV       UUV       UVV       UVV   :
+  EDGE TYPE   :   UUU       UUU       UUU       UUU       UVV       UVV       UVV       UVV   :
   EDGE FROM   :                                                                               :
-  EDGE SIGN   :   +++       +++       +++       +++       ++-       ++-       +--       +--   :
+  EDGE SIGN   :   +++       +++       +++       +++       +--       +--       +--       +--   :
 
-y8 phase,000013,p=1,v=8,"8AAA  +++  ++-  +-- 5--- "," UUU  UUV  UVV 5VVV  +++  ++-  +-- 5--- ","1~~2~4~~6-8=7~5~~3~1","{{0,-2,-1,0,0,0,0,0},{-2,0,0,-1,0,0,0,0},{-1,0,0,0,-2,0,0,0},{0,-1,0,0,0,-2,0,0},{0,0,-2,0,0,0,-1,0},{0,0,0,-2,0,0,0,1},{0,0,0,0,-1,0,0,2},{0,0,0,0,0,1,2,0}}",0,40,0,264,0,1960,0,15624,
+y8 phase,000013,p=1,v=8,"8AAA 2+++ 4+-- 2--- ","2UUU 4UVV 2VVV 2+++ 4+-- 2--- ","1~~2-4~~6-8=7-5~~3~1","{{0,-2,-1,0,0,0,0,0},{-2,0,0,1,0,0,0,0},{-1,0,0,0,-2,0,0,0},{0,1,0,0,0,-2,0,0},{0,0,-2,0,0,0,1,0},{0,0,0,-2,0,0,0,1},{0,0,0,0,1,0,0,2},{0,0,0,0,0,1,2,0}}",0,40,0,264,0,1960,0,15624,
       V       :    1         2         3         4         5         6         7         8    :
     GROUP     :::AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA:::
-  EDGE TYPE   :   UUU       UUV       UVV       VVV       VVV       VVV       VVV       VVV   :
+  EDGE TYPE   :   UUU       UUU       UVV       UVV       UVV       UVV       VVV       VVV   :
   EDGE FROM   :                                                                               :
-  EDGE SIGN   :   +++       ++-       +--       ---       ---       ---       ---       ---   :
+  EDGE SIGN   :   +++       +++       +--       +--       +--       +--       ---       ---   :
 
-y8 phase,000014,p=1,v=8,"8AAA  +++  ++- 5+--  --- "," UUU  UUV 5UVV  VVV  +++  ++- 5+--  --- ","1~~2-4~~6-8=7~5~~3-1","{{0,-2,1,0,0,0,0,0},{-2,0,0,1,0,0,0,0},{1,0,0,0,-2,0,0,0},{0,1,0,0,0,-2,0,0},{0,0,-2,0,0,0,-1,0},{0,0,0,-2,0,0,0,1},{0,0,0,0,-1,0,0,2},{0,0,0,0,0,1,2,0}}",0,40,0,264,0,1960,0,15624,
-      V       :    1         2         3         4         5         6         7         8    :
-    GROUP     :::AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA:::
-  EDGE TYPE   :   UUU       UUV       UVV       UVV       UVV       UVV       UVV       VVV   :
-  EDGE FROM   :                                                                               :
-  EDGE SIGN   :   +++       ++-       +--       +--       +--       +--       +--       ---   :
-
-y8 phase,000015,p=1,v=8,"8AAA  +++ 3++- 3+--  --- "," UUU 3UUV 3UVV  VVV  +++ 3++- 3+--  --- ","1~~2-4~~6-8=7~5=3~1","{{0,-2,-1,0,0,0,0,0},{-2,0,0,1,0,0,0,0},{-1,0,0,0,2,0,0,0},{0,1,0,0,0,-2,0,0},{0,0,2,0,0,0,-1,0},{0,0,0,-2,0,0,0,1},{0,0,0,0,-1,0,0,2},{0,0,0,0,0,1,2,0}}",0,40,0,264,0,1960,0,15624,
-      V       :    1         2         3         4         5         6         7         8    :
-    GROUP     :::AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA:::
-  EDGE TYPE   :   UUU       UUV       UUV       UUV       UVV       UVV       UVV       VVV   :
-  EDGE FROM   :                                                                               :
-  EDGE SIGN   :   +++       ++-       ++-       ++-       +--       +--       +--       ---   :
-
-y8 phase,000016,p=1,v=8,"8AAA  +++ 5++-  +--  --- "," UUU 5UUV  UVV  VVV  +++ 5++-  +--  --- ","1=2~4~~6-8=7~5=3~1","{{0,2,-1,0,0,0,0,0},{2,0,0,-1,0,0,0,0},{-1,0,0,0,2,0,0,0},{0,-1,0,0,0,-2,0,0},{0,0,2,0,0,0,-1,0},{0,0,0,-2,0,0,0,1},{0,0,0,0,-1,0,0,2},{0,0,0,0,0,1,2,0}}",0,40,0,264,0,1960,0,15624,
-      V       :    1         2         3         4         5         6         7         8    :
-    GROUP     :::AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA:::
-  EDGE TYPE   :   UUU       UUV       UUV       UUV       UUV       UUV       UVV       VVV   :
-  EDGE FROM   :                                                                               :
-  EDGE SIGN   :   +++       ++-       ++-       ++-       ++-       ++-       +--       ---   :
-
-y8 phase,000017,p=1,v=8,"8AAA 2+++ 2++- 2+-- 2--- ","2UUU 2UUV 2UVV 2VVV 2+++ 2++- 2+-- 2--- ","1=2~4~~6-8=7-5~~3~1","{{0,2,-1,0,0,0,0,0},{2,0,0,-1,0,0,0,0},{-1,0,0,0,-2,0,0,0},{0,-1,0,0,0,-2,0,0},{0,0,-2,0,0,0,1,0},{0,0,0,-2,0,0,0,1},{0,0,0,0,1,0,0,2},{0,0,0,0,0,1,2,0}}",0,40,0,264,0,1960,0,15624,
-      V       :    1         2         3         4         5         6         7         8    :
-    GROUP     :::AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA:::
-  EDGE TYPE   :   UUU       UUU       UUV       UUV       UVV       UVV       VVV       VVV   :
-  EDGE FROM   :                                                                               :
-  EDGE SIGN   :   +++       +++       ++-       ++-       +--       +--       ---       ---   :
-
-y8 phase,000018,p=1,v=8,"8AAA 3+++  ++-  +-- 3--- ","3UUU  UUV  UVV 3VVV 3+++  ++-  +-- 3--- ","1~~2~4=6-8=7-5~~3~1","{{0,-2,-1,0,0,0,0,0},{-2,0,0,-1,0,0,0,0},{-1,0,0,0,-2,0,0,0},{0,-1,0,0,0,2,0,0},{0,0,-2,0,0,0,1,0},{0,0,0,2,0,0,0,1},{0,0,0,0,1,0,0,2},{0,0,0,0,0,1,2,0}}",0,40,0,264,0,1960,0,15624,
-      V       :    1         2         3         4         5         6         7         8    :
-    GROUP     :::AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA:::
-  EDGE TYPE   :   UUU       UUU       UUU       UUV       UVV       VVV       VVV       VVV   :
-  EDGE FROM   :                                                                               :
-  EDGE SIGN   :   +++       +++       +++       ++-       +--       ---       ---       ---   :
-
-y8 phase,000019,p=1,v=8,"8AAA 5+++  ++-  +--  --- ","5UUU  UUV  UVV  VVV 5+++  ++-  +--  --- ","1~~2-4=6-8=7-5=3~1","{{0,-2,-1,0,0,0,0,0},{-2,0,0,1,0,0,0,0},{-1,0,0,0,2,0,0,0},{0,1,0,0,0,2,0,0},{0,0,2,0,0,0,1,0},{0,0,0,2,0,0,0,1},{0,0,0,0,1,0,0,2},{0,0,0,0,0,1,2,0}}",0,40,0,264,0,1960,0,15624,
-      V       :    1         2         3         4         5         6         7         8    :
-    GROUP     :::AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA:::
-  EDGE TYPE   :   UUU       UUU       UUU       UUU       UUU       UUV       UVV       VVV   :
-  EDGE FROM   :                                                                               :
-  EDGE SIGN   :   +++       +++       +++       +++       +++       ++-       +--       ---   :
-
-
-  ===   y8 prime factors  === 
-
-y8 prime factors,000001,p=6,v=8," AAA 2BBE  CCC  DDD 2BEE  FFF 3---  +--  ++- 2-++  +++ "," vvv 2vv|  uvv  uuv 2|uu  uuu 3---  +--  ++- 2-++  +++ ","1^^ 2^ 3^^^ 4 5^^~6 7^^~8","{{-1,0,0,0,0,0,0,0},{0,1,0,0,0,0,0,0},{0,0,-3,0,0,0,0,0},{0,0,0,3,0,0,0,0},{0,0,0,0,-2,-1,0,0},{0,0,0,0,-1,2,0,0},{0,0,0,0,0,0,-2,-1},{0,0,0,0,0,0,-1,2}}",0,40,0,264,0,1960,0,15624,
-      V       :    1    :    2         3    :    4    :    5    :    6         7    :    8    :
-    GROUP     :::AAAAA:::::BBBBBBBBBBBBBBB:::::CCCCC:::::DDDDD:::::EEEEEEEEEEEEEEE:::::FFFFF:::
-  EDGE TYPE   :   vvv   :        vv|        :   uvv   :   uuv   :        |uu        :   uuu   :
-  EDGE FROM   :         :          E        :         :         :        B          :         :
-  EDGE SIGN   :   ---   :        ---        :   +--   :   ++-   :        -++        :   +++   :
-
-
-  ===   higgs phases  === 
-
-higgs phase,000001,p=1,v=8,"8AAA 8--- ","8VVV 8--- ","1~2~5~3~1~4~6~2 3~7~4 5~8~6 7~8","{{0,-1,-1,-1,0,0,0,0},{-1,0,0,0,-1,-1,0,0},{-1,0,0,0,-1,0,-1,0},{-1,0,0,0,0,-1,-1,0},{0,-1,-1,0,0,0,0,-1},{0,-1,0,-1,0,0,0,-1},{0,0,-1,-1,0,0,0,-1},{0,0,0,0,-1,-1,-1,0}}",0,24,0,168,0,1464,0,13128,
-      V       :    1         2         3         4         5         6         7         8    :
-    GROUP     :::AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA:::
-  EDGE TYPE   :                                      VVV                                      :
-  EDGE FROM   :                                                                               :
-  EDGE SIGN   :                                      ---                                      :
-
-higgs phase,000002,p=1,v=8,"8AAA 8+-- ","8UVV 8+-- ","1-2~5-3~1~4-6~2 3~7~4 5~8~6 7-8","{{0,1,-1,-1,0,0,0,0},{1,0,0,0,-1,-1,0,0},{-1,0,0,0,1,0,-1,0},{-1,0,0,0,0,1,-1,0},{0,-1,1,0,0,0,0,-1},{0,-1,0,1,0,0,0,-1},{0,0,-1,-1,0,0,0,1},{0,0,0,0,-1,-1,1,0}}",0,24,0,168,0,1464,0,13128,
-      V       :    1         2         3         4         5         6         7         8    :
-    GROUP     :::AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA:::
-  EDGE TYPE   :                                      UVV                                      :
-  EDGE FROM   :                                                                               :
-  EDGE SIGN   :                                      +--                                      :
-
-higgs phase,000003,p=1,v=8,"8AAA 8++- ","8UUV 8++- ","1-2-5-3-1~4-6~2 3~7-4 5~8-6 7-8","{{0,1,1,-1,0,0,0,0},{1,0,0,0,1,-1,0,0},{1,0,0,0,1,0,-1,0},{-1,0,0,0,0,1,1,0},{0,1,1,0,0,0,0,-1},{0,-1,0,1,0,0,0,1},{0,0,-1,1,0,0,0,1},{0,0,0,0,-1,1,1,0}}",0,24,0,168,0,1464,0,13128,
+y8 phase,000014,p=1,v=8,"8AAA 8++- ","8UUV 8++- ","1=2~4=6~8=7~5=3~1","{{0,2,-1,0,0,0,0,0},{2,0,0,-1,0,0,0,0},{-1,0,0,0,2,0,0,0},{0,-1,0,0,0,2,0,0},{0,0,2,0,0,0,-1,0},{0,0,0,2,0,0,0,-1},{0,0,0,0,-1,0,0,2},{0,0,0,0,0,-1,2,0}}",0,40,0,264,0,1960,0,15624,
       V       :    1         2         3         4         5         6         7         8    :
     GROUP     :::AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA:::
   EDGE TYPE   :                                      UUV                                      :
   EDGE FROM   :                                                                               :
   EDGE SIGN   :                                      ++-                                      :
 
-higgs phase,000004,p=1,v=8,"8AAA 6++- 2--- ","6UUV 2VVV 6++- 2--- ","1-2~5~3-1~4~6-2 3-7~4 5~8-6 7-8","{{0,1,1,-1,0,0,0,0},{1,0,0,0,-1,1,0,0},{1,0,0,0,-1,0,1,0},{-1,0,0,0,0,-1,-1,0},{0,-1,-1,0,0,0,0,-1},{0,1,0,-1,0,0,0,1},{0,0,1,-1,0,0,0,1},{0,0,0,0,-1,1,1,0}}",0,24,0,168,0,1464,0,13128,
+y8 phase,000015,p=1,v=8,"8AAA 2++- 2+-- 4--- ","2UUV 2UVV 4VVV 2++- 2+-- 4--- ","1~~2-4~~6~8=7~5~~3~1","{{0,-2,-1,0,0,0,0,0},{-2,0,0,1,0,0,0,0},{-1,0,0,0,-2,0,0,0},{0,1,0,0,0,-2,0,0},{0,0,-2,0,0,0,-1,0},{0,0,0,-2,0,0,0,-1},{0,0,0,0,-1,0,0,2},{0,0,0,0,0,-1,2,0}}",0,40,0,264,0,1960,0,15624,
       V       :    1         2         3         4         5         6         7         8    :
     GROUP     :::AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA:::
-  EDGE TYPE   :   UUV       UUV       UUV       UUV       UUV       UUV       VVV       VVV   :
+  EDGE TYPE   :   UUV       UUV       UVV       UVV       VVV       VVV       VVV       VVV   :
   EDGE FROM   :                                                                               :
-  EDGE SIGN   :   ++-       ++-       ++-       ++-       ++-       ++-       ---       ---   :
+  EDGE SIGN   :   ++-       ++-       +--       +--       ---       ---       ---       ---   :
 
-higgs phase,000005,p=1,v=8,"8AAA 4++- 4+-- ","4UUV 4UVV 4++- 4+-- ","1-2-5~3~1-4~6~2 3-7~4 5~8-6 7-8","{{0,1,-1,1,0,0,0,0},{1,0,0,0,1,-1,0,0},{-1,0,0,0,-1,0,1,0},{1,0,0,0,0,-1,-1,0},{0,1,-1,0,0,0,0,-1},{0,-1,0,-1,0,0,0,1},{0,0,1,-1,0,0,0,1},{0,0,0,0,-1,1,1,0}}",0,24,0,168,0,1464,0,13128,
+y8 phase,000016,p=1,v=8,"8AAA 4++- 4--- ","4UUV 4VVV 4++- 4--- ","1~~2~4=6~8=7~5~~3~1","{{0,-2,-1,0,0,0,0,0},{-2,0,0,-1,0,0,0,0},{-1,0,0,0,-2,0,0,0},{0,-1,0,0,0,2,0,0},{0,0,-2,0,0,0,-1,0},{0,0,0,2,0,0,0,-1},{0,0,0,0,-1,0,0,2},{0,0,0,0,0,-1,2,0}}",0,40,0,264,0,1960,0,15624,
       V       :    1         2         3         4         5         6         7         8    :
     GROUP     :::AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA:::
-  EDGE TYPE   :   UUV       UUV       UUV       UUV       UVV       UVV       UVV       UVV   :
+  EDGE TYPE   :   UUV       UUV       UUV       UUV       VVV       VVV       VVV       VVV   :
   EDGE FROM   :                                                                               :
-  EDGE SIGN   :   ++-       ++-       ++-       ++-       +--       +--       +--       +--   :
+  EDGE SIGN   :   ++-       ++-       ++-       ++-       ---       ---       ---       ---   :
 
-higgs phase,000006,p=1,v=8,"8AAA 2++- 4+-- 2--- ","2UUV 4UVV 2VVV 2++- 4+-- 2--- ","1~2-5-3~1~4~6~2 3~7~4 5~8-6 7-8","{{0,-1,-1,-1,0,0,0,0},{-1,0,0,0,1,-1,0,0},{-1,0,0,0,1,0,-1,0},{-1,0,0,0,0,-1,-1,0},{0,1,1,0,0,0,0,-1},{0,-1,0,-1,0,0,0,1},{0,0,-1,-1,0,0,0,1},{0,0,0,0,-1,1,1,0}}",0,24,0,168,0,1464,0,13128,
+y8 phase,000017,p=1,v=8,"8AAA 8+-- ","8UVV 8+-- ","1~~2-4~~6-8~~7-5~~3-1","{{0,-2,1,0,0,0,0,0},{-2,0,0,1,0,0,0,0},{1,0,0,0,-2,0,0,0},{0,1,0,0,0,-2,0,0},{0,0,-2,0,0,0,1,0},{0,0,0,-2,0,0,0,1},{0,0,0,0,1,0,0,-2},{0,0,0,0,0,1,-2,0}}",0,40,0,264,0,1960,0,15624,
       V       :    1         2         3         4         5         6         7         8    :
     GROUP     :::AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA:::
-  EDGE TYPE   :   UUV       UUV       UVV       UVV       UVV       UVV       VVV       VVV   :
+  EDGE TYPE   :                                      UVV                                      :
   EDGE FROM   :                                                                               :
-  EDGE SIGN   :   ++-       ++-       +--       +--       +--       +--       ---       ---   :
+  EDGE SIGN   :                                      +--                                      :
 
-higgs phase,000007,p=1,v=8,"8AAA 3++- 4+--  --- ","3UUV 4UVV  VVV 3++- 4+--  --- ","1~2~5~3~1-4~6-2 3-7~4 5~8-6 7-8","{{0,-1,-1,1,0,0,0,0},{-1,0,0,0,-1,1,0,0},{-1,0,0,0,-1,0,1,0},{1,0,0,0,0,-1,-1,0},{0,-1,-1,0,0,0,0,-1},{0,1,0,-1,0,0,0,1},{0,0,1,-1,0,0,0,1},{0,0,0,0,-1,1,1,0}}",0,24,0,168,0,1464,0,13128,
+y8 phase,000018,p=1,v=8,"8AAA 4+-- 4--- ","4UVV 4VVV 4+-- 4--- ","1~~2~4~~6-8~~7-5~~3~1","{{0,-2,-1,0,0,0,0,0},{-2,0,0,-1,0,0,0,0},{-1,0,0,0,-2,0,0,0},{0,-1,0,0,0,-2,0,0},{0,0,-2,0,0,0,1,0},{0,0,0,-2,0,0,0,1},{0,0,0,0,1,0,0,-2},{0,0,0,0,0,1,-2,0}}",0,40,0,264,0,1960,0,15624,
       V       :    1         2         3         4         5         6         7         8    :
     GROUP     :::AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA:::
-  EDGE TYPE   :   UUV       UUV       UUV       UVV       UVV       UVV       UVV       VVV   :
+  EDGE TYPE   :   UVV       UVV       UVV       UVV       VVV       VVV       VVV       VVV   :
   EDGE FROM   :                                                                               :
-  EDGE SIGN   :   ++-       ++-       ++-       +--       +--       +--       +--       ---   :
+  EDGE SIGN   :   +--       +--       +--       +--       ---       ---       ---       ---   :
 
-higgs phase,000008,p=1,v=8,"8AAA 8+++ ","8UUU 8+++ ","1-2-5-3-1-4-6-2 3-7-4 5-8-6 7-8","{{0,1,1,1,0,0,0,0},{1,0,0,0,1,1,0,0},{1,0,0,0,1,0,1,0},{1,0,0,0,0,1,1,0},{0,1,1,0,0,0,0,1},{0,1,0,1,0,0,0,1},{0,0,1,1,0,0,0,1},{0,0,0,0,1,1,1,0}}",0,24,0,168,0,1464,0,13128,
+y8 phase,000019,p=1,v=8,"8AAA 8--- ","8VVV 8--- ","1~~2~4~~6~8~~7~5~~3~1","{{0,-2,-1,0,0,0,0,0},{-2,0,0,-1,0,0,0,0},{-1,0,0,0,-2,0,0,0},{0,-1,0,0,0,-2,0,0},{0,0,-2,0,0,0,-1,0},{0,0,0,-2,0,0,0,-1},{0,0,0,0,-1,0,0,-2},{0,0,0,0,0,-1,-2,0}}",0,40,0,264,0,1960,0,15624,
+      V       :    1         2         3         4         5         6         7         8    :
+    GROUP     :::AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA:::
+  EDGE TYPE   :                                      VVV                                      :
+  EDGE FROM   :                                                                               :
+  EDGE SIGN   :                                      ---                                      :
+
+
+  ===   y8 prime factors  === 
+
+y8 prime factors,000001,p=6,v=8," AAA 2BBE  CCC  DDD 2BEE  FFF  --- 2--+  +--  ++- 3+++ "," vvv 2vv|  uvv  uuv 2|uu  uuu  --- 2--+  +--  ++- 3+++ ","1^^ 2^ 3^^^ 4 5^^-6 7^^-8","{{-1,0,0,0,0,0,0,0},{0,1,0,0,0,0,0,0},{0,0,-3,0,0,0,0,0},{0,0,0,3,0,0,0,0},{0,0,0,0,-2,1,0,0},{0,0,0,0,1,2,0,0},{0,0,0,0,0,0,-2,1},{0,0,0,0,0,0,1,2}}",0,40,0,264,0,1960,0,15624,
+      V       :    1    :    2         3    :    4    :    5    :    6         7    :    8    :
+    GROUP     :::AAAAA:::::BBBBBBBBBBBBBBB:::::CCCCC:::::DDDDD:::::EEEEEEEEEEEEEEE:::::FFFFF:::
+  EDGE TYPE   :   vvv   :        vv|        :   uvv   :   uuv   :        |uu        :   uuu   :
+  EDGE FROM   :         :          E        :         :         :        B          :         :
+  EDGE SIGN   :   ---   :        --+        :   +--   :   ++-   :        +++        :   +++   :
+
+
+  ===   higgs phases  === 
+
+higgs phase,000001,p=1,v=8,"8AAA 8+++ ","8UUU 8+++ ","1-2-5-3-1-4-6-2 3-7-4 5-8-6 7-8","{{0,1,1,1,0,0,0,0},{1,0,0,0,1,1,0,0},{1,0,0,0,1,0,1,0},{1,0,0,0,0,1,1,0},{0,1,1,0,0,0,0,1},{0,1,0,1,0,0,0,1},{0,0,1,1,0,0,0,1},{0,0,0,0,1,1,1,0}}",0,24,0,168,0,1464,0,13128,
       V       :    1         2         3         4         5         6         7         8    :
     GROUP     :::AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA:::
   EDGE TYPE   :                                      UUU                                      :
   EDGE FROM   :                                                                               :
   EDGE SIGN   :                                      +++                                      :
 
-higgs phase,000009,p=1,v=8,"8AAA 2+++ 6+-- ","2UUU 6UVV 2+++ 6+-- ","1-2~5~3-1-4~6~2 3~7~4 5-8-6 7-8","{{0,1,1,1,0,0,0,0},{1,0,0,0,-1,-1,0,0},{1,0,0,0,-1,0,-1,0},{1,0,0,0,0,-1,-1,0},{0,-1,-1,0,0,0,0,1},{0,-1,0,-1,0,0,0,1},{0,0,-1,-1,0,0,0,1},{0,0,0,0,1,1,1,0}}",0,24,0,168,0,1464,0,13128,
-      V       :    1         2         3         4         5         6         7         8    :
-    GROUP     :::AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA:::
-  EDGE TYPE   :   UUU       UUU       UVV       UVV       UVV       UVV       UVV       UVV   :
-  EDGE FROM   :                                                                               :
-  EDGE SIGN   :   +++       +++       +--       +--       +--       +--       +--       +--   :
-
-higgs phase,000010,p=1,v=8,"8AAA  +++ 3+-- 4--- "," UUU 3UVV 4VVV  +++ 3+-- 4--- ","1~2~5~3~1~4~6~2 3~7~4 5-8-6 7-8","{{0,-1,-1,-1,0,0,0,0},{-1,0,0,0,-1,-1,0,0},{-1,0,0,0,-1,0,-1,0},{-1,0,0,0,0,-1,-1,0},{0,-1,-1,0,0,0,0,1},{0,-1,0,-1,0,0,0,1},{0,0,-1,-1,0,0,0,1},{0,0,0,0,1,1,1,0}}",0,24,0,168,0,1464,0,13128,
-      V       :    1         2         3         4         5         6         7         8    :
-    GROUP     :::AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA:::
-  EDGE TYPE   :   UUU       UVV       UVV       UVV       VVV       VVV       VVV       VVV   :
-  EDGE FROM   :                                                                               :
-  EDGE SIGN   :   +++       +--       +--       +--       ---       ---       ---       ---   :
-
-higgs phase,000011,p=1,v=8,"8AAA 4+++ 3++-  --- ","4UUU 3UUV  VVV 4+++ 3++-  --- ","1~2-5-3~1~4-6-2 3-7-4 5-8-6 7-8","{{0,-1,-1,-1,0,0,0,0},{-1,0,0,0,1,1,0,0},{-1,0,0,0,1,0,1,0},{-1,0,0,0,0,1,1,0},{0,1,1,0,0,0,0,1},{0,1,0,1,0,0,0,1},{0,0,1,1,0,0,0,1},{0,0,0,0,1,1,1,0}}",0,24,0,168,0,1464,0,13128,
-      V       :    1         2         3         4         5         6         7         8    :
-    GROUP     :::AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA:::
-  EDGE TYPE   :   UUU       UUU       UUU       UUU       UUV       UUV       UUV       VVV   :
-  EDGE FROM   :                                                                               :
-  EDGE SIGN   :   +++       +++       +++       +++       ++-       ++-       ++-       ---   :
-
-higgs phase,000012,p=1,v=8,"8AAA  +++ 4++- 3+-- "," UUU 4UUV 3UVV  +++ 4++- 3+-- ","1-2~5~3-1~4-6~2 3~7-4 5-8-6 7-8","{{0,1,1,-1,0,0,0,0},{1,0,0,0,-1,-1,0,0},{1,0,0,0,-1,0,-1,0},{-1,0,0,0,0,1,1,0},{0,-1,-1,0,0,0,0,1},{0,-1,0,1,0,0,0,1},{0,0,-1,1,0,0,0,1},{0,0,0,0,1,1,1,0}}",0,24,0,168,0,1464,0,13128,
+higgs phase,000002,p=1,v=8,"8AAA  +++ 4++- 3+-- "," UUU 4UUV 3UVV  +++ 4++- 3+-- ","1-2~5~3-1~4-6~2 3~7-4 5-8-6 7-8","{{0,1,1,-1,0,0,0,0},{1,0,0,0,-1,-1,0,0},{1,0,0,0,-1,0,-1,0},{-1,0,0,0,0,1,1,0},{0,-1,-1,0,0,0,0,1},{0,-1,0,1,0,0,0,1},{0,0,-1,1,0,0,0,1},{0,0,0,0,1,1,1,0}}",0,24,0,168,0,1464,0,13128,
       V       :    1         2         3         4         5         6         7         8    :
     GROUP     :::AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA:::
   EDGE TYPE   :   UUU       UUV       UUV       UUV       UUV       UVV       UVV       UVV   :
   EDGE FROM   :                                                                               :
   EDGE SIGN   :   +++       ++-       ++-       ++-       ++-       +--       +--       +--   :
 
-higgs phase,000013,p=1,v=8,"8AAA 2+++ 4++- 2+-- ","2UUU 4UUV 2UVV 2+++ 4++- 2+-- ","1-2~5-3~1~4-6~2 3-7-4 5-8-6 7-8","{{0,1,-1,-1,0,0,0,0},{1,0,0,0,-1,-1,0,0},{-1,0,0,0,1,0,1,0},{-1,0,0,0,0,1,1,0},{0,-1,1,0,0,0,0,1},{0,-1,0,1,0,0,0,1},{0,0,1,1,0,0,0,1},{0,0,0,0,1,1,1,0}}",0,24,0,168,0,1464,0,13128,
+higgs phase,000003,p=1,v=8,"8AAA 2+++ 4++- 2+-- ","2UUU 4UUV 2UVV 2+++ 4++- 2+-- ","1-2~5-3~1~4-6~2 3-7-4 5-8-6 7-8","{{0,1,-1,-1,0,0,0,0},{1,0,0,0,-1,-1,0,0},{-1,0,0,0,1,0,1,0},{-1,0,0,0,0,1,1,0},{0,-1,1,0,0,0,0,1},{0,-1,0,1,0,0,0,1},{0,0,1,1,0,0,0,1},{0,0,0,0,1,1,1,0}}",0,24,0,168,0,1464,0,13128,
       V       :    1         2         3         4         5         6         7         8    :
     GROUP     :::AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA:::
   EDGE TYPE   :   UUU       UUU       UUV       UUV       UUV       UUV       UVV       UVV   :
   EDGE FROM   :                                                                               :
   EDGE SIGN   :   +++       +++       ++-       ++-       ++-       ++-       +--       +--   :
 
-higgs phase,000014,p=1,v=8,"8AAA 2+++ 2++- 2+-- 2--- ","2UUU 2UUV 2UVV 2VVV 2+++ 2++- 2+-- 2--- ","1~2~5~3~1-4-6~2 3~7-4 5-8-6 7-8","{{0,-1,-1,1,0,0,0,0},{-1,0,0,0,-1,-1,0,0},{-1,0,0,0,-1,0,-1,0},{1,0,0,0,0,1,1,0},{0,-1,-1,0,0,0,0,1},{0,-1,0,1,0,0,0,1},{0,0,-1,1,0,0,0,1},{0,0,0,0,1,1,1,0}}",0,24,0,168,0,1464,0,13128,
+higgs phase,000004,p=1,v=8,"8AAA 2+++ 2++- 2+-- 2--- ","2UUU 2UUV 2UVV 2VVV 2+++ 2++- 2+-- 2--- ","1~2~5~3~1-4-6~2 3~7-4 5-8-6 7-8","{{0,-1,-1,1,0,0,0,0},{-1,0,0,0,-1,-1,0,0},{-1,0,0,0,-1,0,-1,0},{1,0,0,0,0,1,1,0},{0,-1,-1,0,0,0,0,1},{0,-1,0,1,0,0,0,1},{0,0,-1,1,0,0,0,1},{0,0,0,0,1,1,1,0}}",0,24,0,168,0,1464,0,13128,
       V       :    1         2         3         4         5         6         7         8    :
     GROUP     :::AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA:::
   EDGE TYPE   :   UUU       UUU       UUV       UUV       UVV       UVV       VVV       VVV   :
   EDGE FROM   :                                                                               :
   EDGE SIGN   :   +++       +++       ++-       ++-       +--       +--       ---       ---   :
+
+higgs phase,000005,p=1,v=8,"8AAA 4+++ 3++-  --- ","4UUU 3UUV  VVV 4+++ 3++-  --- ","1~2-5-3~1~4-6-2 3-7-4 5-8-6 7-8","{{0,-1,-1,-1,0,0,0,0},{-1,0,0,0,1,1,0,0},{-1,0,0,0,1,0,1,0},{-1,0,0,0,0,1,1,0},{0,1,1,0,0,0,0,1},{0,1,0,1,0,0,0,1},{0,0,1,1,0,0,0,1},{0,0,0,0,1,1,1,0}}",0,24,0,168,0,1464,0,13128,
+      V       :    1         2         3         4         5         6         7         8    :
+    GROUP     :::AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA:::
+  EDGE TYPE   :   UUU       UUU       UUU       UUU       UUV       UUV       UUV       VVV   :
+  EDGE FROM   :                                                                               :
+  EDGE SIGN   :   +++       +++       +++       +++       ++-       ++-       ++-       ---   :
+
+higgs phase,000006,p=1,v=8,"8AAA 2+++ 6+-- ","2UUU 6UVV 2+++ 6+-- ","1-2~5~3-1-4~6~2 3~7~4 5-8-6 7-8","{{0,1,1,1,0,0,0,0},{1,0,0,0,-1,-1,0,0},{1,0,0,0,-1,0,-1,0},{1,0,0,0,0,-1,-1,0},{0,-1,-1,0,0,0,0,1},{0,-1,0,-1,0,0,0,1},{0,0,-1,-1,0,0,0,1},{0,0,0,0,1,1,1,0}}",0,24,0,168,0,1464,0,13128,
+      V       :    1         2         3         4         5         6         7         8    :
+    GROUP     :::AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA:::
+  EDGE TYPE   :   UUU       UUU       UVV       UVV       UVV       UVV       UVV       UVV   :
+  EDGE FROM   :                                                                               :
+  EDGE SIGN   :   +++       +++       +--       +--       +--       +--       +--       +--   :
+
+higgs phase,000007,p=1,v=8,"8AAA  +++ 3+-- 4--- "," UUU 3UVV 4VVV  +++ 3+-- 4--- ","1~2~5~3~1~4~6~2 3~7~4 5-8-6 7-8","{{0,-1,-1,-1,0,0,0,0},{-1,0,0,0,-1,-1,0,0},{-1,0,0,0,-1,0,-1,0},{-1,0,0,0,0,-1,-1,0},{0,-1,-1,0,0,0,0,1},{0,-1,0,-1,0,0,0,1},{0,0,-1,-1,0,0,0,1},{0,0,0,0,1,1,1,0}}",0,24,0,168,0,1464,0,13128,
+      V       :    1         2         3         4         5         6         7         8    :
+    GROUP     :::AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA:::
+  EDGE TYPE   :   UUU       UVV       UVV       UVV       VVV       VVV       VVV       VVV   :
+  EDGE FROM   :                                                                               :
+  EDGE SIGN   :   +++       +--       +--       +--       ---       ---       ---       ---   :
+
+higgs phase,000008,p=1,v=8,"8AAA 8++- ","8UUV 8++- ","1-2-5-3-1~4-6~2 3~7-4 5~8-6 7-8","{{0,1,1,-1,0,0,0,0},{1,0,0,0,1,-1,0,0},{1,0,0,0,1,0,-1,0},{-1,0,0,0,0,1,1,0},{0,1,1,0,0,0,0,-1},{0,-1,0,1,0,0,0,1},{0,0,-1,1,0,0,0,1},{0,0,0,0,-1,1,1,0}}",0,24,0,168,0,1464,0,13128,
+      V       :    1         2         3         4         5         6         7         8    :
+    GROUP     :::AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA:::
+  EDGE TYPE   :                                      UUV                                      :
+  EDGE FROM   :                                                                               :
+  EDGE SIGN   :                                      ++-                                      :
+
+higgs phase,000009,p=1,v=8,"8AAA 4++- 4+-- ","4UUV 4UVV 4++- 4+-- ","1-2-5~3~1-4~6~2 3-7~4 5~8-6 7-8","{{0,1,-1,1,0,0,0,0},{1,0,0,0,1,-1,0,0},{-1,0,0,0,-1,0,1,0},{1,0,0,0,0,-1,-1,0},{0,1,-1,0,0,0,0,-1},{0,-1,0,-1,0,0,0,1},{0,0,1,-1,0,0,0,1},{0,0,0,0,-1,1,1,0}}",0,24,0,168,0,1464,0,13128,
+      V       :    1         2         3         4         5         6         7         8    :
+    GROUP     :::AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA:::
+  EDGE TYPE   :   UUV       UUV       UUV       UUV       UVV       UVV       UVV       UVV   :
+  EDGE FROM   :                                                                               :
+  EDGE SIGN   :   ++-       ++-       ++-       ++-       +--       +--       +--       +--   :
+
+higgs phase,000010,p=1,v=8,"8AAA 2++- 4+-- 2--- ","2UUV 4UVV 2VVV 2++- 4+-- 2--- ","1~2-5-3~1~4~6~2 3~7~4 5~8-6 7-8","{{0,-1,-1,-1,0,0,0,0},{-1,0,0,0,1,-1,0,0},{-1,0,0,0,1,0,-1,0},{-1,0,0,0,0,-1,-1,0},{0,1,1,0,0,0,0,-1},{0,-1,0,-1,0,0,0,1},{0,0,-1,-1,0,0,0,1},{0,0,0,0,-1,1,1,0}}",0,24,0,168,0,1464,0,13128,
+      V       :    1         2         3         4         5         6         7         8    :
+    GROUP     :::AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA:::
+  EDGE TYPE   :   UUV       UUV       UVV       UVV       UVV       UVV       VVV       VVV   :
+  EDGE FROM   :                                                                               :
+  EDGE SIGN   :   ++-       ++-       +--       +--       +--       +--       ---       ---   :
+
+higgs phase,000011,p=1,v=8,"8AAA 3++- 4+--  --- ","3UUV 4UVV  VVV 3++- 4+--  --- ","1~2~5~3~1-4~6-2 3-7~4 5~8-6 7-8","{{0,-1,-1,1,0,0,0,0},{-1,0,0,0,-1,1,0,0},{-1,0,0,0,-1,0,1,0},{1,0,0,0,0,-1,-1,0},{0,-1,-1,0,0,0,0,-1},{0,1,0,-1,0,0,0,1},{0,0,1,-1,0,0,0,1},{0,0,0,0,-1,1,1,0}}",0,24,0,168,0,1464,0,13128,
+      V       :    1         2         3         4         5         6         7         8    :
+    GROUP     :::AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA:::
+  EDGE TYPE   :   UUV       UUV       UUV       UVV       UVV       UVV       UVV       VVV   :
+  EDGE FROM   :                                                                               :
+  EDGE SIGN   :   ++-       ++-       ++-       +--       +--       +--       +--       ---   :
+
+higgs phase,000012,p=1,v=8,"8AAA 6++- 2--- ","6UUV 2VVV 6++- 2--- ","1-2~5~3-1~4~6-2 3-7~4 5~8-6 7-8","{{0,1,1,-1,0,0,0,0},{1,0,0,0,-1,1,0,0},{1,0,0,0,-1,0,1,0},{-1,0,0,0,0,-1,-1,0},{0,-1,-1,0,0,0,0,-1},{0,1,0,-1,0,0,0,1},{0,0,1,-1,0,0,0,1},{0,0,0,0,-1,1,1,0}}",0,24,0,168,0,1464,0,13128,
+      V       :    1         2         3         4         5         6         7         8    :
+    GROUP     :::AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA:::
+  EDGE TYPE   :   UUV       UUV       UUV       UUV       UUV       UUV       VVV       VVV   :
+  EDGE FROM   :                                                                               :
+  EDGE SIGN   :   ++-       ++-       ++-       ++-       ++-       ++-       ---       ---   :
+
+higgs phase,000013,p=1,v=8,"8AAA 8+-- ","8UVV 8+-- ","1-2~5-3~1~4-6~2 3~7~4 5~8~6 7-8","{{0,1,-1,-1,0,0,0,0},{1,0,0,0,-1,-1,0,0},{-1,0,0,0,1,0,-1,0},{-1,0,0,0,0,1,-1,0},{0,-1,1,0,0,0,0,-1},{0,-1,0,1,0,0,0,-1},{0,0,-1,-1,0,0,0,1},{0,0,0,0,-1,-1,1,0}}",0,24,0,168,0,1464,0,13128,
+      V       :    1         2         3         4         5         6         7         8    :
+    GROUP     :::AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA:::
+  EDGE TYPE   :                                      UVV                                      :
+  EDGE FROM   :                                                                               :
+  EDGE SIGN   :                                      +--                                      :
+
+higgs phase,000014,p=1,v=8,"8AAA 8--- ","8VVV 8--- ","1~2~5~3~1~4~6~2 3~7~4 5~8~6 7~8","{{0,-1,-1,-1,0,0,0,0},{-1,0,0,0,-1,-1,0,0},{-1,0,0,0,-1,0,-1,0},{-1,0,0,0,0,-1,-1,0},{0,-1,-1,0,0,0,0,-1},{0,-1,0,-1,0,0,0,-1},{0,0,-1,-1,0,0,0,-1},{0,0,0,0,-1,-1,-1,0}}",0,24,0,168,0,1464,0,13128,
+      V       :    1         2         3         4         5         6         7         8    :
+    GROUP     :::AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA:::
+  EDGE TYPE   :                                      VVV                                      :
+  EDGE FROM   :                                                                               :
+  EDGE SIGN   :                                      ---                                      :
 
 
   ===   higgs prime factors  === 

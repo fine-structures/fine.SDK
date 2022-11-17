@@ -115,14 +115,14 @@ Finally, let's include *all* possible particles using AllEdgeSigns().
 We call this the "complete" catalog since every possible particle (having any combination of negative edges).
 
 With a complete catalog, we can query for a given particle's Traces and get a list of all possible equivalent "phase modes":
-muon phases (long way),000001,p=1,v=3," BBC  AAB  ACC  ---  --+  -++ "," |||  ||u  |uu  ---  --+  -++ ","1~2~~3",3,15,27,
-muon phases (long way),000002,p=1,v=3," BBC  AAB  ACC 2--+  +++ "," |||  ||u  |uu 2--+  +++ ","1-2~~3",3,15,27,
-muon phases (long way),000003,p=1,v=3," BBC  AAB  ACC  ++-  +++  -++ "," |||  ||u  |uu  ++-  +++  -++ ","1~2=3",3,15,27,
-muon phases (long way),000004,p=1,v=3," BBC  AAB  ACC 3+++ "," |||  ||u  |uu 3+++ ","1-2=3",3,15,27,
+muon phases (long way),000001,p=1,v=3," BBC  AAB  ACC 3+++ "," |||  ||u  |uu 3+++ ","1-2=3",3,15,27,
+muon phases (long way),000002,p=1,v=3," BBC  AAB  ACC  ++-  +++  -++ "," |||  ||u  |uu  ++-  +++  -++ ","1~2=3",3,15,27,
+muon phases (long way),000003,p=1,v=3," BBC  AAB  ACC 2--+  +++ "," |||  ||u  |uu 2--+  +++ ","1-2~~3",3,15,27,
+muon phases (long way),000004,p=1,v=3," BBC  AAB  ACC  ---  --+  -++ "," |||  ||u  |uu  ---  --+  -++ ","1~2~~3",3,15,27,
 
 The function PhaseModes() wraps the above into a convenient function.
 Check out lib/lib2x3.py for other utility functions.
-muon phases (PhaseModes),000001,p=1,v=3," BBC  AAB  ACC  ---  --+  -++ "," |||  ||u  |uu  ---  --+  -++ ","1~2~~3",3,15,27,
-muon phases (PhaseModes),000002,p=1,v=3," BBC  AAB  ACC 2--+  +++ "," |||  ||u  |uu 2--+  +++ ","1-2~~3",3,15,27,
-muon phases (PhaseModes),000003,p=1,v=3," BBC  AAB  ACC  ++-  +++  -++ "," |||  ||u  |uu  ++-  +++  -++ ","1~2=3",3,15,27,
-muon phases (PhaseModes),000004,p=1,v=3," BBC  AAB  ACC 3+++ "," |||  ||u  |uu 3+++ ","1-2=3",3,15,27,
+muon phases (PhaseModes),000001,p=1,v=3," BBC  AAB  ACC 3+++ "," |||  ||u  |uu 3+++ ","1-2=3",3,15,27,
+muon phases (PhaseModes),000002,p=1,v=3," BBC  AAB  ACC  ++-  +++  -++ "," |||  ||u  |uu  ++-  +++  -++ ","1~2=3",3,15,27,
+muon phases (PhaseModes),000003,p=1,v=3," BBC  AAB  ACC 2--+  +++ "," |||  ||u  |uu 2--+  +++ ","1-2~~3",3,15,27,
+muon phases (PhaseModes),000004,p=1,v=3," BBC  AAB  ACC  ---  --+  -++ "," |||  ||u  |uu  ---  --+  -++ ","1~2~~3",3,15,27,
