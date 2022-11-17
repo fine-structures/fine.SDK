@@ -141,9 +141,9 @@ func (v *triVtx) appendTrait(io []byte, trait VtxTrait, ascii bool) []byte {
 				io = append(io, sign)
 			} else {
 				ord *= 3
-				if sign == '-' {
+				if sign == '+' {
 					ord += 1
-				} else if sign == '+' {
+				} else if sign == '-' {
 					ord += 2
 				}
 			}
