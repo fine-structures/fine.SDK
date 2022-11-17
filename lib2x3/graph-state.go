@@ -141,9 +141,9 @@ func (v *triVtx) appendTrait(io []byte, trait VtxTrait, ascii bool) []byte {
 				io = append(io, sign)
 			} else {
 				ord *= 3
-				if sign == '-' {
+				if sign == '+' {
 					ord += 1
-				} else if sign == '+' {
+				} else if sign == '-' {
 					ord += 2
 				}
 			}
@@ -507,14 +507,6 @@ func (X *graphState) findGroupRuns(io []uint8) []uint8 {
 }
 */
 
-// func EncodingSzForTriGraph(Nv int32, opts GraphEncodingOpts) int32 {
-// 	___ := 0
-// 	if opts&OutputAscii != 0 {
-// 		___ = 1
-// 	}
-// 	return (1 + ___ + Nv*(3 + ____) +  ___ + MaxVtxID + ___ + MaxVtxID*(3+___) + ___ + 8*(3+___)
-// }
-
 /*
 	    Number of families
 	    |   Family edges [*^ABCDEF..]
@@ -524,34 +516,6 @@ func (X *graphState) findGroupRuns(io []uint8) []uint8 {
 		|   |   |               |           |
   UTF8:	2   *AC 2  *^B 2 ...    BB. AC.     N--- N--+ N-+- N-++ N+-- N+-+ N++- N+++
   Bits: 6   666 2  666 6        66  66      6    6    6    6    6    6    6    6
-
-            Edge  Edge  Count  Edge
-            From  Type         Sign
-        2   AAC   *|o   1      +-+
-
-      V       :     1           2     :     3           4           5           6     :     7           8     :
-    FAMILY    ::::aaaaa:::::::aaaaa:::::::BBBBB:::::::BBBBB:::::::BBBBB:::::::BBBBB:::::::CCCCC:::::::CCCCC::::
-    GROUP     ::::AAAAA:::::::AAAAA:::::::BBBBB:::::::BBBBB:::::::BBBBB:::::::BBBBB:::::::CCCCC:::::::CCCCC::::
-  EDGE TYPE   :     .    ||*    .     :     .           .    |||    .           .     :     .    ||o    .     :
-  EDGE FROM   :     .    BB     .     :     .           .    ACB    .           .     :     .    BB     .     :
-  EDGE SIGN   :    ---         ++-    :    -++         -++         +++         +++    :     .    +++    .     :
-
-  (for each cycle group)
-    3 BBA ACB BBC 2 4 2   ||* ||| ||o 2 4 2     --- ++- -++2 +++3
-
-  T = vtx types (16 enums, 4 bits)
-
-       Family edges in          Family      Vtx type (ordinal enum)      Vtx Type
-                                Counts      Counts                       Counts
-ascii:
-	3 +B+B-A  +A+C+B  +B+B+C    2 4 2       ||* ||| ||o                  2 4 2     --- ++- -++2 +++3
-
-
-LSM:  (families ranked by family cardinality)
-      edges from   counts  edge innate sign    count       edge type         edge sign modulate
-	3 BBA ACB BBC  2 4 2   ++- +++  +++        2 4 2       ||* ||| ||o        --- ++- -++2 +++3
-
-  maybe subsequently split runs by group *and* edge type ("group family")
 
 
 
