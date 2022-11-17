@@ -10,7 +10,7 @@ printOpts = {
 }
 
 
-light_of_yashua = [
+light_of_yeshua = [
     ["gamma", "1---2"],
     ["tetra", "1-2-3-1-4-2, 3-4"],
     ["y4",    "1=2-3=4-1"],
@@ -20,7 +20,7 @@ light_of_yashua = [
 ]
 
 
-for Xname, graphStr in light_of_yashua:
+for Xname, graphStr in light_of_yeshua:
     X = Graph(graphStr)
     print("\n  ===   %s phases  === \n" % Xname)
     X.PhaseModes().Print(Xname + " phase", **printOpts).Go()
