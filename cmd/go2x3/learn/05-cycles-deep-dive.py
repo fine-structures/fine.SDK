@@ -77,12 +77,12 @@ show(" H (higgs)",          "1-2-3-4-1-5-6-7-8-5, 2-6, 3-7, 4-8")
 show("~H (higgs)",          "1~2~3~4~1~5~6~7~8~5, 2~6, 3~7, 4~8")
 
 # Mystery: why does this Traces (and 2 others in v=6) not appear in the 1.2202.4 catalog?!?
-show("missing!", "1~2-4-5^-6~4,1-3-6", True)
-phases("missing!", "1~2-4-5^-6~4,1-3-6")
+show("missing!", "1~2-4-5^-6~4, 1-3-6")
+phases("missing!", "1~2-4-5^-6~4, 1-3-6", True)
 
 print("\n===============================================  \n")
-phases("p+ (proton)",       "1-2-3")
-phases("n0 (neutron)",      "1-2-3-4-2")
+phases("p+ (proton)",       "1-2-3",            True)
+phases("n0 (neutron)",      "1-2-3-4-2",        True)
 phases("tricky_tri_1",      "1^~2^-3^",         True)
 phases("tricky_tri_2",      "1^-2^~3~1",        True)
 phases("tricky_tri_3",      "1^~2^~3~1",        True)
