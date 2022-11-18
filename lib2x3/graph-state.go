@@ -614,19 +614,25 @@ func (X *graphState) appendGraphEncoding(io []byte, opts GraphEncodingOpts) []by
 		for gi, g := range Tg {
 			loopNet, groupNet, edgeAbs := g.tracesCoeffs()
 			if ascii {
-				io = append(io, '(')
+				if gi > 0 { io = append(io, ' ') }
+				io = append(io, 'A' + byte(gi), '(')
+
 				if loopNet != 0 {
+					//if loopNet > 0 { io = append(io, ' ') }
 					io = strconv.AppendInt(io, int64(loopNet), 10)
 				}
 				io = append(io, ',')
 				if groupNet != 0 {
+					//if groupNet > 0 { io = append(io, ' ') }
 					io = strconv.AppendInt(io, int64(groupNet), 10)
 				}
 				io = append(io, ',')
 				if edgeAbs != 0 {
+					//if edgeAbs > 0 { io = append(io, ' ') }
 					io = strconv.AppendInt(io, int64(edgeAbs), 10)
 				}
-				io = append(io, ')', 'A' + byte(gi), ' ')
+				io = append(io, ')')
+
 			} else {
 				io = append(io,
 					MaxVtxID + byte(loopNet),
@@ -648,33 +654,60 @@ func (X *graphState) appendGraphEncoding(io []byte, opts GraphEncodingOpts) []by
 		
 		for gi, g := range Tg {
 			if ascii {
-				io = append(io, '(')
-				if c := g.count[LocalLoop_Pos]; c > 0 {
-					io = strconv.AppendInt(io, int64(c), 10)
-				}
-				if c := g.count[LocalLoop_Neg]; c > 0 {
-					io = strconv.AppendInt(io, int64(-c), 10)
-				}
-				io = append(io, ',')
+				if gi > 0 { io = append(io, ' ') }
+				io = append(io, 'A' + byte(gi), '(')
 				
-				if c := g.count[GroupEdge_Pos]; c > 0 {
-					io = strconv.AppendInt(io, int64(c), 10)
-				}
-				if c := g.count[GroupEdge_Neg]; c > 0 {
-					io = strconv.AppendInt(io, int64(-c), 10)
-				}
-
-				io = append(io, ',')
-
-				if c := g.count[BasicEdge_Pos]; c > 0 {
-					io = strconv.AppendInt(io, int64(c), 10)
-				}
-				if c := g.count[BasicEdge_Neg]; c > 0 {
-					io = strconv.AppendInt(io, int64(-c), 10)
+				if g.count[LocalLoop_Pos] + g.count[LocalLoop_Neg] > 0 {
+					if c := g.count[LocalLoop_Pos]; c >= 0 {
+						io = strconv.AppendInt(io, int64(c), 10)
+					} else {
+						io = append(io, ' ')
+					}
+					if c := g.count[LocalLoop_Neg]; c > 0 {
+						io = strconv.AppendInt(io, int64(-c), 10)
+					} else {
+						io = append(io, '-', '0')
+					}
 				}
 				
-				io = append(io, ')', 'A' + byte(gi), ' ')
+				io = append(io, ',')
+
+				if g.count[GroupEdge_Pos] + g.count[GroupEdge_Neg] > 0 {
+					if c := g.count[GroupEdge_Pos]; c >= 0 {
+						io = strconv.AppendInt(io, int64(c), 10)
+					} else {
+						io = append(io, ' ')
+					}
+					if c := g.count[GroupEdge_Neg]; c > 0 {
+						io = strconv.AppendInt(io, int64(-c), 10)
+					} else {
+						io = append(io, '-', '0')
+					}
+				}
+				
+				io = append(io, ',')
+
+				if g.count[BasicEdge_Pos] + g.count[BasicEdge_Neg] > 0 {
+					if c := g.count[BasicEdge_Pos]; c >= 0 {
+						io = strconv.AppendInt(io, int64(c), 10)
+					} else {
+						io = append(io, ' ')
+					}
+					if c := g.count[BasicEdge_Neg]; c > 0 {
+						io = strconv.AppendInt(io, int64(-c), 10)
+					} else {
+						io = append(io, '-', '0')
+					}
+				}
+				
+				io = append(io, ')')
 			} else {
+				io = append(io,
+					byte(g.count[LocalLoop_Neg]), byte(g.count[LocalLoop_Pos]),
+					byte(g.count[GroupEdge_Neg]), byte(g.count[GroupEdge_Pos]),
+					byte(g.count[BasicEdge_Neg]), byte(g.count[BasicEdge_Pos]),
+				)
+					
 				for _, c := range g.count {
 					io = append(io, byte(c))
 				}
