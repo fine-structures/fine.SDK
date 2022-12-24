@@ -51,6 +51,8 @@ func TestBasics(t *testing.T) {
 
 	PrintCycles("1-2-3")
 
+	PrintCycles("1^-~2-3=4")
+
 	PrintCycles("1-2,2=3")
 	PrintCycles("1-2,1-4,2-3,2-4,3-4")
 
@@ -87,5 +89,5 @@ func PrintCycles(Xstr string) {
 	})
 	str := b.String()
 	fmt.Println(str)
-
+	X.Reclaim()
 }

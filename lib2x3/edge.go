@@ -35,11 +35,13 @@ func (e GroupEdge) EdgeTypeOrd() EdgeTypeOrd {
 }
 
 func (e GroupEdge) EdgeTypeRune() byte {
-	return [NumEdgeTypes]byte{
-		'|', '|',
-		'U', 'V',
-		'u', 'v',
-	}[e.EdgeTypeOrd()]
+	if e.IsVtxLoop() {
+		return 'o'
+	} else if e.IsGroupLoop() {
+		return 'O'
+	} else {
+		return '|'
+	}
 }
 
 func (e GroupEdge) GroupRune() byte {

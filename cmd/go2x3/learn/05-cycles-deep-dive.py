@@ -21,6 +21,7 @@ def show(desc, Xstr):
     
 
 def phases(desc, Xstr, verbose = False):
+    print("\n\n")
     X = Graph(Xstr)
     if verbose:
         X.PhaseModes().Print(desc, **verboseOpts).Go()
