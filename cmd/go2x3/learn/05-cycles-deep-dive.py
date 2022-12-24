@@ -21,6 +21,7 @@ def show(desc, Xstr):
     
 
 def phases(desc, Xstr, verbose = False):
+    print("\n\n")
     X = Graph(Xstr)
     if verbose:
         X.PhaseModes().Print(desc, **verboseOpts).Go()
@@ -79,6 +80,7 @@ show("~H (higgs)",          "1~2~3~4~1~5~6~7~8~5, 2~6, 3~7, 4~8")
 print("\n===============================================  \n")
 phases("γ  (photon)",       "1---2",            True)
 phases("p+ (proton)",       "1-2-3",            True)
+phases("n0 (neutron)",      "1-2-3-4-2",        True)
 phases("tricky_tri_1",      "1^~2^-3^",         True)
 phases("tricky_tri_2",      "1^-2^~3~1",        True)
 phases("tricky_tri_3",      "1^~2^~3~1",        True)
