@@ -731,10 +731,10 @@ type edgeTrait int
 
 const (
 	kVtxID = iota
-	kEdgeHomeGroup
-	kEdgeType
-	kEdgeFrom
 	kEdgeSign
+	kEdgeFrom
+	kEdgeType
+	kEdgeHomeGroup
 
 	kNumLines = 5
 )
@@ -757,11 +757,14 @@ func (v *triVtx) printEdgesDesc(vi int, trait edgeTrait, dst []byte) {
 			r := byte('!')
 			switch trait {
 			case kEdgeFrom:
-				r = e.FromGroupRune()
+				r = e.GroupRune()
 			case kEdgeType:
 				r = e.EdgeTypeRune()
 			case kEdgeSign:
-				r = e.SignRune(true)
+				r = ' '
+				if e.IsNeg() {
+					r = '_'
+				}
 			case kEdgeHomeGroup:
 				r = v.GroupRune()
 			}
@@ -770,16 +773,25 @@ func (v *triVtx) printEdgesDesc(vi int, trait edgeTrait, dst []byte) {
 	}
 }
 
-// Note that this graph is not assumed to be in a canonic state -- this proc ust visualizes what's there.
+// PrintVtxGrouping prints a graph in human readable form for the console.
+// Note that this graph is not assumed to be in a canonic state.
+//
+// Example output for the proton:
+//
+//	    V       :    1    :    2         3    :
+//	EDGE SIGN   :         :                   :
+//	EDGE FROM   :   ABB   :   ABB       ABB   :
+//	EDGE TYPE   :   o||   :   |oo       |oo   :
+//	  GROUP     :::AAAAA:::::BBBBBBBBBBBBBBB:::
 func (X *graphState) PrintVtxGrouping(out io.Writer) {
 	X.canonize()
 
 	labels := []string{
 		"      V       ",
-		"    GROUP     ",
-		"  EDGE TYPE   ",
-		"  EDGE FROM   ",
 		"  EDGE SIGN   ",
+		"  EDGE FROM   ",
+		"  EDGE TYPE   ",
+		"    GROUP     ",
 	}
 
 	Nv := int(X.vtxCount)
@@ -826,7 +838,7 @@ func (X *graphState) PrintVtxGrouping(out io.Writer) {
 
 		for vi := 0; vi < Nv; {
 			vtxRunLen := 1
-			traitConst := true
+			//traitConst := true
 
 			Xv[vi].printEdgesDesc(vi, edgeTrait(li), viEdges[:])
 
@@ -834,10 +846,10 @@ func (X *graphState) PrintVtxGrouping(out io.Writer) {
 				if Xv[vi].GroupID != Xv[vj].GroupID {
 					break
 				}
-				Xv[vj].printEdgesDesc(vj, edgeTrait(li), vjEdges[:])
-				if viEdges != vjEdges {
-					traitConst = false
-				}
+				// Xv[vj].printEdgesDesc(vj, edgeTrait(li), vjEdges[:])
+				// if viEdges != vjEdges {
+				// 	traitConst = false
+				// }
 				vtxRunLen++
 			}
 
@@ -852,7 +864,7 @@ func (X *graphState) PrintVtxGrouping(out io.Writer) {
 				row[runR] = ':'
 			}
 
-			traitRun := traitConst && (li == kEdgeFrom || li == kEdgeType || li == kEdgeSign)
+			traitRun := false //traitConst && (li == kEdgeFrom || li == kEdgeType || li == kEdgeSign)
 
 			for vj := vi; vj < vi+vtxRunLen; vj++ {
 				vtxC := vtxWid*vj + vtxWid>>1
@@ -873,16 +885,15 @@ func (X *graphState) PrintVtxGrouping(out io.Writer) {
 				for w := runL + 3; w <= runR-3; w++ {
 					row[w] = c
 				}
-			}
-
-			if traitRun {
-				copy(row[runC-1:], viEdges[:])
+			default:
+				if traitRun {
+					copy(row[runC-1:], viEdges[:])
+				}
 			}
 
 			runL = runR
 			vi += vtxRunLen
 		}
-
 	}
 
 	out.Write(rows)
