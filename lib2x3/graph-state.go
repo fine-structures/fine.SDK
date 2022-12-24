@@ -39,14 +39,6 @@ var (
 	ErrBadEdges = errors.New("edge count does not correspond to vertex count")
 )
 
-type vtxStatus int32
-
-const (
-	newlyReset vtxStatus = iota + 1
-	calculating
-	canonized
-)
-
 type graphState struct {
 	vtxCount  int32
 	vtxDimSz  int32
@@ -54,9 +46,9 @@ type graphState struct {
 	vtx       []*graphVtx // ordered list of vtx groups
 	numGroups GroupID     // number of unique vertex groups present
 
-	curCi  int32
-	traces Traces
-	status vtxStatus
+	curCi     int32
+	traces    Traces
+	canonized bool
 }
 
 // triVtx starts as a vertex in a conventional "2x3" vertex+edge and used to derive a canonical LSM-friendly encoding (i.e. TriID)
@@ -76,8 +68,9 @@ type groupEdge struct {
 }
 
 // Returns:
-//    0 if loop
-//    1 if edge (non-loop)
+//
+//	0 if loop
+//	1 if edge (non-loop)
 func (e *groupEdge) LoopBit() int32 {
 	if e.isLoop {
 		return 0
@@ -101,6 +94,19 @@ const (
 	VtxTrait_EdgesType
 	VtxTrait_EdgesSign
 )
+
+func (v *triVtx) hasDoubleGroupEdges() (A1, A2, B int32) {
+	if e0, e1 := v.edges[0].GroupEdge, v.edges[1].GroupEdge; e0.GroupID() == e1.GroupID() {
+		return 0, 1, 2
+	}
+	if e0, e2 := v.edges[0].GroupEdge, v.edges[2].GroupEdge; e0.GroupID() == e2.GroupID() {
+		return 0, 2, 1
+	}
+	if e1, e2 := v.edges[1].GroupEdge, v.edges[2].GroupEdge; e1.GroupID() == e2.GroupID() {
+		return 1, 2, 0
+	}
+	return -1, -1, -1
+}
 
 func (v *triVtx) appendTrait(io []byte, trait VtxTrait, ascii bool) []byte {
 	switch trait {
@@ -190,7 +196,7 @@ func (X *graphState) reset(numVerts byte) {
 	X.vtxCount = Nv
 	X.numGroups = 0
 	X.curCi = 0
-	X.status = newlyReset
+	X.canonized = false
 	if X.vtxDimSz >= Nv {
 		return
 	}
@@ -296,12 +302,12 @@ func (X *graphState) VtxByID() []*graphVtx {
 }
 
 func (X *graphState) sortVtxGroups() {
-	Xg := X.Vtx()
+	Xv := X.Vtx()
 
 	// With edges on vertices now canonic order, we now re-order to assert canonic order within each group.
-	sort.Slice(Xg, func(i, j int) bool {
-		vi := Xg[i]
-		vj := Xg[j]
+	sort.Slice(Xv, func(i, j int) bool {
+		vi := Xv[i]
+		vj := Xv[j]
 
 		// if d := vi.VtxType - vj.VtxType; d != 0 {
 		// 	return d < 0
@@ -333,9 +339,7 @@ func (X *graphState) calcCyclesUpTo(numTraces int32) {
 	Xv := X.VtxByID()
 
 	// Init C0
-	if X.status == newlyReset {
-		X.status = calculating
-
+	if X.curCi == 0 {
 		for i, vi := range Xv {
 			for j := 0; int32(j) < Nv; j++ {
 				c0 := int64(0)
@@ -386,12 +390,16 @@ func (X *graphState) calcCyclesUpTo(numTraces int32) {
 
 }
 
-func (X *graphState) canonize() {
-	if X.status >= canonized {
-		return
-	}
+func (X *graphState) Touch() {
+	X.canonized = false
+	X.curCi = 0
+	X.numGroups = 0
+}
 
-	{
+func (X *graphState) canonize() {
+
+	for !X.canonized {
+
 		Nv := X.vtxCount
 		X.calcCyclesUpTo(Nv)
 
@@ -400,13 +408,12 @@ func (X *graphState) canonize() {
 		// Two major sub steps:
 		//    I)  Edge normalization: turn pos+neg loop pairs into group edges wherever possible
 		//    II) Vertex-pair normalization: for every edge, normalize to factor complimentary group IDs from
-		// Look for adjacent vtx that can be consolidated into an equivalent single cycle group
+		// Look for adjacent vtx normalization opportunities.  As with any normalization, it will modify the graph.
 		//  e.g.    1^-~2     => 1^-2^,
 		//          1^-~2-3=4 => 1^-2-3-4-2,1-4
 		// X=1-2=Y   => X-1-Y, X-2-Y,
 		{
 			// (1) Look for edge pairs on two adjacent vertices
-			// The conversion we're looking for is two vertices that, when combined,
 			{
 
 			}
@@ -450,12 +457,10 @@ func (X *graphState) canonize() {
 			v_prev = v
 		}
 
-		XvByID := X.VtxByID()
-
 		// With cycle group numbers assigned to each vertex, assign srcGroup to all edges and then finally order edges on each vertex canonically.
 		for _, v := range Xv {
 			for ei, e := range v.edges {
-				src_vi := XvByID[e.srcVtx]
+				src_vi := X.vtxByID[e.srcVtx]
 				v.edges[ei].GroupEdge = FormGroupEdge(src_vi.GroupID, src_vi.GroupID == v.GroupID, e.isLoop, e.sign < 0)
 			}
 
@@ -476,10 +481,60 @@ func (X *graphState) canonize() {
 			})
 		}
 
-		X.sortVtxGroups()
-	}
+		if X.normalizeVtxPairs() {
+			X.Touch()
+			continue
+		}
 
-	X.status = canonized
+		X.sortVtxGroups()
+
+		X.canonized = true
+	}
+}
+
+func (X *graphState) normalizeVtxPairs() (madeChanges bool) {
+	return false
+
+	/*
+		Xv := X.Vtx()
+
+		// For each edge across a group boundary, see if an end has "inputs" that, when combined, are divisible by 2.
+		// This implies the edges of these two vertices can be rewired into a (by definition) single cycle group of size 2:
+		//  	     A=1-2=B => A-1-B, A-2-B
+		//
+		// In other words, look for two adjacent vertices that each have double edges to other groups.
+		//
+		// The more general basis here what can be changed while keeping the traces sum unchanged?
+		// The answer is that flipping an edge sign in a group with |Gi| vertices means a corresponding number of negative terms can be absorbed via other sign flips.
+		for _, vA := range Xv {
+
+			// Criterion #1(A): each vtx must have a double edge ( ±A±A + ±B±B => ±A±B + ±A±B)
+			eA1, _, vA_adj := vA.hasDoubleGroupEdges()
+			if vA_adj < 0 {
+				continue
+			}
+
+			vB := X.vtxByID[vA.edges[vA_adj].srcVtx]
+
+			// Criterion #2: the adjacent vtx must belong to a different group
+			if vA.GroupID == vB.GroupID {
+				continue
+			}
+
+			// Criterion #1(B)
+			eB1, _, vB_adj := vB.hasDoubleGroupEdges()
+			if vB_adj < 0 {
+				continue
+			}
+
+			// Green light to rewire -- but then we must also trigger a re-canonicalize
+			A1 := vA.edges[eA1]
+			vA.edges[eA1] = vB.edges[eB1]
+			vB.edges[eB1] = A1
+			madeChanges = true
+		}
+
+	*/
 }
 
 /*
