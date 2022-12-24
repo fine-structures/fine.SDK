@@ -6,24 +6,24 @@ package graph;
 
 message CatalogState {
 
-                int32               MajorVers                   = 1;
-                int32               MinorVers                   = 2;
+    int32               MajorVers                   = 1;
+    int32               MinorVers                   = 2;
     
     // TraceCount is the Traces len for this Catalog's Traces index.
     // This effectively sets a vertex size limit for Graphs this Catalog can process.
     // DefaultCatalogTraceCount specifies the default TraceCount for new catalogs. 
-                int32               TraceCount                  = 10;
+    int32               TraceCount                  = 10;
                 
     // NumTraces[Nv] is the number of traces of in this catalog for a given number of vertices.
     // Note: NumTraces[0] is always 0 and len(NumTraces) == TraceCount+1
-    repeated    uint64              NumTraces                   = 11;
+    repeated uint64     NumTraces                   = 11;
     
     // NumPrimes[Nv] is the number of particle primes for a given number of vertices.
     // Note: NumPrimes[0] is always 0 and len(NumPrimes) == TraceCount+1
-    repeated    uint64              NumPrimes                   = 12;
+    repeated uint64     NumPrimes                   = 12;
     
     // Set if this catalog is to auto-determine if a newly added Graph / Traces are primes.
-                bool                IsPrimeCatalog              = 20;
+    bool                IsPrimeCatalog              = 20;
 }
 
 
@@ -52,19 +52,23 @@ enum IsPrime {
 // Has similarities to a "Contributing structure" in quantum|chemistry lingo. https://en.wikipedia.org/wiki/Resonance_(chemistry)
 message GraphDef {
 
-                IsPrime             IsPrime                     = 1;
+    IsPrime             IsPrime                     = 1;
                 
     // If non-zero, the Traces of this graph has a registered ID. 
     // These values can be used to lookup a graph's common ascii symbolic name, UTF8 symbolic name, or nickname
-                uint64              TracesID                    = 2;
-                uint64              GraphID                     = 3;
+    uint64              TracesID                    = 2;
+    uint64              GraphID                     = 3;
                 
-                // fixed64             GraphUID0                   = 5;
-                // fixed64             GraphUID1                   = 6;
-
     // A specific vertex+edge assignment 
-                bytes               GraphEncoding               = 8;
+    bytes               GraphEncoding               = 8;
                 
+                    // Graph expr string that canonically express this graph and can therefore be used for easy graph equivalence testing.
+    string              CanonicGraphExpr            = 9;
+   
+    // Any number of graph expr strings that reduce to the same equivalent (canonic) graph.
+    // This list is stored and maintained in sorted UTF8 order for binary search.
+    repeated string     GraphExprs                  = 12;
+    
 }
 
 
