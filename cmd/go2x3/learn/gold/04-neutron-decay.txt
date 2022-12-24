@@ -12,52 +12,52 @@ Beta Decay:
 
 Actors:
 
-neutron,000001,p=1,v=4," BBC 2ABB  ACC 4+++ "," ||| 2|Uu  |uu 4+++ ","1-2-3-1-4",4,14,34,98,274,
+neutron,000001,p=1,v=4," BBC 2ABB  ACC 4+++ "," ||| 2|Oo  |oo 4+++ ","1-2-3-1-4",4,14,34,98,274,
       V       :    1    :    2         3    :    4    :
+  EDGE SIGN   :         :                   :         :
+  EDGE FROM   :   BBC   :   ABB       ABB   :   ACC   :
+  EDGE TYPE   :   |||   :   |Oo       |Oo   :   |oo   :
     GROUP     :::AAAAA:::::BBBBBBBBBBBBBBB:::::CCCCC:::
-  EDGE TYPE   :   |||   :        |Uu        :   |uu   :
-  EDGE FROM   :   BBC   :        A          :   A     :
-  EDGE SIGN   :   +++   :        +++        :   +++   :
 
-proton,000001,p=1,v=3,"3ABB 3+++ "," u|| 2|uu 3+++ ","1-2-3",5,13,35,97,275,
+proton,000001,p=1,v=3,"3ABB 3+++ "," o|| 2|oo 3+++ ","1-2-3",5,13,35,97,275,
       V       :    1    :    2         3    :
+  EDGE SIGN   :         :                   :
+  EDGE FROM   :   ABB   :   ABB       ABB   :
+  EDGE TYPE   :   o||   :   |oo       |oo   :
     GROUP     :::AAAAA:::::BBBBBBBBBBBBBBB:::
-  EDGE TYPE   :   u||   :        |uu        :
-  EDGE FROM   :    BB   :        A          :
-  EDGE SIGN   :   +++   :        +++        :
 
-W-,000001,p=1,v=1," AAA  +-- "," uvv  +-- ","1^^",-1,1,-1,1,-1,
+W-,000001,p=1,v=1," AAA  +-- "," ooo  +-- ","1^^",-1,1,-1,1,-1,
       V       :    1    :
+  EDGE SIGN   :    __   :
+  EDGE FROM   :   AAA   :
+  EDGE TYPE   :   ooo   :
     GROUP     :::AAAAA:::
-  EDGE TYPE   :   uvv   :
-  EDGE FROM   :         :
-  EDGE SIGN   :   +--   :
 
-gamma,000001,p=1,v=2,"2AAA 2+++ ","2UUU 2+++ ","1---2",0,18,0,162,0,
+gamma,000001,p=1,v=2,"2AAA 2+++ ","2OOO 2+++ ","1---2",0,18,0,162,0,
       V       :    1         2    :
+  EDGE SIGN   :                   :
+  EDGE FROM   :   AAA       AAA   :
+  EDGE TYPE   :   OOO       OOO   :
     GROUP     :::AAAAAAAAAAAAAAA:::
-  EDGE TYPE   :        UUU        :
-  EDGE FROM   :                   :
-  EDGE SIGN   :        +++        :
 
-e,000001,p=1,v=1," AAA  +++ "," uuu  +++ ","1",3,9,27,81,243,
+e,000001,p=1,v=1," AAA  +++ "," ooo  +++ ","1",3,9,27,81,243,
       V       :    1    :
+  EDGE SIGN   :         :
+  EDGE FROM   :   AAA   :
+  EDGE TYPE   :   ooo   :
     GROUP     :::AAAAA:::
-  EDGE TYPE   :   uuu   :
-  EDGE FROM   :         :
-  EDGE SIGN   :   +++   :
 
-~ve,000001,p=1,v=2,"2AAA 2+-- ","2Uvv 2+-- ","1^^-2^^",-4,10,-28,82,-244,
+~ve,000001,p=1,v=2,"2AAA 2+-- ","2Ooo 2+-- ","1^^-2^^",-4,10,-28,82,-244,
       V       :    1         2    :
+  EDGE SIGN   :    __        __   :
+  EDGE FROM   :   AAA       AAA   :
+  EDGE TYPE   :   Ooo       Ooo   :
     GROUP     :::AAAAAAAAAAAAAAA:::
-  EDGE TYPE   :        Uvv        :
-  EDGE FROM   :                   :
-  EDGE SIGN   :        +--        :
 
 
 Commonly known n0 beta decay products (note equal n0 Traces):
-W- +  p:   p=2,v=4," AAA 3BCC  +-- 3+++ "," uvv  u|| 2|uu  +-- 3+++ ","1^^ 2-3-4",4,14,34,98,
-e- + qdq:  p=2,v=4,"3AAB  CCC 2+-+ 2+++ ","2uv|  ||u  uuu 2+-+ 2+++ ","1 2^-3-4^",4,14,34,98,
+W- +  p:   p=2,v=4," AAA 3BCC  +-- 3+++ "," ooo  o|| 2|oo  +-- 3+++ ","1^^ 2-3-4",4,14,34,98,
+e- + qdq:  p=2,v=4,"3AAB  CCC 2+-+ 2+++ ","2oo|  ||o  ooo 2+-+ 2+++ ","1 2^-3-4^",4,14,34,98,
 
 Let's verify that the Traces all add up as expected:
 sum(W- + p):   [4, 14, 34, 98]
@@ -66,46 +66,46 @@ sum(e + qdq):  [4, 14, 34, 98]
 So, does a neutron only have 2 decay modes??
 We can use PrimeModes() to analyze a given Traces set and performs a particle "prime" factorization, 
 yielding all possible sets of primes that produce the Traces in question:
-n0 prime mode,000001,p=2,v=4," AAA 3BCC  +-- 3+++ "," uvv  u|| 2|uu  +-- 3+++ ","1^^ 2-3-4",4,14,34,98,
-n0 prime mode,000002,p=2,v=4,"3AAB  CCC 2+-+ 2+++ ","2UV|  ||u  uuu 2+-+ 2+++ ","1 2-3-~4-2",4,14,34,98,
+n0 prime mode,000001,p=2,v=4," AAA 3BCC  +-- 3+++ "," ooo  o|| 2|oo  +-- 3+++ ","1^^ 2-3-4",4,14,34,98,
+n0 prime mode,000002,p=2,v=4,"3AAB  CCC 2+-+ 2+++ ","2OO|  ||o  ooo 2+-+ 2+++ ","1 2-3-~4-2",4,14,34,98,
 ...so yes, there are only 2 decay modes.
 
 What if a photon interacts with a neutron??
-n0 + γ : p=2,v=6," CCD 2BBB 2ACC  ADD 6+++ "," ||| 2UUU 2|Uu  |uu 6+++ ","1-2-3-1-4 5---6",4,32,34,260,274,2252,
+n0 + γ : p=2,v=6," CCD 2BBB 2ACC  ADD 6+++ "," ||| 2OOO 2|Oo  |oo 6+++ ","1-2-3-1-4 5---6",4,32,34,260,274,2252,
 
 Let's use PrimeModes() to see what this v=6 system now factors into.
 We should see *at least* the above 2 (with an additional e ~e pair from the gamma)...
-n0 + γ prime mode,000001,p=4,v=6," AAA  BBB 3CDD  EEE  ---  +-- 4+++ "," vvv  uvv  u|| 2|uu  uuu  ---  +-- 4+++ ","1^^ 2^^^ 3 4-5-6",4,32,34,260,274,2252,
-n0 + γ prime mode,000002,p=4,v=6," AAA 3BCC 2DDD  +--  -++ 2+-- 2+++ "," uvv  v|| 2|VV 2uuu  +--  -++ 2+-- 2+++ ","1^^ 2 3 4^-5~~6-4",4,32,34,260,274,2252,
-n0 + γ prime mode,000003,p=4,v=6," AAA 3BBC 2DDD  --- 2+-+ 3+++ "," vvv 2UV|  ||u 2uuu  --- 2+-+ 3+++ ","1^^^ 2 3 4-5-~6-4",4,32,34,260,274,2252,
+n0 + γ prime mode,000001,p=4,v=6," AAA  BBB 3CDD  EEE  ---  +-- 4+++ "," ooo  ooo  o|| 2|oo  ooo  ---  +-- 4+++ ","1^^ 2^^^ 3 4-5-6",4,32,34,260,274,2252,
+n0 + γ prime mode,000002,p=4,v=6," AAA 3BCC 2DDD  +--  -++ 2+-- 2+++ "," ooo  o|| 2|OO 2ooo  +--  -++ 2+-- 2+++ ","1^^ 2 3 4^-5~~6-4",4,32,34,260,274,2252,
+n0 + γ prime mode,000003,p=4,v=6," AAA 3BBC 2DDD  --- 2+-+ 3+++ "," ooo 2OO|  ||o 2ooo  --- 2+-+ 3+++ ","1^^^ 2 3 4-5-~6-4",4,32,34,260,274,2252,
 
 Behold, there is a THIRD prime factorization!
 It turns out this particle prime is of the few v=3 primes that only has forms with one or more negative edges.
 We can verify this by adding all the Traces up in any order...
-e + e + W- + y~dy:  p=4,v=6," AAA 3BCC 2DDD  +--  -+-  +++  -++ 2+++ "," uvv  v||  |UU  |UU 2uuu  +--  -+-  +++  -++ 2+++ ","1 2 3^^ 4^-5=6~4",4,32,34,260,274,2252,
-y~dy + e + W- + e:  p=4,v=6," AAA 3BCC 2DDD  +--  -+-  +++  -++ 2+++ "," uvv  v||  |UU  |UU 2uuu  +--  -+-  +++  -++ 2+++ ","4 5^^ 6 1^-2=3~1",4,32,34,260,274,2252,
-W- + e + y~dy + e:  p=4,v=6," AAA 3BCC 2DDD  +--  -+-  +++  -++ 2+++ "," uvv  v||  |UU  |UU 2uuu  +--  -+-  +++  -++ 2+++ ","1^^ 2 6 3^-4=5~3",4,32,34,260,274,2252,
+e + e + W- + y~dy:  p=4,v=6," AAA 3BCC 2DDD  +--  -+-  +++  -++ 2+++ "," ooo  o||  |OO  |OO 2ooo  +--  -+-  +++  -++ 2+++ ","1 2 3^^ 4^-5=6~4",4,32,34,260,274,2252,
+y~dy + e + W- + e:  p=4,v=6," AAA 3BCC 2DDD  +--  -+-  +++  -++ 2+++ "," ooo  o||  |OO  |OO 2ooo  +--  -+-  +++  -++ 2+++ ","4 5^^ 6 1^-2=3~1",4,32,34,260,274,2252,
+W- + e + y~dy + e:  p=4,v=6," AAA 3BCC 2DDD  +--  -+-  +++  -++ 2+++ "," ooo  o||  |OO  |OO 2ooo  +--  -+-  +++  -++ 2+++ ","1^^ 2 6 3^-4=5~3",4,32,34,260,274,2252,
 
 Note how W- + e- => anti-neutrino, implying that a gamma is consumed during neutron decay:
-~ve ,000001,p=1,v=2,"2AAA 2+-- ","2Uvv 2+-- ","1^^-2^^",-4,10,-28,82,-244,730,-2188,6562,
-W- + e,000001,p=2,v=2," AAA  BBB  ---  +-- "," vvv  uvv  ---  +-- ","1^^ 2^^^",-4,10,-28,82,-244,730,-2188,6562,
+~ve ,000001,p=1,v=2,"2AAA 2+-- ","2Ooo 2+-- ","1^^-2^^",-4,10,-28,82,-244,730,-2188,6562,
+W- + e,000001,p=2,v=2," AAA  BBB  ---  +-- "," ooo  ooo  ---  +-- ","1^^ 2^^^",-4,10,-28,82,-244,730,-2188,6562,
 
 So how often (what relative ratios) can we expect to see for a n0 + gamma interaction?
 We use PhaseModes() to calculate the number of equivalent forms of a given particle:
-y~dy phase mode,000001,p=1,v=3,"3ABB  -++ 2+-- "," v|| 2|VV  -++ 2+-- ","1^-2~~3-1",-1,13,-19,
-y~dy phase mode,000002,p=1,v=3,"3ABB  -+-  +++  -++ "," v||  |UU  |UU  -+-  +++  -++ ","1^~2=3-1",-1,13,-19,
-y~dy phase mode,000003,p=1,v=3,"3ABB 3--- "," v|| 2|VV 3--- ","1^~2~~3~1",-1,13,-19,
+y~dy phase mode,000001,p=1,v=3,"3ABB  -++ 2+-- "," o|| 2|OO  -++ 2+-- ","1^-2~~3-1",-1,13,-19,
+y~dy phase mode,000002,p=1,v=3,"3ABB  -+-  +++  -++ "," o||  |OO  |OO  -+-  +++  -++ ","1^~2=3-1",-1,13,-19,
+y~dy phase mode,000003,p=1,v=3,"3ABB 3--- "," o|| 2|OO 3--- ","1^~2~~3~1",-1,13,-19,
 
-qdq phase mode,000001,p=1,v=3,"3AAB 2+-+  +++ ","2UV|  ||u 2+-+  +++ ","1-2-~3-1",1,5,7,
-qdq phase mode,000002,p=1,v=3,"3AAB 2+-+  +++ ","2uv|  ||u 2+-+  +++ ","1^-2-3^",1,5,7,
-qdq phase mode,000003,p=1,v=3,"3AAB  +-+  +--  +-+ "," UV|  UV|  ||u  +-+  +--  +-+ ","1~2-~3-1",1,5,7,
-qdq phase mode,000004,p=1,v=3,"3AAB  +-+  +--  +-+ "," uv|  uv|  ||u  +-+  +--  +-+ ","1^~2-3^",1,5,7,
-qdq phase mode,000005,p=1,v=3,"3AAB 2+--  --+ ","2UV|  ||u 2+--  --+ ","1~2-~3~1",1,5,7,
-qdq phase mode,000006,p=1,v=3,"3AAB 2+--  --+ ","2uv|  ||u 2+--  --+ ","1^~2~3^",1,5,7,
+qdq phase mode,000001,p=1,v=3,"3AAB 2+-+  +++ ","2OO|  ||o 2+-+  +++ ","1-2-~3-1",1,5,7,
+qdq phase mode,000002,p=1,v=3,"3AAB 2+-+  +++ ","2oo|  ||o 2+-+  +++ ","1^-2-3^",1,5,7,
+qdq phase mode,000003,p=1,v=3,"3AAB  +-+  +--  +-+ "," OO|  OO|  ||o  +-+  +--  +-+ ","1~2-~3-1",1,5,7,
+qdq phase mode,000004,p=1,v=3,"3AAB  +-+  +--  +-+ "," oo|  oo|  ||o  +-+  +--  +-+ ","1^~2-3^",1,5,7,
+qdq phase mode,000005,p=1,v=3,"3AAB 2+--  --+ ","2OO|  ||o 2+--  --+ ","1~2-~3~1",1,5,7,
+qdq phase mode,000006,p=1,v=3,"3AAB 2+--  --+ ","2oo|  ||o 2+--  --+ ","1^~2~3^",1,5,7,
 
-proton phase mode,000001,p=1,v=3,"3ABB 3+++ "," u|| 2|uu 3+++ ","1-2-3",5,13,35,
-proton phase mode,000002,p=1,v=3,"3ABB  ++-  +++  -++ "," u||  |uu  |uu  ++-  +++  -++ ","1~2-3",5,13,35,
-proton phase mode,000003,p=1,v=3,"3ABB  +-- 2-++ "," u|| 2|uu  +-- 2-++ ","1~2~3",5,13,35,
+proton phase mode,000001,p=1,v=3,"3ABB 3+++ "," o|| 2|oo 3+++ ","1-2-3",5,13,35,
+proton phase mode,000002,p=1,v=3,"3ABB  ++-  +++  -++ "," o||  |oo  |oo  ++-  +++  -++ ","1~2-3",5,13,35,
+proton phase mode,000003,p=1,v=3,"3ABB  +-- 2-++ "," o|| 2|oo  +-- 2-++ ","1~2~3",5,13,35,
 
 Number of phase modes for each possible n0+γ product:
     y~dy:   3
