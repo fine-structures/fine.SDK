@@ -450,15 +450,10 @@ func (X *graphState) canonize() {
 			v_prev = v
 		}
 
-		XvByID := X.VtxByID()
-
 		// With cycle group numbers assigned to each vertex, assign srcGroup to all edges and then finally order edges on each vertex canonically.
 		for _, v := range Xv {
 			for ei, e := range v.edges {
-				src_vi := XvByID[e.srcVtx]
-				if src_vi.GroupID == 0 {
-					panic("src_vi.GroupID == 0")
-				}
+				src_vi := X.vtxByID[e.srcVtx]
 				v.edges[ei].GroupEdge = FormGroupEdge(src_vi.GroupID, src_vi.GroupID == v.GroupID, e.isLoop, e.sign < 0)
 			}
 
