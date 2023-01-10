@@ -403,9 +403,9 @@ func (X *Graph) WriteAsString(out io.Writer, opts PrintOpts) {
 	X.Canonize(false) // TODO: remove this when we can print output for any case: 1) un-canonized, 2) canonized, 3) canonized+normalized
 
 	var scrap [512]byte
-	propsStr := X.xstate.AppendGraphEncoding(scrap[:0], EncodeHumanReadable|EncodeProperties)
-	stateStr := X.xstate.AppendGraphEncoding(propsStr[len(propsStr):], EncodeHumanReadable|EncodeState)
-	fmt.Fprintf(out, "p=%d,v=%d,%q,%q,", X.NumParticles(), X.NumVerts(), propsStr, stateStr)
+	encFull := X.xstate.AppendGraphEncoding(scrap[:0], EncodeHumanReadable|EncodeProperties)
+	//encNorm := X.xstate.AppendGraphEncoding(encFull[len(encFull):], EncodeHumanReadable|EncodeState) . TODO: output the normalized and non-normalized encoding
+	fmt.Fprintf(out, "p=%d,v=%d,%q,%q,", X.NumParticles(), X.NumVerts(), encFull, "")
 
 	if opts.Graph {
 		X.WriteAsGraphExprStr(out)

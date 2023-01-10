@@ -181,6 +181,7 @@ def ShowGraph(desc, Xstr, verbose = True):
         X.Print(desc, **gPrintOpts).Go()
 
 def ShowPhases(desc, Xstr, verbose = False):
+    print()
     X = Graph(Xstr)
     if verbose:
         X.PhaseModes().Print(desc, **gPrintOptsVerbose).Go()
@@ -189,7 +190,7 @@ def ShowPhases(desc, Xstr, verbose = False):
         
     # TODO: only do if graph is not a prime
     X.PrimeModes().Print(desc + " FACTORIZATION", **gPrintOptsVerbose).Go()
-    print("\n\n")
+    print()
 
 
 
