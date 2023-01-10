@@ -189,20 +189,17 @@ func (stream *GraphStream) SelectFromStream(sel GraphSelector) *GraphStream {
 	return next
 }
 
-/*
-func (stream *GraphStream) Canonize() *GraphStream {
+func (stream *GraphStream) Canonize(normalize bool) *GraphStream {
 	next := &GraphStream{
 		Outlet: make(chan *Graph, 1),
 	}
 
 	go func() {
-		ctx := newCanonizeCtx()
 		for X := range stream.Outlet {
-			err := ctx.goCanonize(X)
+			err := X.Canonize(normalize)
 			if err != nil {
 				panic(err)
 			}
-
 			next.Outlet <- X
 		}
 		next.Close()
@@ -211,6 +208,7 @@ func (stream *GraphStream) Canonize() *GraphStream {
 	return next
 }
 
+/*
 type canonizeCtx struct {
 	Gin  orca.GraphIn
 	Gout orca.GraphOut

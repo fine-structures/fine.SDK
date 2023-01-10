@@ -403,6 +403,17 @@ func ph_GraphStream_DropDupes(self py.Object, args py.Tuple) (py.Object, error) 
 	return py.Object(next), nil
 }
 
+func ph_GraphStream_Canonize(self py.Object, args py.Tuple) (py.Object, error) {
+	stream := self.(*GraphStream)
+	normalize := false
+	err := py.LoadTuple(args, []interface{}{&normalize})
+	if err != nil {
+		return nil, err
+	}
+	next := stream.Canonize(normalize)
+	return py.Object(next), nil
+}
+
 func ph_GraphStream_Select(self py.Object, args py.Tuple) (py.Object, error) {
 	sel := DefaultGraphSelector
 	err := getGraphSelector(args[0], &sel)
@@ -462,6 +473,7 @@ func init() {
 		// PyGraphStreamType.Dict["PullGraph"] = py.MustNewMethod("PullGraph", ph_GraphStream_PullGraph, 0, "")
 		// PyGraphStreamType.Dict["PushGraph"] = py.MustNewMethod("PushGraph", ph_GraphStream_PushGraph, 0, "")
 		PyGraphStreamType.Dict["AddTo"] = py.MustNewMethod("AddTo", ph_GraphStream_AddTo, 0, "")
+		PyGraphStreamType.Dict["Canonize"] = py.MustNewMethod("Canonize", ph_GraphStream_Canonize, 0, "")
 		PyGraphStreamType.Dict["DropDupes"] = py.MustNewMethod("DropDupes", ph_GraphStream_DropDupes, 0, "")
 		PyGraphStreamType.Dict["Select"] = py.MustNewMethod("Select", ph_GraphStream_Select, 0, "")
 		PyGraphStreamType.Dict["AllVtxSigns"] = py.MustNewMethod("AllVtxSigns", ph_GraphStream_PermuteVtxSigns, 0, "")

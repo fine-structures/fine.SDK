@@ -393,8 +393,14 @@ var DefaultPrintOpts = PrintOpts{
 	NumTraces: -1,
 }
 
-func (X *Graph) WriteAsString(out io.Writer, opts PrintOpts) {
+func (X *Graph) Canonize(normalize bool) error {
 	X.Traces(0) // Make sure graph is flushed to X.xstate
+	X.xstate.Canonize(normalize)
+	return nil
+}
+
+func (X *Graph) WriteAsString(out io.Writer, opts PrintOpts) {
+	X.Canonize(false) // TODO: remove this when we can print output for any case: 1) un-canonized, 2) canonized, 3) canonized+normalized
 
 	var scrap [512]byte
 	propsStr := X.xstate.AppendGraphEncoding(scrap[:0], EncodeHumanReadable|EncodeProperties)
