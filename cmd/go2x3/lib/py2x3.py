@@ -15,7 +15,7 @@ print('''
 |                                                               |
 |       "OH LET ME BEHOLD YOUR PRESENCE”  EXODUS 33:2x3x3       |
 =================================================================
-''' % (_py2x3.LIB2X3_VERSION))
+''' % (_py2x3.LIB_VERSION))
 
 def EnumPureParticles(v_lo, v_hi):
     return _py2x3.EnumPureParticles(v_lo, v_hi)
@@ -47,6 +47,9 @@ class Graph:
     def Stream(self):
         return self._graph.Stream()
 
+    def Canonize(self, normalize = False):
+        return self._graph.Stream().Canonize(normalize)
+
     def Print(self, *args, **kwargs):
         """Prints each Graph from a GraphStream with various options
 
@@ -62,8 +65,6 @@ class Graph:
     def AddTo(self, catalog):
         return self._graph.Stream().AddTo(catalog)
         
-    def Select(self, graphSelector):
-        return self._graph.Stream().Select(graphSelector)
         
     '''
     Emits all canonically unique permutations of given graph's edge signs.
@@ -158,6 +159,38 @@ class GraphSelector:
     def SetTraces(self, X):
         self.traces = X.Traces()
     
+
+
+gPrintOptsVerbose = {
+    'graph':  True,
+    'matrix': True,
+    'codes':  True,
+    'cycles': True,
+    'traces': 10,
+}
+
+gPrintOpts = {
+    'codes':  True,
+}
+
+def ShowGraph(desc, Xstr, verbose = True):
+    X = Graph(Xstr)
+    if verbose:
+        X.Print(desc, **gPrintOptsVerbose).Go()
+    else:
+        X.Print(desc, **gPrintOpts).Go()
+
+def ShowPhases(desc, Xstr, verbose = False):
+    X = Graph(Xstr)
+    if verbose:
+        X.PhaseModes().Print(desc, **gPrintOptsVerbose).Go()
+    else:
+        X.PhaseModes().Print(desc, **gPrintOpts).Go()
+        
+    # TODO: only do if graph is not a prime
+    X.PrimeModes().Print(desc + " FACTORIZATION", **gPrintOptsVerbose).Go()
+    print("\n\n")
+
 
 
 READ_ONLY           = 0x01

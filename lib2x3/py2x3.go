@@ -17,7 +17,7 @@ import (
 )
 
 var (
-	LIB2X3_VERSION = "v1.2022.3"
+	LIB_VERSION = "v1.2023.1"
 )
 
 var (
@@ -481,9 +481,9 @@ func init() {
 		// 	&py.File{os.Stdout, py.FileWrite},
 		// 	&py.File{os.Stderr, py.FileWrite}
 		globals := py.StringDict{
-			"LIB2X3_VERSION": py.String(LIB2X3_VERSION),
-			"PY_VERSION":     py.String("v3.4.0"),
-			"MAX_VTX":        py.Int(MaxVtxID),
+			"LIB_VERSION": py.String(LIB_VERSION),
+			"PY_VERSION":  py.String("v3.4.0"),
+			"MAX_VTX":     py.Int(MaxVtxID),
 		}
 
 		py.RegisterModule(&py.ModuleImpl{

@@ -1,10 +1,12 @@
 module github.com/2x3systems/go2x3
 
-go 1.18
+go 1.19
 
-// go get info: https://stackoverflow.com/a/61312937/3958082
-
-//replace github.com/go-python/gpython => ../gpython
+// List versions of a module:
+//    go list -m -versions github.com/arcspace/go-cedar
+//
+// go list & get cheatsheet:
+//    https://stackoverflow.com/a/61312937/3958082
 
 require (
 	github.com/alecthomas/participle/v2 v2.0.0-beta.5
