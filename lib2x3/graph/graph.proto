@@ -35,18 +35,6 @@ enum IsPrime {
     IsPrime_No          = 2;
 }
 
-// enum AttrName {
-//     kAsciiID,
-//     kUT8Name,
-//     kTracesID,
-//     kGraphID,
-// }
-
-// message GraphAttr {
-//     uint64 AttrLabelID = 1;
-//     string AttrLabel = 2;
-//     bytes  Block = 3;
-// }
 
 // GraphDef is a particular vertex+edge assignment with bound names.
 // Has similarities to a "Contributing structure" in quantum|chemistry lingo. https://en.wikipedia.org/wiki/Resonance_(chemistry)
@@ -71,4 +59,85 @@ message GraphDef {
     
 }
 
+// GroupID is a vertex group ID containing one or more Vtx.
+enum GroupID {
+    GroupID_void      = 0;
+    GroupID_LoopVtx   = 1; // Group self-edge having cycle length 1 
+    GroupID_LoopGroup = 2; // Group self-edge having cycle length 2
+    GroupID_G1        = 3; // Ordinal of first vertex group
+}
 
+// VtxStatus specifies the current state of Vtx that comprise a 2x3 graph.
+enum VtxStatus {
+    
+    // The graph is an in unassigned or otherwise invalid state
+    VtxStatus_Invalid = 0;
+     
+    // All Vtx have been validated as expressing a valid and complete graph.
+    // VtxID, E_FromVtx. E_Sign have been assigned.
+    // Each Vtx is in its own separate group and has exactly 3 VtxEdges.
+    VtxStatus_Validated = 2;
+    
+    // GroupOrd and GroupT0 have been determined via canonic vertex comparison.
+    // Vtx with the same cycle vector will be assigned the same GroupID.
+    VtxStatus_Canonized  = 4;
+    
+    // E_FromVtx and E_Sign values have been normalized and have been canonically ordered.
+    // VtxIDs have been normalized.
+    //
+    // Each VtxEdge with the same "home" GroupID are combined into a single (group) Vtx
+    // and edges are canonically consolidated and reordered. 
+    VtxStatus_Canonized_Normalized = 6;
+}
+
+
+message VtxEdge {
+
+    // Initially assigned label: 1, 2, 3, ..  (a one-based index ID)
+    uint32              HomeVtxID                   = 1;
+    
+    // Specifies the remote vertex of this edge (a one-based vtx index ID)
+    uint32              FromVtxID                   = 2;
+  
+    int32               EdgeSign                    = 4;
+    int32               EdgeSign_Raw                = 7;
+
+    // Note that if Sign has been normalized to 0, then FromGroup is also normalized to nil.
+    // Sort edges by normalized values first, then by raw / unnormalized values
+    GroupID             FromGroup                   = 3;
+    GroupID             FromGroup_Raw               = 6;
+    
+}
+
+
+// Vtx generally isn't used for Graph serialization but is used to model runtime processing and state 
+message Vtx {
+
+    // Initially assigned label: 1, 2, 3, ..  (a one-based index ID)
+    uint32              VtxID                       = 2;
+    
+    // When assigned from a 2x3 graph, each Vtx has 3 edges but after canonicalization,
+    // edges are pooled together into their respective grouops.
+    repeated VtxEdge    Edges                       = 4;
+
+    // Group ID assignment of home Vtx based on canonic cycle vector comparison ordering.
+    // Init to 0 to denote unknown; the first valid GroupID for a Vtx starts at GroupID_G1.
+    GroupID             GroupID                     = 6;
+    
+    // Traces sum of path length 1 (net sum of vtx loop signs in group)
+    int32               GroupT0                     = 7;
+    
+    repeated int64      Cycles                      = 10;
+    repeated int64      Ci0                         = 11;
+    repeated int64      Ci1                         = 12;
+    
+}
+
+
+
+message VtxGraph {
+    VtxStatus           Status                      = 1;
+
+
+    repeated Vtx        Vtx                         = 2;
+}

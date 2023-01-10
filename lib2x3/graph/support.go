@@ -47,3 +47,28 @@ func (def *GraphDef) AssignFrom(src *GraphDef) {
 		def.GraphExprs = append(exprs, src.GraphExprs...)
 	}
 }
+
+func FormGroupID(groupNum int32) GroupID {
+	return GroupID_G1 + GroupID(groupNum-1)
+}
+
+func (g GroupID) GroupRune() byte {
+	r := byte('.')
+	switch {
+	case g == GroupID_LoopVtx:
+		r = 'o'
+	case g == GroupID_LoopGroup:
+		r = 'O'
+	case g >= GroupID_G1:
+		r = 'A' + byte(g-GroupID_G1)
+	}
+	return r
+}
+
+func (X *VtxGraph) IsNormalized() bool {
+	return X.Status >= VtxStatus_Canonized_Normalized
+}
+
+func (X *VtxGraph) IsCanonized() bool {
+	return X.Status >= VtxStatus_Canonized
+}
