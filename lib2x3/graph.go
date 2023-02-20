@@ -161,6 +161,7 @@ type Graph struct {
 	edges     [MaxEdges]EdgeID  // edges assignment
 	dirty     bool
 	xstate    graphState
+	vm        graph.VtxGraphVM
 	Def       graph.GraphDef
 }
 
@@ -427,6 +428,18 @@ func (X *Graph) WriteAsString(out io.Writer, opts PrintOpts) {
 	if opts.CycleSpec {
 		X.xstate.PrintCycleSpectrum(out)
 	}
+	
+	if opts.Tricodes {
+		out.Write(newline)
+		
+		X.vm.PrintCycleSpectrum(out)
+		X.vm.Canonize()
+		out.Write(newline)
+		X.vm.PrintCycleSpectrum(out)
+
+		out.Write(newline)
+	}
+
 }
 
 func (X *Graph) WriteTracesAsCSV(out io.Writer, numTraces int) {
@@ -435,7 +448,7 @@ func (X *Graph) WriteTracesAsCSV(out io.Writer, numTraces int) {
 	var buf [24]byte
 
 	for _, TXi := range TX {
-		out.Write(PrintInt(buf[:], TXi))
+		out.Write(graph.PrintInt(buf[:], TXi))
 		out.Write(comma)
 	}
 }
@@ -450,7 +463,7 @@ func (X *Graph) WriteAsGraphExprStr(out io.Writer) {
 
 	printVtx := func(vi VtxID) {
 		var buf [8]byte
-		s := PrintInt(buf[:4], int64(vi))
+		s := graph.PrintInt(buf[:4], int64(vi))
 		neg := negLoops[vi-1]
 
 		if neg > 0 {
@@ -553,7 +566,7 @@ func (X *Graph) WriteAsMatrixStr(out io.Writer) {
 			if j > 0 {
 				out.Write(comma)
 			}
-			out.Write(PrintInt(buf[:], Xij))
+			out.Write(graph.PrintInt(buf[:], Xij))
 		}
 		out.Write([]byte("}"))
 	}
@@ -561,32 +574,7 @@ func (X *Graph) WriteAsMatrixStr(out io.Writer) {
 
 }
 
-// PrintInt prints the given integer in base 10, right justified in the buffer.
-// Returns the tight-fitting slice of the output digits (a slice of []dst)
-func PrintInt(dst []byte, val int64) []byte {
-	sign := int(1)
-	if val < 0 {
-		sign = -1
-		val = -val
-	}
-	L := len(dst)
-	i := L
-	for {
-		next := val / 10
-		digit := val - 10*next
-		val = next
-		i--
-		dst[i] = '0' + byte(digit)
-		if val == 0 {
-			break
-		}
-	}
-	if sign < 0 {
-		i--
-		dst[i] = '-'
-	}
-	return dst[i:]
-}
+
 
 func (X *Graph) Reclaim() {
 	if X != nil {
@@ -732,10 +720,54 @@ func (X *Graph) FormLookupKeys(in []byte) (tracesKey, graphKey []byte) {
 	return key, full
 }
 
+
+func ExportGraph(Xsrc *Graph, X *graph.VtxGraphVM) error {
+	X.ResetGraph()
+	Nv := Xsrc.NumVerts()
+	if Xsrc == nil || Nv == 0 {
+		return ErrNilGraph
+	}
+		
+	// First, add edges that connect to the same vertex (loops)
+	for i, vtyp := range Xsrc.Vtx() {
+		vi := uint32(i+1)
+		for j := vtyp.PosLoops(); j > 0; j-- {
+			if err := X.AddVtxEdge(+1, vi, vi, +1); err != nil {
+				panic(err)
+			}
+		}
+		for j := vtyp.NegLoops(); j > 0; j-- {
+			if err := X.AddVtxEdge(-1, vi, vi, -1); err != nil {
+				panic(err)
+			}
+		}
+	}
+
+	// Second, add edges connecting two different vertices
+	for _, edge := range Xsrc.Edges() {
+		ai, bi := edge.VtxAB()
+		pos, neg := edge.EdgeType().NumPosNeg()
+		for j := pos; j > 0; j-- {
+			if err := X.AddVtxEdge(0, uint32(ai), uint32(bi), +1); err != nil {
+				panic(err)
+			}
+		}
+		for j := neg; j > 0; j-- {
+			if err := X.AddVtxEdge(0, uint32(ai), uint32(bi), -1); err != nil {
+				panic(err)
+			}
+		}
+	}
+	
+	return X.Validate2x3()
+}
+
+
 // Traces returns a slice of the requested number of Traces.  If numTraces == 0, then the Traces length defaults to X.NumVerts()
 // The slice should be considered immediate read-only.
 func (X *Graph) Traces(numTraces int) Traces {
 	if X.dirty {
+		ExportGraph(X, &X.vm)
 		X.xstate.AssignGraph(X)
 		X.dirty = false
 	}

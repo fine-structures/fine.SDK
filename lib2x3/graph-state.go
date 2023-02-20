@@ -39,7 +39,7 @@ type graphState struct {
 // El Shaddai's Grace abounds.  Emmanuel, God with us!  Yashua has come and victory has been sealed!
 type triVtx struct {
 	graph.GroupID              // which group this is
-	VtxType                    // which type of vertex this is
+	//VtxType                    // which type of vertex this is
 	VtxIdx        byte         // Initial vertex ID (zero-based index)
 	GroupT0       int8         // Traces sum of path length 1 (net sum of loops for group)
 	edges         [3]groupEdge // Edges to other vertices
@@ -217,8 +217,8 @@ func (X *graphState) AssignGraph(Xsrc *Graph) error {
 				}
 			}
 		}
-		v.VtxType = GetVtxType(negLoops, numEdges)
-		if Ne != 3 || v.VtxType == V_nil {
+		vtxType := GetVtxType(negLoops, numEdges)
+		if Ne != 3 || vtxType == V_nil {
 			return ErrBadEdges
 		}
 	}
@@ -430,18 +430,144 @@ func (X *graphState) Canonize(normalize bool) {
 			for ei, e := range v.edges {
 				src_vi := X.vtxByID[e.FromVtxIdx]
 				from := src_vi.GroupID
-				switch {
-				case src_vi.VtxIdx == v.VtxIdx:
-					from = graph.GroupID_LoopVtx
-				case src_vi.GroupID == v.GroupID:
-					from = graph.GroupID_LoopGroup
-				}
 				v.edges[ei].FromGroup = from
 			}
 		}
-				src_vi := X.vtxByID[e.srcVtx]
-				v.edges[ei].GroupEdge = FormGroupEdge(src_vi.GroupID, src_vi.GroupID == v.GroupID, e.isLoop, e.sign < 0)
-			}
+
+		/*
+			K8,000045,p=1,v=8,"2oBB 4OAC 2oBB 2_   6    ","2_   6    ","1^-2-3-6-7^-8-5-4-2 6-8 1-4",0,24,12,104,120,552,980,3400,
+			      V       :    1         2    :    3         4         5         6    :    7         8    :
+			  EDGE SIGN   :   _         _     :                                       :                   :
+			  EDGE FROM   :   oBB       oBB   :   OAC       OAC       OAC       OAC   :   oBB       oBB   :
+			    GROUP     :::AAAAAAAAAAAAAAA:::::BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB:::::CCCCCCCCCCCCCCC:::
+
+			becomes
+			
+			    V / G     :     1     :       2        :    3        
+			  NRM COUNT   :   ?   ?   :   ?           :           :
+			  NET COUNT   :  -2   4   :   4   4   4   :   2   4   :
+			  ABS COUNT   :   2   4   :   4   4   4   :   2   4   :        :
+			  EDGE FROM   :   O   B   :   O   A   C   :   O   B . :
+			    GROUP     :::AAAAAAA:::::BBBBBBBBBBB:::::CCCCCCC:::
+                 C1 		    -2            0             2
+			  
+			               
+			 2,4 O   -> A  -2
+			 4,4 B   -> A
+			 
+			 4,4 A   -> B
+			 4,4,O   -> B   0
+			 4,4 C . -> B
+			
+			 4,4,B . -> C
+			 2,2 O . -> C  -2
+			 
+			 higgs. 
+			 24,24 O -> A  0
+             		
+            photon
+             6 6 .O  -> A  0
+					
+		
+			// ALSO
+			// Odd/Even edge normalization: 
+			// vtx loops with opposite signs 'normalize' into group loops (retaining their sign)
+			//  - this reflects traces sum of C1 sum not changing and then o -> O being identical after C1.
+			// .  (a) opposite signs from any group (i.e. -1 +1) normalize to a group loop edge.
+			// Cosnider:
+			K8,000021,p=1,v=8,"2OBB 4OAC 2OBB 2_   6    ","2_   6    ","1-2-3-1-4~5-2 3-6-7-4 5-8-6 7-8",0,24,12,104,120,552,980,3400,
+			      V       :    1         2    :    3         4         5         6    :    7         8    :
+			  EDGE SIGN   :   _         _     :                                       :                   :
+			  EDGE FROM   :   OBB       OBB   :   OAC       OAC       OAC       OAC   :   OBB       OBB   :
+			    GROUP     :::AAAAAAAAAAAAAAA:::::BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB:::::CCCCCCCCCCCCCCC:::
+			    
+			K8,000045,p=1,v=8,"2oBB 4OAC 2oBB 2_   6    ","2_   6    ","1^-2-3-6-7^-8-5-4-2 6-8 1-4",0,24,12,104,120,552,980,3400,
+			      V       :    1         2    :    3         4         5         6    :    7         8    :
+			  EDGE SIGN   :   _         _     :                                       :                   :
+			  EDGE FROM   :   oBB       oBB   :   OAC       OAC       OAC       OAC   :   oBB       oBB   :
+			    GROUP     :::AAAAAAAAAAAAAAA:::::BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB:::::CCCCCCCCCCCCCCC:::
+			    
+			X.forEveryGroup(func(gi []*graphVtx) {
+				T0 := int8(0)
+				for _, v := range gi {
+					for _, e := range v.edges {
+						if e.FromVtxIdx == v.VtxIdx {
+							T0 += e.EdgeSign
+						}
+					}
+				}
+				for _, v := range gi {
+					v.GroupT0 = T0
+				}
+			})
+
+
+			// Group edge normalization (1): teo edges from the same group with opposite signs normalize to ^ (alias for 0).
+				
+			      V       :    1    :    2    :    3    :    4    :    5    :
+			  EDGE SIGN   :         :         :         :         :         :
+			  EDGE FROM   :   BBC   :   AAE   :   ADD   :   oCC   :   ooB   :
+			    GROUP     :::AAAAA:::::BBBBB:::::CCCCC:::::DDDDD:::::EEEEE:::
+			
+			τ-  (tau)      ,000002,p=1,v=5," BBC  AAE  ADD  oCC  ooB         _ 2       _ ","        _ 2       _ ","1~2=3-4=5",3,25,27,165,243,
+			      V       :    1    :    2    :    3    :    4    :    5    :
+			  EDGE SIGN   :         :     _   :         :         :     _   :
+			  EDGE FROM   :   BBC   :   AAE   :   ADD   :   oCC   :   ooB   :
+			    GROUP     :::AAAAA:::::BBBBB:::::CCCCC:::::DDDDD:::::EEEEE:::
+    
+    
+    
+			      V       :    1    :    2         3    :
+			  EDGE SIGN   :         :                   :
+			  EDGE FROM   :   oBB   :   ooA       ooA   :
+			    GROUP     :::AAAAA:::::BBBBBBBBBBBBBBB:::
+			
+			
+			p+ (proton),000002,p=1,v=3," oBB 2ooA    _         _ ","   _         _ ","1~2-3","{{2,-1,0},{-1,1,1},{0,1,2}}",5,13,35,97,275,793,2315,6817,
+			      V       :    1    :    2         3    :
+			  EDGE SIGN   :     _   :               _   :
+			  EDGE FROM   :   oBB   :   ooA       ooA   :
+			    GROUP     :::AAAAA:::::BBBBBBBBBBBBBBB:::
+			
+			
+			
+			K4,000005,p=1,v=4," oBB 2OAC  oBB  _   3    "," _   3    ","1^-2-3-4-2 1-4",0,12,12,68,
+			      V       :    1    :    2         3    :    4    :
+			  EDGE SIGN   :   _     :                   :         :
+			  EDGE FROM   :   oBB   :   OAC       OAC   :   oBB   :
+			    GROUP     :::AAAAA:::::BBBBBBBBBBBBBBB:::::CCCCC:::
+			    
+			K4,000003,p=1,v=4," oBB  AAC  BDD  oCC  _ _   __  _        "," _ _   __  _        ","1^-~2~3=4",0,12,12,68,
+			      V       :    1    :    2    :    3    :    4    :
+			  EDGE SIGN   :   _ _   :    __   :   _     :         :
+			  EDGE FROM   :   oBB   :   AAC   :   BDD   :   oCC   :
+			    GROUP     :::AAAAA:::::BBBBB:::::CCCCC:::::DDDDD:::
+			      
+			X.forEveryGroupEdgePair(func(vi, vj *graphVtx, ei, ej int) {
+				if vi.edges[ei].EdgeSign+vj.edges[ej].EdgeSign == 0 {
+					src_ei_vi := X.vtxByID[vi.edges[ei].FromVtxIdx]
+					src_ej_vj := X.vtxByID[vj.edges[ej].FromVtxIdx]
+					if src_ei_vi.GroupID == src_ej_vj.GroupID {
+						vi.edges[ei].EdgeSign = 0
+						vj.edges[ej].EdgeSign = 0
+					}
+				}
+			})
+
+			// Group edge normalization (2): two negative edges from the same group flip positive
+			X.forEveryGroupEdgePair(func(vi, vj *graphVtx, ei, ej int) {
+				if vi.edges[ei].EdgeSign < 0 && vj.edges[ej].EdgeSign < 0 {
+					src_ei_vi := X.vtxByID[vi.edges[ei].FromVtxIdx]
+					src_ej_vj := X.vtxByID[vj.edges[ej].FromVtxIdx]
+					if src_ei_vi.GroupID == src_ej_vj.GroupID &&
+						src_ei_vi.GroupT0 == 0 &&
+						src_ej_vj.GroupT0 == 0 {
+						vi.edges[ei].EdgeSign = -vi.edges[ei].EdgeSign
+						vj.edges[ej].EdgeSign = -vj.edges[ej].EdgeSign
+					}
+				}
+			})
+		*/
 
 		// A=vi-vj=B => A-vi-B, A-vj-B
 		//X.forEveryGroupVtxPair(func(vi, vj *graphVtx) {

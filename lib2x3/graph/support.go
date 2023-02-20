@@ -1,6 +1,10 @@
 package graph
 
-import "sort"
+import (
+	fmt "fmt"
+	"sort"
+	strconv "strconv"
+)
 
 // Adds the given graph expr string to .GraphExprs[] if it is not already present.
 // Returns true if the string was added.
@@ -72,3 +76,90 @@ func (X *VtxGraph) IsNormalized() bool {
 func (X *VtxGraph) IsCanonized() bool {
 	return X.Status >= VtxStatus_Canonized
 }
+
+
+func (e *VtxEdge) Ord() int64 {
+	return int64(e.DstVtxID) << 32 | int64(e.SrcVtxID) // sort by dst / "home" vtx ID first
+}
+
+
+func (e *VtxEdge) AppendDesc(io []byte) []byte {
+	//var buf [24]byte
+	
+	str := fmt.Sprintf("    %c <=   +%02d-%02d <= %c ", 'A' - 1 + byte(e.DstVtxID), e.PosCount, e.NegCount, 'A' - 1 + byte(e.SrcVtxID))
+	io = append(io, str...)
+	
+	// if strings.HasSuffix(str, "+0") {
+	// 	io = append(io[:len(io)-2], ' ', ' ')
+	// }
+	
+	
+	// io = append(io, 'A' - 1 + byte(e.DstVtxID), ' ', '<', '=', ' ', ' ')
+	// io = AppendInt02(io, +int64(e.PosCount))
+	// io = AppendInt02(io, -int64(e.NegCount))
+
+	
+	// io = append(io, ' ', ' ', 'A' - 1 + byte(e.SrcVtxID), ' ', ' ', ' ')
+
+
+	io = AppendInt02(io, int64(e.C1Seed))
+
+	return io
+}
+
+
+func AppendInt02(dst []byte, val int64) []byte {
+	if val == 0 {
+		dst = append(dst, ' ', ' ', ' ')
+		return dst
+	}
+
+	N := len(dst)
+	dst = append(dst, '+')
+	if val < 0 {
+		val = -val
+		dst[N] = '-'
+	}
+	
+	if val <= 99 {
+		dst = append(dst, '0', '0')
+		next := val / 10
+		digit := val - 10*next		
+		dst[N+1] = '0' + byte(next)
+		dst[N+2] = '0' + byte(digit)
+	} else {
+		dst = strconv.AppendInt(dst, val, 10)
+	}
+	return dst
+}
+
+// PrintInt prints the given integer in base 10, right justified in the buffer.
+// Returns the tight-fitting slice of the output digits (a slice of []dst)
+func PrintInt(dst []byte, val int64) []byte {
+	sign := int(1)
+	if val < 0 {
+		sign = -1
+		val = -val
+	}
+	L := len(dst)
+	i := L
+	for {
+		next := val / 10
+		digit := val - 10*next
+		val = next
+		i--
+		dst[i] = '0' + byte(digit)
+		if val == 0 {
+			break
+		}
+	}
+	if sign < 0 {
+		i--
+		dst[i] = '-'
+	}
+	for j := i-1; j >= 0; j-- {
+		dst[j] = ' '
+	}
+	return dst[i:]
+}
+
