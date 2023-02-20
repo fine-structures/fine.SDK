@@ -171,6 +171,7 @@ gPrintOptsVerbose = {
 
 gPrintOpts = {
     'codes':  True,
+    'cycles': True,
 }
 
 def ShowGraph(desc, Xstr, verbose = True):

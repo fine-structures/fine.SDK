@@ -33,18 +33,19 @@ type VtxCount byte
 
 // VtxType is one of the 10 fundamental 2x3 vertex types
 type VtxType byte
+
 const (
-	V_nil   VtxType = 0
-	
-	V_e_bar VtxType = 1 // ***
-	V_π_bar VtxType = 2 // **o
-	V_π     VtxType = 3 // *oo
-	V_e     VtxType = 4 // ooo
-	V_u_bar VtxType = 5 // **|
-	V_q     VtxType = 6 // *o|
-	V_u     VtxType = 7 // oo|
-	V_d_bar VtxType = 8 // *||
-	V_d     VtxType = 9 // o||
+	V_nil VtxType = 0
+
+	V_e_bar VtxType = 1  // ***
+	V_π_bar VtxType = 2  // **o
+	V_π     VtxType = 3  // *oo
+	V_e     VtxType = 4  // ooo
+	V_u_bar VtxType = 5  // **|
+	V_q     VtxType = 6  // *o|
+	V_u     VtxType = 7  // oo|
+	V_d_bar VtxType = 8  // *||
+	V_d     VtxType = 9  // o||
 	V_𝛾     VtxType = 10 // |||
 
 	// VtxTypeMask masks the bits associated with VtxType
@@ -57,10 +58,10 @@ func (v VtxType) Ord() byte {
 
 func (v VtxType) String() string {
 	return [...]string{"nil",
-		"~e",   "~π",           "π",  "e",
-				"~u",   "q",    "u",
-				"~d",           "d",
-						"y", // "𝛾"
+		"~e", "~π", "π", "e",
+		"~u", "q", "u",
+		"~d", "d",
+		"y", // "𝛾"
 	}[v]
 }
 
@@ -78,6 +79,21 @@ func (v VtxType) NegLoops() byte {
 
 func (v VtxType) NetLoops() int8 {
 	return [...]int8{0, -3, -1, 1, 3, -2, 0, 2, -1, 1, 0}[v]
+}
+
+func (v VtxType) SelfEdgeType() EdgeType {
+	return [...]EdgeType{
+		NegNegNegEdge,
+		PosNegNegEdge,
+		PosPosNegEdge,
+		PosPosPosEdge,
+		NegNegEdge,
+		PosNegEdge,
+		PosPosEdge,
+		NegEdge,
+		PosEdge,
+		NilEdge,
+	}[v]
 }
 
 func (v VtxType) VtxPerm() VtxPerm {
