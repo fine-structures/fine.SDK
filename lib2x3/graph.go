@@ -1,7 +1,6 @@
 package lib2x3
 
 import (
-	"errors"
 	"fmt"
 	"io"
 	"sort"
@@ -26,15 +25,6 @@ func NewGraphFromDef(graphDef []byte) (*Graph, error) {
 	return X, nil
 }
 
-var (
-	ErrGraphBadEncoding   = errors.New("bad graph encoding")
-	ErrGraphBadVtxID      = errors.New("bad graph vertex ID")
-	ErrGraphMissingVtxID  = errors.New("missing vertex ID")
-	ErrGraphBadEdge       = errors.New("bad graph edge")
-	ErrGraphBadEdgeType   = errors.New("bad graph edge type")
-	ErrGraphVtxExpected   = errors.New("vertex ID expected")
-	ErrGraphSitesExceeded = errors.New("number of loops and edges exceeds 3")
-)
 
 // VtxList is an ordered sequence of VtxTypes
 type VtxList []VtxType
@@ -396,7 +386,7 @@ var DefaultPrintOpts = PrintOpts{
 
 func (X *Graph) Canonize(normalize bool) error {
 	X.Traces(0) // Make sure graph is flushed to X.xstate
-	X.xstate.Canonize(normalize)
+	X.xstate.Canonize()
 	return nil
 }
 
@@ -432,10 +422,7 @@ func (X *Graph) WriteAsString(out io.Writer, opts PrintOpts) {
 	if opts.Tricodes {
 		out.Write(newline)
 		
-		X.vm.PrintCycleSpectrum(out)
-		X.vm.Canonize()
-		out.Write(newline)
-		X.vm.PrintCycleSpectrum(out)
+		X.vm.PrintCycleSpectrum(0, out)
 
 		out.Write(newline)
 	}
@@ -609,7 +596,7 @@ func (X *Graph) initFromEncoding(Xe GraphEncoding) error {
 	X.vtxCount = int32(info.NumVerts)
 
 	if int32(info.NumParticles) > X.vtxCount {
-		return ErrGraphBadEncoding
+		return graph.ErrBadEncoding
 	}
 
 	idx := int32(5)
@@ -618,7 +605,7 @@ func (X *Graph) initFromEncoding(Xe GraphEncoding) error {
 	for i := int32(0); i < X.vtxCount; i++ {
 		v := VtxType(Xe[idx])
 		if v <= 0 || v > V_𝛾 {
-			return ErrGraphBadEncoding
+			return graph.ErrBadEncoding
 		}
 		X.vtx[i] = v
 		info.NegLoops -= v.NegLoops()
@@ -628,7 +615,7 @@ func (X *Graph) initFromEncoding(Xe GraphEncoding) error {
 
 	// consistency check
 	if info.NegLoops != 0 || info.PosLoops != 0 {
-		return ErrGraphBadEncoding
+		return graph.ErrBadEncoding
 	}
 
 	// Note this edge count is for edge *types*, so for example, PosPosEdge would be one edge.
@@ -647,7 +634,7 @@ func (X *Graph) initFromEncoding(Xe GraphEncoding) error {
 
 	// consistency check
 	if info.NegEdges != 0 || info.PosEdges != 0 {
-		return ErrGraphBadEncoding
+		return graph.ErrBadEncoding
 	}
 
 	return nil
@@ -731,35 +718,22 @@ func ExportGraph(Xsrc *Graph, X *graph.VtxGraphVM) error {
 	// First, add edges that connect to the same vertex (loops)
 	for i, vtyp := range Xsrc.Vtx() {
 		vi := uint32(i+1)
-		for j := vtyp.PosLoops(); j > 0; j-- {
-			if err := X.AddVtxEdge(+1, vi, vi, +1); err != nil {
-				panic(err)
-			}
-		}
-		for j := vtyp.NegLoops(); j > 0; j-- {
-			if err := X.AddVtxEdge(-1, vi, vi, -1); err != nil {
-				panic(err)
-			}
+		if err := X.AddVtxEdge(vtyp.NegLoops(), vtyp.PosLoops(), vi, vi); err != nil {
+			panic(err)
 		}
 	}
 
 	// Second, add edges connecting two different vertices
 	for _, edge := range Xsrc.Edges() {
 		ai, bi := edge.VtxAB()
-		pos, neg := edge.EdgeType().NumPosNeg()
-		for j := pos; j > 0; j-- {
-			if err := X.AddVtxEdge(0, uint32(ai), uint32(bi), +1); err != nil {
-				panic(err)
-			}
-		}
-		for j := neg; j > 0; j-- {
-			if err := X.AddVtxEdge(0, uint32(ai), uint32(bi), -1); err != nil {
-				panic(err)
-			}
+		edgeType := edge.EdgeType()
+		numPos, numNeg := edgeType.NumPosNeg()
+		if err := X.AddVtxEdge(numNeg, numPos, uint32(ai), uint32(bi)); err != nil {
+			panic(err)
 		}
 	}
 	
-	return X.Validate2x3()
+	return X.Validate()
 }
 
 
@@ -767,7 +741,9 @@ func ExportGraph(Xsrc *Graph, X *graph.VtxGraphVM) error {
 // The slice should be considered immediate read-only.
 func (X *Graph) Traces(numTraces int) Traces {
 	if X.dirty {
-		ExportGraph(X, &X.vm)
+		if err := ExportGraph(X, &X.vm); err != nil {
+			panic(err)
+		}
 		X.xstate.AssignGraph(X)
 		X.dirty = false
 	}

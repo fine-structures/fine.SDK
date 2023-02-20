@@ -70,43 +70,104 @@ func (g GroupID) GroupRune() byte {
 }
 
 func (X *VtxGraph) IsNormalized() bool {
-	return X.Status >= VtxStatus_Canonized_Normalized
+	return X.Status >= VtxStatus_Normalized
 }
 
 func (X *VtxGraph) IsCanonized() bool {
 	return X.Status >= VtxStatus_Canonized
 }
 
-
 func (e *VtxEdge) Ord() int64 {
-	return int64(e.DstVtxID) << 32 | int64(e.SrcVtxID) // sort by dst / "home" vtx ID first
+	return int64(e.DstVtxID)<<32 | int64(e.SrcVtxID) // sort by dst / "home" vtx ID first
 }
 
+func appendPair(io []byte, pos, neg int32) []byte {
+	prOpts := PrintIntOpts{
+		SpaceZero: true,
+		MinWidth:  3,
+	}
+	io = AppendInt(io, int64(pos), prOpts)
+	io = append(io, '-')
+	prOpts.MinWidth = 0
+	io = AppendInt(io, int64(neg), prOpts)
+	if neg < 10 {
+		io = append(io, ' ')
+	}
+	io = append(io, "  "...)
+	return io
+}
 
 func (e *VtxEdge) AppendDesc(io []byte) []byte {
-	//var buf [24]byte
-	
-	str := fmt.Sprintf("    %c <=   +%02d-%02d <= %c ", 'A' - 1 + byte(e.DstVtxID), e.PosCount, e.NegCount, 'A' - 1 + byte(e.SrcVtxID))
+	prOpts := PrintIntOpts{
+		SpaceZero: true,
+		MinWidth:  3,
+	}
+
+	dst := 'A' - 1 + byte(e.DstVtxID)
+	src := 'A' - 1 + byte(e.SrcVtxID)
+	str := fmt.Sprintf("   %c%c%c  <=  %c%c%c    ",
+		dst, dst, dst,
+		src, src, src)
 	io = append(io, str...)
-	
-	// if strings.HasSuffix(str, "+0") {
-	// 	io = append(io[:len(io)-2], ' ', ' ')
-	// }
-	
-	
-	// io = append(io, 'A' - 1 + byte(e.DstVtxID), ' ', '<', '=', ' ', ' ')
-	// io = AppendInt02(io, +int64(e.PosCount))
-	// io = AppendInt02(io, -int64(e.NegCount))
 
-	
-	// io = append(io, ' ', ' ', 'A' - 1 + byte(e.SrcVtxID), ' ', ' ', ' ')
+	io = appendPair(io, e.C1_Pos, e.C1_Neg)
 
+	io = AppendInt(io, int64(e.E0_Count), prOpts)
+	io = append(io, "   "...)
 
-	io = AppendInt02(io, int64(e.C1Seed))
+	io = appendPair(io, 1*e.E1_Pos, 1*e.E1_Neg)
+	io = appendPair(io, 2*e.E2_Pos, 2*e.E2_Neg)
+	io = appendPair(io, 3*e.E3_Pos, 3*e.E3_Neg)
 
 	return io
 }
 
+type PrintIntOpts struct {
+	MinWidth     int
+	LeadingZeros int
+	AlwaysSign   bool
+	SpaceZero    bool
+}
+
+func AppendInt(io []byte, val int64, opts PrintIntOpts) []byte {
+	var digits [24]byte
+	sgn := byte(0)
+	if val < 0 {
+		sgn = '-'
+		val = -val
+	} else if opts.AlwaysSign && val > 0 {
+		sgn = '+'
+	}
+
+	N := 0
+	for {
+		next := val / 10
+		digit := val - 10*next
+		val = next
+		digits[N] = '0' + byte(digit)
+		N++
+		if val == 0 {
+			break
+		}
+	}
+	if sgn != 0 {
+		digits[N] = sgn
+		N++
+	}
+
+	for i := N; i < opts.MinWidth; i++ {
+		io = append(io, ' ')
+	}
+	if opts.SpaceZero && N == 1 && digits[0] == '0' {
+		io = append(io, ' ')
+	} else {
+		for i := N - 1; i >= 0; i-- {
+			io = append(io, digits[i])
+		}
+	}
+
+	return io
+}
 
 func AppendInt02(dst []byte, val int64) []byte {
 	if val == 0 {
@@ -120,11 +181,11 @@ func AppendInt02(dst []byte, val int64) []byte {
 		val = -val
 		dst[N] = '-'
 	}
-	
+
 	if val <= 99 {
 		dst = append(dst, '0', '0')
 		next := val / 10
-		digit := val - 10*next		
+		digit := val - 10*next
 		dst[N+1] = '0' + byte(next)
 		dst[N+2] = '0' + byte(digit)
 	} else {
@@ -157,9 +218,8 @@ func PrintInt(dst []byte, val int64) []byte {
 		i--
 		dst[i] = '-'
 	}
-	for j := i-1; j >= 0; j-- {
+	for j := i - 1; j >= 0; j-- {
 		dst[j] = ' '
 	}
 	return dst[i:]
 }
-

@@ -379,12 +379,10 @@ func (X *graphState) forEveryGroupEdgePair(iter func(vi, vj *graphVtx, ei, ej in
 	}
 }
 
-func (X *graphState) Canonize(normalize bool) {
+func (X *graphState) Canonize() {
 
 	for {
-		if X.VtxStatus >= graph.VtxStatus_Canonized_Normalized {
-			return
-		} else if !normalize && X.VtxStatus >= graph.VtxStatus_Canonized {
+		if X.VtxStatus >= graph.VtxStatus_Canonized {
 			return
 		}
 
@@ -634,11 +632,8 @@ func (X *graphState) Canonize(normalize bool) {
 
 		X.sortVtxGroups()
 
-		if normalize {
-			X.VtxStatus = graph.VtxStatus_Canonized_Normalized
-		} else {
-			X.VtxStatus = graph.VtxStatus_Canonized
-		}
+		X.VtxStatus = graph.VtxStatus_Canonized
+
 	}
 }
 
@@ -782,7 +777,7 @@ const (
 )
 
 func (X *graphState) AppendGraphEncoding(io []byte, opts GraphEncodingOpts) []byte {
-	X.Canonize(false)
+	X.Canonize()
 
 	var buf [32]byte
 
@@ -891,7 +886,7 @@ var lineLabels = []string{
 //	EDGE FROM   :   BBC   :   oOA       oOA   :   ooA   :
 //	  GROUP     :::AAAAA:::::BBBBBBBBBBBBBBB:::::CCCCC:::
 func (X *graphState) PrintVtxGrouping(out io.Writer) {
-	X.Canonize(false)
+	X.Canonize()
 
 	Nv := int(X.vtxCount)
 
@@ -999,7 +994,7 @@ func (X *graphState) PrintVtxGrouping(out io.Writer) {
 }
 
 func (X *graphState) PrintCycleSpectrum(out io.Writer) {
-	X.Canonize(false)
+	X.Canonize()
 
 	Nv := X.vtxCount
 	Xv := X.Vtx()
