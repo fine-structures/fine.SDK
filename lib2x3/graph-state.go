@@ -428,6 +428,12 @@ func (X *graphState) Canonize() {
 			for ei, e := range v.edges {
 				src_vi := X.vtxByID[e.FromVtxIdx]
 				from := src_vi.GroupID
+				switch {
+				case src_vi.VtxIdx == v.VtxIdx:
+					from = graph.GroupID_LoopVtx
+				case src_vi.GroupID == v.GroupID:
+					from = graph.GroupID_LoopGroup
+				}
 				v.edges[ei].FromGroup = from
 			}
 		}
