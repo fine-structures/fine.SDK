@@ -20,6 +20,8 @@ ShowGraph("~µ+ (anti-muon)",     "1^^~2~~3^")
 ShowGraph("τ-  (tau)      ",     "1-2--3-4--5")
 ShowGraph("~τ- (anti-tau) ",     "1^^~2~~3~4~~5^")
 
+print("\n=================   SHOW AND TELL   =================  \n")
+
 
 print("\n=================   COMMON   =================  \n")
 ShowGraph("e- (electron)",       "1")
@@ -60,6 +62,7 @@ ShowPhases("tricky_tri_3",      "1^~2^~3~1",        True)
 ShowPhases("tricky_bravo",      "1^-~2-3-~4",       )
 ShowPhases("tricky_whiskey",    "1^=2-3-~4",        )
 ShowPhases("tricky_boson",      "1^-2^-3-4^",       )
+ShowPhases("E0 <=> C1",         "1^-2-3-4, 3-5-6^"  )
 ShowPhases("τ-  (tau)      ",   "1-2--3-4--5",      )
 ShowPhases("~τ- (anti-tau) ",   "1^^~2~~3~4~~5^",   )
 ShowPhases("K4",                "1-2-3^-4-1, 2-4",  )
