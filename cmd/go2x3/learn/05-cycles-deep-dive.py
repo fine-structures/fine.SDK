@@ -20,8 +20,6 @@ ShowGraph("~µ+ (anti-muon)",     "1^^~2~~3^")
 ShowGraph("τ-  (tau)      ",     "1-2--3-4--5")
 ShowGraph("~τ- (anti-tau) ",     "1^^~2~~3~4~~5^")
 
-print("\n=================   SHOW AND TELL   =================  \n")
-
 
 print("\n=================   COMMON   =================  \n")
 ShowGraph("e- (electron)",       "1")

@@ -128,13 +128,9 @@ message VtxEdge {
     int32               C1_Pos         = 8;
     int32               C1_Neg         = 9;
     
-    // Instances of a "characteristic 0" edge (a double edge with opposite signs)
-    // The contribution to C2 is: 0 * E0_Count
-    int32               E0_Count       = 10;
-    
     // Instances of a "characteristic 1" edge, which appears as either:
     //     - a single edge (positive or negative), or
-    //     - a triple edge with signs (1,1,-1) or (-1,-1,1)
+    //     - a triple edge with signs (+,+,-) or (-,-,+)
     // The contribution to C2 is: 1 * (E1_Pos + E1_Neg)
     int32               E1_Pos         = 12;
     int32               E1_Neg         = 13;
@@ -144,10 +140,10 @@ message VtxEdge {
     int32               E2_Pos         = 14;
     int32               E2_Neg         = 15;
     
-    // Instances of a "characteristic 3" edge (a triple edge, positive or negative)
-    // The contribution to C2 is: 9 * (E3_Pos + E3_Neg)
-    int32               E3_Pos         = 16;
-    int32               E3_Neg         = 17;
+    // // Instances of a "characteristic 3" edge (a triple edge, positive or negative)
+    // // The contribution to C2 is: 9 * (E3_Pos + E3_Neg)
+    // int32               E3_Pos         = 16;
+    // int32               E3_Neg         = 17;
     
 
     
@@ -284,30 +280,7 @@ message VtxEdge {
 
 
 /*
-// Vtx generally isn't used for Graph serialization but is used to model runtime processing and state 
-// VtxGroup?
-message ComputeVtx {
 
-    // Initially assigned label: 1, 2, 3, ..  (a one-based index ID)
-    uint32              VtxID                       = 2;
-    
-    // When assigned from a 2x3 graph, each Vtx has 3 edges but after canonicalization,
-    // edges are pooled together into their respective grouops.
-    repeated VtxEdge    Edges                       = 4;
-
-    // Group ID assignment of home Vtx based on canonic cycle vector comparison ordering.
-    // Init to 0 to denote unknown; the first valid GroupID for a Vtx starts at GroupID_G1.
-    GroupID             GroupID                     = 6;
-    
-    // Traces sum of path length 1 (net sum of vtx loop signs in group)
-    int32               C1                          = 7;
-    int32               C1_Normalized               = 8;
-
-    repeated int64      Cycles                      = 10;
-    repeated int64      Ci0                         = 11;
-    repeated int64      Ci1                         = 12;
-    
-}
 
 
 message ComputeVtx2 {
@@ -332,13 +305,47 @@ message ComputeVtx2 {
 */
 
 
+// VtxGroup generally aren't used for Graph serialization but is used to model runtime processing and state 
+message VtxGroup {
 
+    // Number of total Vtx instances in this group
+    uint32              VtxCount                    = 1;
+    
+    // Initially assigned label: 1, 2, 3, ..  (a one-based index ID)
+    //uint32              VtxID                       = 2;
+
+    // Group ID assignment of home Vtx based on canonic cycle vector comparison ordering.
+    // 0 denotes unassigned; first valid GroupID is 1.
+    uint32              GroupID                     = 3;
+    
+    // VtxEdge             EdgeA                  = 4;
+    // VtxEdge             EdgeB                  = 4;
+    // VtxEdge             EdgeC                  = 4;
+    
+    // When assigned from a 2x3 graph, each Vtx has 3 edges. 
+    // After canonization, the edges of vertices having the same Cycles are consolidated into corresponding groups.
+    repeated VtxEdge    Edges                       = 5;
+    
+    // The product of this times VtxCount is the this groups total contribution to VtxGraph.Traces
+    repeated int64      Cycles                      = 10;
+}
+
+message Tag {
+    string              Label                      = 1;
+    string              TagURI                     = 2;
+    string              Expr                       = 3;
+}
 
 message VtxGraph {
     VtxStatus           Status                      = 1;
+    
+    repeated Tag        Tags                        = 2;
 
-    repeated VtxEdge    Edges                       = 2;
-    repeated int64      Traces                      = 3;
+
+    //bytes               VtxToGroupID                = 2;
+    
+
+    repeated int64      Traces                      = 6;
 }
 
 

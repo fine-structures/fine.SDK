@@ -15,7 +15,7 @@ help:
 
 GOFILES = $(shell find . -type f -name '*.go')
 	
-.PHONY: build
+.PHONY: build clean
 
 ## build the go2x3 binary
 build: $(GOFILES)

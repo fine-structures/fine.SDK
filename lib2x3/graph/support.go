@@ -1,9 +1,8 @@
 package graph
 
 import (
-	fmt "fmt"
+	"fmt"
 	"sort"
-	strconv "strconv"
 )
 
 // Adds the given graph expr string to .GraphExprs[] if it is not already present.
@@ -82,51 +81,52 @@ func (e *VtxEdge) Ord() int64 {
 }
 
 func appendPair(io []byte, pos, neg int32) []byte {
-	prOpts := PrintIntOpts{
-		SpaceZero: true,
-		MinWidth:  3,
+	if printAbs := true; printAbs {
+		if total := int64(pos+neg); total != 0 {
+			io = fmt.Appendf(io, "%3d", total)
+		} else {
+			io = append(io, "   "...)
+		}
+	
+		if delta := pos - neg; delta != 0 {
+			io = fmt.Appendf(io, "%+-3d  ", delta)
+		} else {
+			io = append(io, "-    "...)
+		}
+	} else {
+		if (pos == 0 && neg == 0) {
+			io = append(io, "   -    "...)
+		} else {
+			io = fmt.Appendf(io, "%+3d-%-3d ", pos, neg)		
+		}
 	}
-	io = AppendInt(io, int64(pos), prOpts)
-	io = append(io, '-')
-	prOpts.MinWidth = 0
-	io = AppendInt(io, int64(neg), prOpts)
-	if neg < 10 {
-		io = append(io, ' ')
-	}
-	io = append(io, "  "...)
 	return io
 }
 
 func (e *VtxEdge) AppendDesc(io []byte) []byte {
-	prOpts := PrintIntOpts{
-		SpaceZero: true,
-		MinWidth:  3,
-	}
 
 	dst := 'A' - 1 + byte(e.DstVtxID)
 	src := 'A' - 1 + byte(e.SrcVtxID)
+	if src == dst {
+		src = ' '
+	}
 	str := fmt.Sprintf("   %c%c%c  <=  %c%c%c    ",
 		dst, dst, dst,
 		src, src, src)
 	io = append(io, str...)
 
-	io = appendPair(io, e.C1_Pos, e.C1_Neg)
-
-	io = AppendInt(io, int64(e.E0_Count), prOpts)
-	io = append(io, "   "...)
-
-	io = appendPair(io, 1*e.E1_Pos, 1*e.E1_Neg)
+	// List edge types in LSM order
 	io = appendPair(io, 2*e.E2_Pos, 2*e.E2_Neg)
-	io = appendPair(io, 3*e.E3_Pos, 3*e.E3_Neg)
+	io = appendPair(io, 1*e.E1_Pos, 1*e.E1_Neg)
+	io = appendPair(io, e.C1_Pos, e.C1_Neg)
 
 	return io
 }
 
 type PrintIntOpts struct {
-	MinWidth     int
-	LeadingZeros int
-	AlwaysSign   bool
-	SpaceZero    bool
+	MinWidth   int
+	AlwaysSign bool
+	SpaceZero  bool
 }
 
 func AppendInt(io []byte, val int64, opts PrintIntOpts) []byte {
@@ -167,31 +167,6 @@ func AppendInt(io []byte, val int64, opts PrintIntOpts) []byte {
 	}
 
 	return io
-}
-
-func AppendInt02(dst []byte, val int64) []byte {
-	if val == 0 {
-		dst = append(dst, ' ', ' ', ' ')
-		return dst
-	}
-
-	N := len(dst)
-	dst = append(dst, '+')
-	if val < 0 {
-		val = -val
-		dst[N] = '-'
-	}
-
-	if val <= 99 {
-		dst = append(dst, '0', '0')
-		next := val / 10
-		digit := val - 10*next
-		dst[N+1] = '0' + byte(next)
-		dst[N+2] = '0' + byte(digit)
-	} else {
-		dst = strconv.AppendInt(dst, val, 10)
-	}
-	return dst
 }
 
 // PrintInt prints the given integer in base 10, right justified in the buffer.

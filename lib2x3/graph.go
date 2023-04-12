@@ -422,6 +422,12 @@ func (X *Graph) WriteAsString(out io.Writer, opts PrintOpts) {
 	if opts.Tricodes {
 		out.Write(newline)
 		
+		if !X.Traces(0).IsEqual(Traces(X.vm.GetTraces(0))) {
+			panic("traces failed to cross-check")
+		}
+
+		X.vm.Canonize()
+		
 		X.vm.PrintCycleSpectrum(0, out)
 
 		out.Write(newline)
