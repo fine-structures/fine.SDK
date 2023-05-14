@@ -4,6 +4,14 @@ package graph;
 //option go_package = "github.com/2x3systems/go2x3/lib2x3/graph";
 
 
+
+enum TracesSign {
+    TracesSign_Zero = 0;
+    TracesSign_Pos  = 1;
+    TracesSign_Neg  = 2;
+}
+
+
 message CatalogState {
 
     int32               MajorVers                   = 1;
@@ -99,6 +107,12 @@ enum EdgeType {
 }
 */
 
+enum EdgeDomain {
+    EdgeDomain_EvenOdd = 0;
+    EdgeDomain_Odd     = 1;
+    EdgeDomain_Even    = 2;
+}
+
 // VtxEdge is characterized by the Src and Dst VtxID and C1 and C2.
 // Identities that can transform one VtxEdge into another VtxEdge can be used in a process 
 //    called normalization where edge signs and degree are rotated to a canonical form.
@@ -107,202 +121,40 @@ enum EdgeType {
 //     are enough on their own to uniquely identify a graph.  Since the graph is known to exist and be a valid construction,.
 //     by the given set ensures that C1 and C2 *alone* are enough to represent the graph (and thus reconstruct it if need be).
 message VtxEdge {
-
-    // Number of vtx instances consolidated and now reflected in the sum of the C1 and EX values.
-    // This helps us to recreate the original graph if need be.
-    //int32               Count                       = 5;
     
-    // The group ID of this edge (a one-based group index ID)
-    //uint32              GroupID                     = 1;
-    //uint32              GroupVtxCount               = 2;
-    
-    // Initially assigned label: 1, 2, 3, ..  (a one-based index ID)
-    uint32              DstVtxID                    = 1;
+    // Initially assigned label: 1, 2, 3,..  (a one-based index ID)
+    uint32              DstVtxID = 1;
     
     // Specifies the remote vertex of this edge (a one-based vtx index ID)
-    uint32              SrcVtxID                    = 3;
+    uint32              SrcVtxID = 3;
     
-    // Instances of vertex loops (self-edges)
-    // Only non-zero when SrcVtxID == DstVtxID
-    // The contribution to C1 is: C1_Pos + 0C1_Neg
-    int32               C1_Pos         = 8;
-    int32               C1_Neg         = 9;
+    // Number of instances of Traces
+    int32               NetCount = 4; // number of instances of Traces
+    //int32   WeightPos  = 4; // number of instances of Traces
+    //int32   WeightNeg  = 5; // number of instances of Traces
     
-    // Instances of a "characteristic 1" edge, which appears as either:
-    //     - a single edge (positive or negative), or
-    //     - a triple edge with signs (+,+,-) or (-,-,+)
-    // The contribution to C2 is: 1 * (E1_Pos + E1_Neg)
-    int32               E1_Pos         = 12;
-    int32               E1_Neg         = 13;
-    
-    // Instances of a "characteristic 2" edges (a double edge, positive or negative)
-    // The contribution to C2 is: 4 * (E2_Pos + E2_Neg)
-    int32               E2_Pos         = 14;
-    int32               E2_Neg         = 15;
-    
-    // // Instances of a "characteristic 3" edge (a triple edge, positive or negative)
-    // // The contribution to C2 is: 9 * (E3_Pos + E3_Neg)
-    // int32               E3_Pos         = 16;
-    // int32               E3_Neg         = 17;
-    
+    EdgeDomain          Domain = 7; // 1 if even, 0 if odd
 
+    int64               MetricNumerator   = 8; // numerator of the metric
+    int64               MetricDenominator = 9; // numerator of the metric
     
-    // // C2N == C2 - C1^2
-    // // This value implies the number of edges between SrcVtxID and DstVtxID.
-    // int32               C2N                       = 10;
+    // TracesID is a unique ID associated with the normalized []Cycles integer vector.
+    // We could carry the odd and even Traces components separately inline, but this is more compact and efficient.
+    // TracesID == 0 is hardwired to [0, 0, 0,..], and occurs in many particles (e.g. TracesID_Even for bosons is 0) 
+    uint64              TracesID = 11; 
     
+    // Cycles is an integer vector corresponding to the number of cycles of each "Ci" length.
+    // If Domain == EdgeDomain_EvenOdd:
+    //    [ odd[0], even[0],
+    //      odd[1], even[1],
+    //      odd[n], even[n]] 
+    repeated int64      Cycles         = 19;
     
-    // // C2 contribution from edges with degree 1, 2, and 3
-    // int32               C2_E1 = 11;
-    // int32               C2_E2 = 12;
-    // int32               C2_E3 = 13;
-    
-    
-    
-    // // Either: 0 (1-1), 1 (1), 2 (1+1), 3 (1+1+1
-    // // Characteristic        Possible Edges        
-    // //       0                  (-1 1)
-    // //       1             (-1), (1), (-1 1 1)
-    // //       2 .             (-1 -1), (1 1)
-    // //       3 .          (-1 -1 -1), (1 1 1)
-    // int32               EdgeCharacteristic = 21;
-    
-    // For VtxCount == 1, possible values are:
-    // .      Ne:  0 .  1      2 .       3
-    //      0 == . 0,       (1-1)^2, 
-    //      1 ==       1^2             
-    //                                 (1-2)^2
-    //                                 (2-1)^2
-    //      2 ==    2x 1^2.
-    //      2 ==    3x 1^2.
-    // .    4 ==                2^2
-    // .    5 ==       1^2  + (+2)^2
-    //                        (-2)^2
-    // .    9 == .     1*1  +  1*1   + 1*1   
-    // .  (3x 1*1), 4 (2*2), 5 (2*2 + 1*1),  
-    //   Loop:                +1
-    //   Single:       -1     +1
-    //   Double:    -2     0     +2
-    //   Triple: -3    -1     +1     +3 
-    // Only possible values are 9, 5 (4+1), 4, 3 (1+1+1), 2 (1+1), 1
-    // Only possible values are 9, 5 (4+1), 4, 3 (1+1+1), 2 (1+1), 1
-    // For each VtxCount, possible values are ±3**, ±2**[±1**], ±1[±1[±1]], 0 corresponding to multi-edges
-
-    
-    // // EdgeType and EdgeWeight are immutable characteristics of an edge. 
-    // EdgeType            EdgeType                    = 5;
-    
-    // // Sum of the edge signs for the currently set EdgeType. 
-    // // For VtxCount == 1, possible values for each EdgeType:
-    // //   Loop:         -1     +1
-    // //   Single:       -1     +1
-    // //   Double:    -2     0     +2
-    // //   Triple: -3    -1     +1     +3 
-    // int32               EdgeWeight               = 7;
-    
-
-    
-    /*
-    int32               NetWeight_Loops   = 10;
-    int32               NetWeight_Singles = 11;
-    int32               NetDoubles = 12;
-    int32               NetTriples = 13;
-    
-    int32               C1 = 10;
-    int32               E1 = 11; // Net single edge count
-    int32               E2 = 11; // Net double edge count
-    int32               E3 = 12; // Net triple edge count
-    
-    
-    // Only non-zero when SrcVtxID == DstVtxID
-    int32               C1                          = 9;
-
-    
-    // Net sum of square of group edge weights + C1^2
-    // Only possible values are 9, 5 (4+1), 4, 3 (1+1+1), 2 (1+1), 1
-    // For each VtxCount, possible values are ±3**, ±2**[±1**], ±1[±1[±1]], 0 corresponding to multi-edges
-    int32               C2  = 10;
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    int32 C1 = 5; // Odd injection
-    int32 C2 = 6; // Even injection -- or C2-sqrt(C1) -- aka net group edges
-    // gamma: (3) => 3*3=9, yN: (2,1) => 2*2+1 = 5, higgs: (1,1,1) => 1*1+1*1+1*1 => 3, dN(1,1) => 1+1, v2 (1) => 1, 
-    
-    // C1 is the contribution of this edge into the vtx's T1 Traces -- the Traces sum of path length 1 (net sum group loop count)
-    // By convention, Seed values are specified in the "self" group edges (DstVtxID == SrcVtxID)
-    // aka "odd" weight"
-    int32               NetWeight                  = 5;  // aka NetWeight
-    int32               EvenWeight = 123; // ala Group or Inner weight,  9, 5, 4, 3, 2, 1, 0 (for each possible group edge configuration)
-    //int32               EvenWeight                  = 6;
-
-    // Net "odd" weight for this edge (net sum of vtx loops)
-    // Only non-zero when SrcVtxID == DstVtxID
-    int32               C1                          = 9;
-    
-    // Net sum of odd edges 
-    int32               NetEdgeWeight                  = 9;
-    
-    // Net sum of square of group edge weights. 
-    // Only non-zero when SrcVtxID == DstVtxID
-    // For each VtxCount, possible values are ±3**, ±2**[±1**], ±1[±1[±1]], 0 corresponding to multi-edges
-    int32               C2  = 10;
-   
-
-    // Output of normalization of all Vtx groups in the graph via amazing analysis.
-    // These values are always positive. 
-    //int32               EdgeWeight                  = 7;
-    //int32               EvenWeight                  = 6;
-
-    // State values --  C1Seed is used to init Ci1, PosCi0 and PosCi0 
-    // Ci1    = Pos * PosCi0 - Neg * NegCi0
-    // PosCi0 = Pos * LOAD[SrcVtxID]
-    // NegCi0 = Neg * LOAD[SrcVtxID]
-    //int64              Cin    = 10;
-    // int64              PosCi0 = 10;
-    // int64              NegCi0 = 11;
-    //int64              Cout    = 11;
-    
-
-*/
 
 }
 
 
 
-
-
-/*
-
-
-
-message ComputeVtx2 {
-
-    // Initially assigned label: 1, 2, 3, ..  (a one-based index ID)
-    // Group ID assignment of home Vtx based on canonic cycle vector comparison ordering.
-    // Init to 0 to denote unknown; the first valid GroupID for a Vtx starts at GroupID_G1.
-    uint32              GroupID                       = 2;
-    
-    // When assigned from a 2x3 graph, each Vtx has 3 edges but after canonicalization,
-    // edges are pooled together into their respective grouops.
-    repeated VtxEdge    Edges                       = 4;
-    
-    // Traces sum of path length 1 (net sum of vtx loop signs in group)
-    int32               C1                          = 7;
-
-    repeated int64      Cycles                      = 10;
-    repeated int64      Ci0                         = 11;
-    repeated int64      Ci1                         = 12;
-    
-}
-*/
 
 
 // VtxGroup generally aren't used for Graph serialization but is used to model runtime processing and state 
@@ -341,11 +193,7 @@ message VtxGraph {
     
     repeated Tag        Tags                        = 2;
 
-
-    //bytes               VtxToGroupID                = 2;
-    
-
-    repeated int64      Traces                      = 6;
+    repeated VtxEdge    Edges                      = 3;
 }
 
 

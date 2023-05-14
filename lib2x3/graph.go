@@ -144,9 +144,9 @@ func (cmd EncoderCmd) IsAddEdgeCmd() (isAddEdge bool, Va, Vb VtxID) {
 }
 
 type Graph struct {
-	partCount int32             // number of particles (i.e. matrix partitions).  Zero if not yet calculated
-	vtxCount  int32             // number of assigned Vtx in []vtx
-	edgeCount int32             // number of assigned EdgeIDs in []edges
+	partCount int               // number of particles (i.e. matrix partitions).  Zero if not yet calculated
+	vtxCount  int               // number of assigned Vtx in []vtx
+	edgeCount int               // number of assigned EdgeIDs in []edges
 	vtx       [MaxVtxID]VtxType // poles assignment
 	edges     [MaxEdges]EdgeID  // edges assignment
 	dirty     bool
@@ -163,7 +163,7 @@ func (X *Graph) Vtx() []VtxType {
 	return X.vtx[:X.vtxCount]
 }
 
-func (X *Graph) Len() int           { return int(X.vtxCount) }
+func (X *Graph) Len() int           { return X.vtxCount }
 func (X *Graph) Less(i, j int) bool { return X.vtx[i] < X.vtx[j] }
 func (X *Graph) Swap(i, j int) {
 	X.vtx[i], X.vtx[j] = X.vtx[j], X.vtx[i]
@@ -206,13 +206,13 @@ func (X *Graph) NumParticles() byte {
 	}
 
 	// The number of unique values in the vtx list is the number of partitions
-	pcount := int32(0)
+	pcount := 0
 	if Nv > 0 {
 		pcount++
 	}
 	for _, vi := range vtx {
 		newPart := true
-		for j := int32(0); j < pcount; j++ {
+		for j := 0; j < pcount; j++ {
 			if vtx[j] == vi {
 				newPart = false
 			}
@@ -227,8 +227,8 @@ func (X *Graph) NumParticles() byte {
 	return byte(X.partCount)
 }
 
-func (X *Graph) NumVerts() byte {
-	return byte(X.vtxCount)
+func (X *Graph) NumVertices() int {
+	return X.vtxCount
 }
 
 func (X *Graph) CountLoops() (negLoops, posLoops byte) {
@@ -254,7 +254,7 @@ func (X *Graph) GetInfo() GraphInfo {
 
 	return GraphInfo{
 		NumParticles: X.NumParticles(),
-		NumVerts:     X.NumVerts(),
+		NumVerts:     byte(X.NumVertices()),
 		NegEdges:     negEdges,
 		PosEdges:     posEdges,
 		NegLoops:     negLoops,
@@ -349,7 +349,7 @@ func (X *Graph) combineMultiEdges() {
 		L = R
 	}
 	if D != Ne {
-		X.edgeCount = int32(D)
+		X.edgeCount = D
 	}
 }
 
@@ -394,9 +394,8 @@ func (X *Graph) WriteAsString(out io.Writer, opts PrintOpts) {
 	X.Canonize(false) // TODO: remove this when we can print output for any case: 1) un-canonized, 2) canonized, 3) canonized+normalized
 
 	var scrap [512]byte
-	encFull := X.xstate.AppendGraphEncoding(scrap[:0], EncodeHumanReadable|EncodeProperties)
-	//encNorm := X.xstate.AppendGraphEncoding(encFull[len(encFull):], EncodeHumanReadable|EncodeState) . TODO: output the normalized and non-normalized encoding
-	fmt.Fprintf(out, "p=%d,v=%d,%q,%q,", X.NumParticles(), X.NumVerts(), encFull, "")
+	encFull, _ := X.ExportStateEncoding(scrap[:0], graph.ExportAsAscii)
+	fmt.Fprintf(out, "p=%d,v=%d,%q,%q,", X.NumParticles(), X.NumVertices(), encFull, "")
 
 	if opts.Graph {
 		X.WriteAsGraphExprStr(out)
@@ -404,7 +403,7 @@ func (X *Graph) WriteAsString(out io.Writer, opts PrintOpts) {
 	if opts.Matrix {
 		X.WriteAsMatrixStr(out)
 	}
-	if opts.NumTraces != 0 {
+	if opts.NumTraces < 0 {
 		X.WriteTracesAsCSV(out, opts.NumTraces)
 	}
 
@@ -422,13 +421,14 @@ func (X *Graph) WriteAsString(out io.Writer, opts PrintOpts) {
 	if opts.Tricodes {
 		out.Write(newline)
 		
-		if !X.Traces(0).IsEqual(Traces(X.vm.GetTraces(0))) {
+		TX := X.Traces(0)
+		if !TX.IsEqual(X.vm.Traces(0)) {
 			panic("traces failed to cross-check")
 		}
 
 		X.vm.Canonize()
 		
-		X.vm.PrintCycleSpectrum(0, out)
+		X.vm.PrintCycleSpectrum(12, out)
 
 		out.Write(newline)
 	}
@@ -491,7 +491,7 @@ func (X *Graph) WriteAsGraphExprStr(out io.Writer) {
 		}
 
 		var b_prev VtxID
-		for i := int32(0); i < Ne; i++ {
+		for i := 0; i < Ne; i++ {
 
 			// Look for an edge we can combine
 			edge := e[i]
@@ -529,13 +529,13 @@ func (X *Graph) WriteAsGraphExprStr(out io.Writer) {
 }
 
 func (X *Graph) WriteAsMatrixStr(out io.Writer) {
-	Nv := int32(X.NumVerts())
+	Nv := X.NumVertices()
 
 	var buf [8]byte
 	var Xm [16 * 16]int8
 
 	// Set matrix diagonal values from vertices
-	for i := int32(0); i < Nv; i++ {
+	for i := 0; i < Nv; i++ {
 		v := X.vtx[i]
 		Xm[i+i*Nv] = v.NetLoops()
 	}
@@ -549,12 +549,12 @@ func (X *Graph) WriteAsMatrixStr(out io.Writer) {
 	}
 
 	out.Write([]byte("\"{"))
-	for row := int32(0); row < Nv; row++ {
+	for row := 0; row < Nv; row++ {
 		if row > 0 {
 			out.Write(comma)
 		}
 		out.Write([]byte("{"))
-		for j := int32(0); j < Nv; j++ {
+		for j := 0; j < Nv; j++ {
 			Xij := int64(Xm[j+row*Nv])
 			if j > 0 {
 				out.Write(comma)
@@ -599,16 +599,16 @@ func (X *Graph) initFromEncoding(Xe GraphEncoding) error {
 	X.Init(nil)
 
 	info := Xe.GetInfo()
-	X.vtxCount = int32(info.NumVerts)
+	X.vtxCount = int(info.NumVerts)
 
-	if int32(info.NumParticles) > X.vtxCount {
+	if int(info.NumParticles) > X.vtxCount {
 		return graph.ErrBadEncoding
 	}
 
 	idx := int32(5)
 
 	// read VtxTypes
-	for i := int32(0); i < X.vtxCount; i++ {
+	for i := 0; i < X.vtxCount; i++ {
 		v := VtxType(Xe[idx])
 		if v <= 0 || v > V_𝛾 {
 			return graph.ErrBadEncoding
@@ -625,11 +625,11 @@ func (X *Graph) initFromEncoding(Xe GraphEncoding) error {
 	}
 
 	// Note this edge count is for edge *types*, so for example, PosPosEdge would be one edge.
-	X.edgeCount = int32(Xe[idx])
+	X.edgeCount = int(Xe[idx])
 	idx++
 
 	// read edges
-	for i := int32(0); i < X.edgeCount; i++ {
+	for i := 0; i < X.edgeCount; i++ {
 		edge := (EdgeID(Xe[idx]) << 8) | EdgeID(Xe[idx+1])
 		numPos, numNeg := edge.EdgeType().NumPosNeg()
 		info.NegEdges -= numNeg
@@ -688,7 +688,7 @@ func (X *Graph) Concatenate(Xsrc *Graph) {
 	X.edgeCount += Xsrc.edgeCount
 	for i, edge := range Xsrc.Edges() {
 		a, b := edge.VtxAB()
-		X.edges[e0+int32(i)] = edge.EdgeType().FormEdge(a+v0, b+v0)
+		X.edges[e0+i] = edge.EdgeType().FormEdge(a+v0, b+v0)
 	}
 
 	X.onGraphChanged()
@@ -701,22 +701,15 @@ func (X *Graph) onGraphChanged() {
 	X.dirty = true
 }
 
-// Appends this graph's traces and canonic signature to the given buffer:
-//
-//	Nv + varint([Nv], NUL, NUL) + GraphUID
-func (X *Graph) FormLookupKeys(in []byte) (tracesKey, graphKey []byte) {
-	key := append(in, X.NumVerts())
-	key = X.Traces(0).AppendTraceSpecTo(key)
-	key = append(key, 0, 0)
-
-	full := X.xstate.AppendGraphEncoding(key, EncodeProperties|EncodeState)
-	return key, full
+func (X *Graph) ExportStateEncoding(io []byte, opts graph.ExportOpts) ([]byte, error) {
+	return X.xstate.ExportEncoding(io, opts)
 }
+
 
 
 func ExportGraph(Xsrc *Graph, X *graph.VtxGraphVM) error {
 	X.ResetGraph()
-	Nv := Xsrc.NumVerts()
+	Nv := Xsrc.NumVertices()
 	if Xsrc == nil || Nv == 0 {
 		return ErrNilGraph
 	}
@@ -724,7 +717,8 @@ func ExportGraph(Xsrc *Graph, X *graph.VtxGraphVM) error {
 	// First, add edges that connect to the same vertex (loops)
 	for i, vtyp := range Xsrc.Vtx() {
 		vi := uint32(i+1)
-		if err := X.AddVtxEdge(vtyp.NegLoops(), vtyp.PosLoops(), vi, vi); err != nil {
+		netCount := int32(vtyp.NetLoops())
+		if err := X.AddVtxEdge(netCount, vi, vi); err != nil {
 			panic(err)
 		}
 	}
@@ -733,8 +727,8 @@ func ExportGraph(Xsrc *Graph, X *graph.VtxGraphVM) error {
 	for _, edge := range Xsrc.Edges() {
 		ai, bi := edge.VtxAB()
 		edgeType := edge.EdgeType()
-		numPos, numNeg := edgeType.NumPosNeg()
-		if err := X.AddVtxEdge(numNeg, numPos, uint32(ai), uint32(bi)); err != nil {
+		netCount := edgeType.EdgeSum()
+		if err := X.AddVtxEdge(netCount, uint32(ai), uint32(bi)); err != nil {
 			panic(err)
 		}
 	}
@@ -745,7 +739,7 @@ func ExportGraph(Xsrc *Graph, X *graph.VtxGraphVM) error {
 
 // Traces returns a slice of the requested number of Traces.  If numTraces == 0, then the Traces length defaults to X.NumVerts()
 // The slice should be considered immediate read-only.
-func (X *Graph) Traces(numTraces int) Traces {
+func (X *Graph) Traces(numTraces int) graph.Traces {
 	if X.dirty {
 		if err := ExportGraph(X, &X.vm); err != nil {
 			panic(err)
@@ -763,7 +757,7 @@ func (X *Graph) Traces(numTraces int) Traces {
 func (X *Graph) PermuteVtxSigns(handler func(Xperm *Graph) bool) {
 	var span [MaxVtxID][4]VtxType
 
-	Nv := int(X.NumVerts())
+	Nv := X.NumVertices()
 	if Nv == 0 {
 		return
 	}
@@ -835,7 +829,7 @@ func (X *Graph) PermuteEdgeSigns(handler func(Xperm *Graph) bool) {
 
 	// If there's no edges to permute over, export only the given graph (which is just 0 or more single vertex particles).
 	// Note that X.edgeCount is vertex pair count, so 2 or 3 edges of matching type will only show up as *one* element.
-	Ne := int(X.edgeCount)
+	Ne := X.edgeCount
 	if Ne == 0 {
 		handler(X)
 		return
@@ -1050,7 +1044,7 @@ func (gw *GraphWalker) onParticleCompleted(cmds []EncoderCmd) {
 	// Since the particle enumeration process only makes positive edges, a Traces vector uniquely identifies
 	//     a graph and we are thus spared from doing a full canonicalization in order to detect duplicate enumerations.
 	//
-	// However, for texting, we emit all particlees and so the canonizer can be properly tested.
+	// However, for testing, we emit all particles.
 	if true { //|| gw.emitted.TryAdd(X.Traces(0)) {
 		gw.EnumStream.Outlet <- X
 	}

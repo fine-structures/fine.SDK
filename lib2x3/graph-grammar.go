@@ -134,7 +134,7 @@ func (X *Graph) InitFromString(graphExpr string) error {
 	}
 
 	// After we've absorbed all the edge parts, update X
-	X.edgeCount = int32(len(Xb.edges))
+	X.edgeCount = len(Xb.edges)
 	X.Def.TryAddGraphExpr(graphExpr)
 	return nil
 }

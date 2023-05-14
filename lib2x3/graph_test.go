@@ -49,6 +49,8 @@ func TestMisc(t *testing.T) {
 
 func TestBasics(t *testing.T) {
 
+	PrintCycles("1~2~3-1-4-5-2,3-6~7~4,5-8~6,7-8")
+	
 	PrintCycles("1^-2~3~6-7^-8~5~4-2,6-8,1-4")                         //
 
 	PrintCycles("1^-~2~3~~4")
@@ -61,8 +63,6 @@ func TestBasics(t *testing.T) {
 
 	PrintCycles("1-2,2=3")
 	PrintCycles("1-2,1-4,2-3,2-4,3-4")
-
-
 
 	PrintCycles("1~2-3~1-4-5-2,3-6-7~4,5-8-6,7-8")                         //
 	// PrintCycles("1-2, 1-3, 1-4, 2-5, 4-5, 2-6, 3-6, 3-7, 4-7, 5-8, 6-8, 7-8") // 001

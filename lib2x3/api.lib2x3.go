@@ -6,10 +6,6 @@ import (
 	"github.com/go-python/gpython/py"
 )
 
-// TracesID uniquely identifies a Graph's trace spectrum ("Traces")
-// The most significant byte is the number of vertices, and the lower bytes are the "series ID", identifying the Traces
-type TracesID uint64
-
 // OnGraphHit is a callback proc used to return Graph's meeting a set of selection criteria.
 // Ownership of a Graph also travels through the channel.
 type OnGraphHit chan<- *Graph
@@ -17,7 +13,7 @@ type OnGraphHit chan<- *Graph
 // Errors
 var (
 	ErrUnmarshal          = errors.New("unmarshal failed")
-	ErrBadCatalogFilename = errors.New("bad catalog filename")
+	ErrBadCatalogParam    = errors.New("bad catalog param")
 )
 
 // NewCatalogContext is a forward declared entry point, allowing Catalog implementations to decouple from the lib2x3 module.

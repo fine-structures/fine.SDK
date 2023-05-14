@@ -1,29 +1,9 @@
 package graph
 
 import (
-	"errors"
-	"fmt"
 	"io"
 	"sort"
 )
-
-var (
-	ErrBadEncoding   = errors.New("bad graph encoding")
-	ErrBadVtxID      = errors.New("bad graph vertex ID")
-	ErrMissingVtxID  = errors.New("missing vertex ID")
-	ErrBadEdge       = errors.New("bad graph edge")
-	ErrBadEdgeType   = errors.New("bad graph edge type")
-	ErrBrokenEdges   = errors.New("bad or inconsistent graph edge configuration")
-	ErrViolates2x3   = errors.New("graph is not a valid 2x3")
-	ErrVtxExpected   = errors.New("vertex ID expected")
-	ErrSitesExceeded = errors.New("number of loops and edges exceeds 3")
-	ErrNilGraph      = errors.New("nil graph")
-	ErrInvalidVtxID  = errors.New("invalid vertex or group ID")
-)
-
-func chopBuf(consume []int64, N int) (alloc []int64, remain []int64) {
-	return consume[0:N], consume[N:]
-}
 
 type ComputeVtx struct {
 	VtxGroup
@@ -47,13 +27,10 @@ func (v *ComputeVtx) RemoveEdge(remove *VtxEdge) {
 type VtxGraphVM struct {
 	VtxGraph
 
-	//edgesAlloced int
+	traces   []int64
 	edgePool []*VtxEdge
 	calcBuf  []int64
 	vtx      []*ComputeVtx // Vtx by VtxID (zero-based indexing)
-
-	// Do we use the "super vertex" approach or group of vtx??
-	groups []*VtxGroup // Vtx by GroupID (zero-based indexing)
 
 }
 
@@ -81,6 +58,7 @@ func (X *VtxGraphVM) addEdgeToVtx(dst uint32, e *VtxEdge) {
 	Nv := len(X.vtx)
 	dstID := int(dst)
 
+	// Resize vtx table as necessary
 	if cap(X.vtx) < dstID {
 		old := X.vtx
 		X.vtx = make([]*ComputeVtx, dstID, 8+2*cap(X.vtx))
@@ -88,6 +66,8 @@ func (X *VtxGraphVM) addEdgeToVtx(dst uint32, e *VtxEdge) {
 	} else if len(X.vtx) < dstID {
 		X.vtx = X.vtx[:dstID]
 	}
+
+	// Create vtx if necessary
 	for i := Nv; i < dstID; i++ {
 		v := X.vtx[i]
 		if v == nil {
@@ -97,12 +77,14 @@ func (X *VtxGraphVM) addEdgeToVtx(dst uint32, e *VtxEdge) {
 		} else {
 			v.Edges = v.Edges[:0]
 		}
+
 		v.VtxID = uint32(i + 1)
 		v.GroupID = 0
 		v.VtxCount = 1
 		Nv++
 	}
 
+	// With a dst vtx in hand, add the edge
 	dstVtx := X.vtx[dstID-1]
 	dstVtx.Edges = append(dstVtx.Edges, e)
 }
@@ -124,11 +106,13 @@ func (X *VtxGraphVM) ResetGraph() {
 	// 	}
 	// }
 	X.vtx = X.vtx[:0]
-	X.groups = X.groups[:0]
-	X.Touch()
+	X.Edges = X.Edges[:0]
+	X.edgePool = X.edgePool[:0]
+	X.traces = nil
+	X.Status = VtxStatus_Invalid
 
 	// if cap(X.vtx) < Nv {
-	// 	X.vtx = make([]*ComputeVtx, Nv, 8 + 2*cap(X.vtx))
+	// 	X.vtx = make([]*ComputeVtx, Nv, 8 + edgePool2*cap(X.vtx))
 	// } else if len(X.vtx) < dstID {
 	// 	X.vtx = X.vtx[:dstID]
 	// }
@@ -160,25 +144,23 @@ func (X *VtxGraphVM) newVtxEdge() *VtxEdge {
 
 	e := X.edgePool[Ne-1]
 	if e == nil {
-		e = new(VtxEdge)
+		e = &VtxEdge{}
 		X.edgePool[Ne-1] = e
+	} else {
+		*e = VtxEdge{}
+		e.Cycles = e.Cycles[:0]
 	}
 
 	return e
 }
 
-func (X *VtxGraphVM) Touch() {
-	X.Status = VtxStatus_Invalid
-	X.Traces = nil
-}
-
 // Adds an edge using one-based indexing.
 func (X *VtxGraphVM) AddVtxEdge(
-	numNeg, numPos byte,
+	netCount int32,
 	vi, vj uint32,
 ) error {
 
-	if numNeg+numPos == 0 {
+	if netCount == 0 {
 		return nil
 	}
 
@@ -195,43 +177,10 @@ func (X *VtxGraphVM) AddVtxEdge(
 	// Add edge "halves" (one for each vertex to reflect graph flow)
 	for i := 0; i < adding; i++ {
 		ei := X.newVtxEdge()
-		*ei = VtxEdge{
-			DstVtxID: vi,
-			SrcVtxID: vj,
-		}
+		ei.DstVtxID = vi
+		ei.SrcVtxID = vj
 
-		switch {
-		case vi == vj:
-			ei.C1_Pos = int32(numPos)
-			ei.C1_Neg = int32(numNeg)
-
-		case numPos == 1 && numNeg == 0:
-			ei.E1_Pos = 1
-		case numPos == 0 && numNeg == 1:
-			ei.E1_Neg = 1
-		case numPos == 1 && numNeg == 1:
-			ei.E1_Pos = 1
-			ei.E1_Neg = 1
-
-		case numPos == 2 && numNeg == 0:
-			ei.E2_Pos = 1
-		case numPos == 0 && numNeg == 2:
-			ei.E2_Neg = 1
-
-		case numPos == 3 && numNeg == 0:
-			ei.E1_Pos = 3
-		case numPos == 0 && numNeg == 3:
-			ei.E1_Neg = 3
-		case numPos == 2 && numNeg == 1:
-			ei.E1_Pos = 2
-			ei.E1_Neg = 1
-		case numPos == 1 && numNeg == 2:
-			ei.E1_Pos = 1
-			ei.E1_Neg = 2
-
-		default:
-			return ErrBadEdgeType
-		}
+		ei.NetCount = netCount
 
 		X.addEdgeToVtx(vi, ei)
 
@@ -287,14 +236,6 @@ func (X *VtxGraphVM) Validate() error {
 	return err
 }
 
-func min(a,b int32) int32 {
-	if a < b {
-		return a
-	} else {
-		return b
-	}
-}
-	
 /*
 func (X *VtxGraphVM) Consolidate() {
 
@@ -356,7 +297,18 @@ func (X *VtxGraphVM) Consolidate() {
 }
 */
 
+// func (vg *VtxGroup) sameCycleGroup(vg2 *VtxGroup) bool {
+// 	for ii := range gi.Cycles {
+// 		ci_new := int64(gi.VtxCount) * gi.Cycles[ii] + int64(gj.VtxCount) * gj.Cycles[ii]
+// 		remainder := ci_new % int64(gi.VtxCount + gj.VtxCount)
+// 		if remainder != 0 {
+// 			return false
+// 		}
+// 	}
+// 	return true
+// }
 
+/*
 func sameCycleGroup(gi, gj *VtxGroup) bool {
 	for ii := range gi.Cycles {
 		// ci_new := int64(gi.VtxCount) * gi.Cycles[ii] + int64(gj.VtxCount) * gj.Cycles[ii]
@@ -375,7 +327,7 @@ func (vg *VtxGroup) absorbGroup(vg2 *VtxGroup) bool {
 	}
 	vtxCount := vg.VtxCount + vg2.VtxCount
 	for ii := range vg.Cycles {
-		ci_new := int64(vg.VtxCount) * vg.Cycles[ii] + int64(vg2.VtxCount) * vg2.Cycles[ii]
+		ci_new := int64(vg.VtxCount)*vg.Cycles[ii] + int64(vg2.VtxCount)*vg2.Cycles[ii]
 		vg.Cycles[ii] = ci_new / int64(vtxCount)
 	}
 	vg.VtxCount = vtxCount
@@ -383,8 +335,9 @@ func (vg *VtxGroup) absorbGroup(vg2 *VtxGroup) bool {
 }
 
 
+// inserts the given vtx group into an matching existing group or creates a new one
 func (X *VtxGraphVM) addVtxToGroup(v *VtxGroup) {
-	
+
 	var dstGroup *VtxGroup
 	for _, gi := range X.groups {
 		if gi.absorbGroup(v) {
@@ -392,7 +345,8 @@ func (X *VtxGraphVM) addVtxToGroup(v *VtxGroup) {
 			break
 		}
 	}
-	
+
+	// If no matching group found, create a new one
 	if dstGroup == nil {
 		Ng := len(X.groups)
 		Ng++
@@ -417,9 +371,9 @@ func (X *VtxGraphVM) addVtxToGroup(v *VtxGroup) {
 		gr.GroupID = uint32(Ng)
 		dstGroup = gr
 	}
-	
+
+	// bind the vertex to its group
 	v.GroupID = dstGroup.GroupID
-	
 
 	//X.VtxToGroupID = append(X.VtxToGroupID, byte(Ng))
 
@@ -434,6 +388,7 @@ func (X *VtxGraphVM) addVtxToGroup(v *VtxGroup) {
 	// }
 
 }
+*/
 
 // func (X *VtxGraphVM) setVtxGroup(v *ComputeVtx, groupID uint32) {
 // 	v.GroupID = groupID
@@ -448,7 +403,7 @@ func (X *VtxGraphVM) addVtxToGroup(v *VtxGroup) {
 
 // func (X *VtxGraphVM) forEveryVtxPair(fn func(vi, vj *ComputeVtx)) {
 // 	Xv := X.Vtx()
-	
+
 // 	for i, vi := range Xv {
 // 		for _, vj := range Xv[i+1:] {
 // 			//j := j0 + i + 1
@@ -457,102 +412,157 @@ func (X *VtxGraphVM) addVtxToGroup(v *VtxGroup) {
 // 	}
 // }
 
-
 // Pre: assume edges are consolidated
 // func (v *ComputeVtx) hasDoubleEdge() (VtoE2 *VtxEdge, E2toV *VtxEdge, V_adj int32) {
 // 	// if len(v.Edges) != 2 {
 // 	// 	return
 // 	// }
-// 	// if 
+// 	// if
 // }
-
 
 func (X *VtxGraphVM) Canonize() {
 
 	/*
-	// Do this so that we can more easily detect consolidation opportunities
-	for _, v := range X.Vtx() {
-		X.consolidateEdges(v)
-	}
-	// Look for and normalize A=vi-vj=B to A=(vi,vj)=B.
-	// This forms vi and vj into a single group while preserving cycle signature.	
-	//
-	//                                    vi
-	//       A=vi-vj=B     ===>          /|\
-	//                                 A-vj-B    
-	//          
-	//  ±A±A±vi + ±B±B±vj  ===>  ±A±B±vi + ±A±B±vj  (must preserve sign aggregates) 
-	//  sA0 A * sA1 A * svi * vi + 
-	//  sB0 B * sB1 B * svj * vj
-	//                     ===> (sA0 + sA1) * A * (svi * vi) + 
-	//                          (sB0 + sB1) * B * (svj * vj) 
-	X.forEveryVtxPair(func(Vi, Vj *ComputeVtx) {
-	
-		e_iA, e_Ai, Vi_adj := Vi.hasDoubleEdge()
-		if e_iA == nil {
-			return
+		// Do this so that we can more easily detect consolidation opportunities
+		for _, v := range X.Vtx() {
+			X.consolidateEdges(v)
 		}
-	
-		e_jB, e_Bj, Vj_adj := Vj.hasDoubleEdge()
-		if e_jB == nil {
-			return
-		}
-		
-		if e_iA.DstVtxID != e_Ai.SrcVtxID || e_jB.DstVtxID != e_Bj.SrcVtxID {
-			panic("inconsistent edge data")
-		}
-		
-		// Vi and Vj must share a single edge
-		if Vi_adj != Vj_adj {
-			return
-		}
+		// Look for and normalize A=vi-vj=B to A=(vi,vj)=B.
+		// This forms vi and vj into a single group while preserving cycle signature.
+		//
+		//                                    vi
+		//       A=vi-vj=B     ===>          /|\
+		//                                 A-vj-B
+		//
+		//  ±A±A±vi + ±B±B±vj  ===>  ±A±B±vi + ±A±B±vj  (must preserve sign aggregates)
+		//  sA0 A * sA1 A * svi * vi +
+		//  sB0 B * sB1 B * svj * vj
+		//                     ===> (sA0 + sA1) * A * (svi * vi) +
+		//                          (sB0 + sB1) * B * (svj * vj)
+		X.forEveryVtxPair(func(Vi, Vj *ComputeVtx) {
 
-		// Split A's edges to vj
-		if e_iA.E2_Pos > 0 {
-			e_iA.E2_Pos--
-			e_Ai.E2_Pos--
-			X.AddVtxEdge(0, 1, e_iA.SrcVtxID, Vj.VtxID)
-		} else if e_iA.E2_Neg > 0 {
-			e_iA.E2_Neg--
-			e_Ai.E2_Neg--
-			X.AddVtxEdge(1, 0, e_iA.SrcVtxID, Vj.VtxID)
-		} else {
-			panic("vi_eA should be a double edge")
-		}
-		
-		// Split B's edges to vi
-		if e_jB.E2_Pos > 0 {
-			e_jB.E2_Pos--
-			e_Bj.E2_Pos--
-			X.AddVtxEdge(0, 1, e_jB.SrcVtxID, Vi.VtxID)
-		} else if e_jB.E2_Neg > 0 {
-			e_jB.E2_Neg--
-			e_Bj.E2_Neg--
-			X.AddVtxEdge(1, 0, e_jB.SrcVtxID, Vi.VtxID)
-		} else {
-			panic("e_jB should be a double edge")
-		}
-		
-	})
+			e_iA, e_Ai, Vi_adj := Vi.hasDoubleEdge()
+			if e_iA == nil {
+				return
+			}
+
+			e_jB, e_Bj, Vj_adj := Vj.hasDoubleEdge()
+			if e_jB == nil {
+				return
+			}
+
+			if e_iA.DstVtxID != e_Ai.SrcVtxID || e_jB.DstVtxID != e_Bj.SrcVtxID {
+				panic("inconsistent edge data")
+			}
+
+			// Vi and Vj must share a single edge
+			if Vi_adj != Vj_adj {
+				return
+			}
+
+			// Split A's edges to vj
+			if e_iA.E2_Pos > 0 {
+				e_iA.E2_Pos--
+				e_Ai.E2_Pos--
+				X.AddVtxEdge(0, 1, e_iA.SrcVtxID, Vj.VtxID)
+			} else if e_iA.E2_Neg > 0 {
+				e_iA.E2_Neg--
+				e_Ai.E2_Neg--
+				X.AddVtxEdge(1, 0, e_iA.SrcVtxID, Vj.VtxID)
+			} else {
+				panic("vi_eA should be a double edge")
+			}
+
+			// Split B's edges to vi
+			if e_jB.E2_Pos > 0 {
+				e_jB.E2_Pos--
+				e_Bj.E2_Pos--
+				X.AddVtxEdge(0, 1, e_jB.SrcVtxID, Vi.VtxID)
+			} else if e_jB.E2_Neg > 0 {
+				e_jB.E2_Neg--
+				e_Bj.E2_Neg--
+				X.AddVtxEdge(1, 0, e_jB.SrcVtxID, Vi.VtxID)
+			} else {
+				panic("e_jB should be a double edge")
+			}
+
+		})
 	*/
-	
-	// Compute vtx cycle signatures for each vtx
-	X.GetTraces(0)
 
-	Xv := X.Vtx()
+	X.Traces(12)
 
-	vtxByCy := append([]*ComputeVtx{}, Xv...)
+	// Normalize edge signs
+	{
+		edges := X.Edges[:0]
 
-	// Sort vertices by vertex's innate characteristics & cycle signature
-	// Warning: after this sort, VtxID need to be remapped!
-	sort.Slice(vtxByCy, func(i, j int) bool {
-		vi := vtxByCy[i]
-		vj := vtxByCy[j]
+		for _, src_e := range X.edgePool {
 
-		// Sort by cycle count first and foremost
-		// The cycle count vector (an integer sequence of size Nv) is what characterizes a vertex.
-		for ci := range vi.Cycles {
-			d := vi.Cycles[ci] - vj.Cycles[ci]
+			// Spit edges into even and odd
+			for _, domain := range [2]EdgeDomain{EdgeDomain_Odd, EdgeDomain_Even} {
+				e := X.newVtxEdge()
+				e.Domain = domain
+
+				// Since edge signs have been baked into the cycle signature, edge counts have also normalized to positive.
+				e.NetCount = abs(src_e.NetCount)
+				e.Cycles = e.Cycles[:0]
+				for ci := int(domain - 1); ci < len(src_e.Cycles); ci += 2 {
+					e.Cycles = append(e.Cycles, src_e.Cycles[ci])
+				}
+				edges = append(edges, e)
+			}
+		}
+
+		X.Edges = edges
+	}
+
+	X.normalizeEdges()
+
+}
+
+func abs(x int32) int32 {
+	if x < 0 {
+		return -x
+	}
+	return x
+}
+
+func (X *VtxGraphVM) normalizeEdges() {
+
+	edges := X.Edges
+
+	// Sign and count normalization
+	for _, e := range edges {
+		sign := 0
+		for i, ci := range e.Cycles {
+			if sign == 0 && ci != 0 {
+				if ci < 0 {
+					sign = -1
+					e.NetCount *= -1
+				} else {
+					sign = 1
+				}
+			}
+			if sign < 0 {
+				e.Cycles[i] = -ci
+			}
+		}
+		if sign == 0 {
+			e.NetCount = 0
+		}
+	}
+
+	sort.Slice(edges, func(i, j int) bool {
+		ei := edges[i]
+		ej := edges[j]
+
+		// First, sort by domain
+		if d := int(ei.Domain) - int(ej.Domain); d != 0 {
+			return d < 0
+		}
+
+		// Then sort by cycle signature
+		for i, ci := range ei.Cycles {
+			d := ci - ej.Cycles[i]
 			if d != 0 {
 				return d < 0
 			}
@@ -560,204 +570,42 @@ func (X *VtxGraphVM) Canonize() {
 		return false
 	})
 
-	// Now that vertices are sorted by cycle vector, assign each vertex the cycle group number now associated with its vertex index.
-	// We issue a new group number when the cycle vector changes.
-	{
-		X.groups = X.groups[:0]
-
-		for _, v := range X.Vtx() {
-			X.addVtxToGroup(&v.VtxGroup)
-		}
-	}
-	
-	/*
-	{
-		// groupForVtx := make([]*VtxGroup, len(X.Vtx()))
-		// for i, v := range X.Vtx() {
-		// 	groupForVtx[i] = X.groups[v.GroupID-1]
-		// }
-consolidate:
-		for i, gi := range X.groups {
-			for j0, gj := range X.groups[i+1:] {
-			
-				if gi.absorbGroup(gj) {
-					j := j0 + i + 1
-					Ng := len(X.groups)-1
-					for jj := j; jj < Ng; jj++ {
-						X.groups[jj] = X.groups[jj+1]
-						X.groups[jj].GroupID--
-					}
-					X.groups[Ng] = gj // now deleted
-					X.groups = X.groups[:Ng]
-	
-					
-					if gj.GroupID != uint32(j+1) {
-						panic("group id mismatch")
-					}
-					// Update vtx with consolidated group
-					for _, v := range X.Vtx() {
-						if v.GroupID == gj.GroupID {
-							v.GroupID = gi.GroupID
-						} else if v.GroupID > gj.GroupID {
-							v.GroupID--
-						}
-					}
-					goto consolidate
-				}
-			}
-		}
-	} */
-	
-	for _, v := range X.Vtx() {
-	
-		// With groups assigned, add edges to groups and consolidate
-		for _, src_e := range v.Edges {
-			e := X.newVtxEdge()
-			*e = *src_e
-			e.SrcVtxID = X.vtx[src_e.SrcVtxID-1].GroupID
-			e.DstVtxID = X.vtx[src_e.DstVtxID-1].GroupID
-			dstGroup := X.groups[v.GroupID-1]
-			dstGroup.Edges = append(dstGroup.Edges, e) // TODO: use pooling!!! *** *** ***
-		}
-	}
-
-
-	
-	
-	// We need to canonically assign a GroupID and we have a lookup fcn to know if any two vtx are in the same group
-	
-	/*
-	// This substitution is performed after cycle analysis bc we need to symbolically compare each side so see if we can  preserves edge input flow with an edge rewire:
-	//
-	//                                    vi
-	//       A=vi-vj=B     ===>          /|\
-	//                                 A-vj-B    
-	//          
-	//  ±A±A±vi + ±B±B±vj  ===>  ±A±B±vi + ±A±B±vj  (must preserve sign aggregates) 
-	//  sA0 A * sA1 A * svi * vi + 
-	//  sB0 B * sB1 B * svj * vj
-	//                     ===> (sA0 + sA1) * A * (svi * vi) + 
-	//                          (sB0 + sB1) * B * (svj * vj) 
-	X.forEveryVtxPair(func(vi, vj *ComputeVtx) {
-		
-		// vertices must be adjacent and meet conidtions to be merged
-		if groupable(vi, vj) {
-				
-			// If the resultant cycle vector of combining these vertices is evenly divisible by group sz, then we can merge them. 
-			sameGroup := true
-			for _, ii := range vi.Cycles {
-				newCycleSum := int64(vi.VtxCount) * vi.Cycles[ii] + int64(vj.VtxCount) * vj.Cycles[ii]
-				remainder := newCycleSum % int64(vi.VtxCount + vj.VtxCount)
-				if remainder != 0  {
-					sameGroup = false
-					break
-				}
-			}
-			
-			// two vtx in the same group means their edges can be normalized together
-			if sameGroup {
-	
-				//!!
-			}
-		}
-		vj_adj := vj.hasDoubleEdgeToGroup()
-		if vj_adj < 0 {
-			continue
-		}
-		
-	
-	})
-*/
-
-	{
-		for _, gi := range X.groups {
-			X.consolidateEdges(gi)
-		}
-	}
-	
-	sort.Slice(X.groups, func(i, j int) bool {
-		gi := X.groups[i]
-		gj := X.groups[j]
-		
-		return gi.GroupID < gj.GroupID
-	})
-	
-	
-	//X.Normalize()
-
-}
-
-
-
-
-func (X *VtxGraphVM) consolidateEdges(gr *VtxGroup) {
-
-	// Now accumulate edges with matching characteristics
+	// Consolidate edges (accumulate edges with compatible characteristics)
 	// Note that doing so invalidates edge.SrcVtxID values, so lets zero them out for safety.
 	// Work right to left as we overwrite the edge array in place
 	{
-		Ge := gr.Edges
+		L := 0
+		Ne := len(edges)
+		numConsolidated := 0
+		for R := 1; R < Ne; R++ {
+			eL := edges[L]
+			eR := edges[R]
 
-		// First sort edges so that edges that can be consolidated will be sequential
-		sort.Slice(Ge, func(i, j int) bool {
-			return Ge[i].Ord() < Ge[j].Ord()
-		})
-		
-		L := byte(0)
-		Ne := int32(len(Ge))
-		numConsolidated := int32(0)
-		for R := int32(1); R < Ne; R++ {
-			eL := Ge[L]
-			eR := Ge[R]
-			match := eL.Ord() == eR.Ord()
+			match := false
+			if eL.Domain == eR.Domain {
+				match = true
+				for i, ci := range eL.Cycles {
+					if ci != eR.Cycles[i] {
+						match = false
+						break
+					}
+				}
+			}
 
 			// If exact match, absorb R into L, otherwise advance L (old R becomes new L)
 			if match {
-				eL.C1_Pos += eR.C1_Pos
-				eL.C1_Neg += eR.C1_Neg
-
-				eL.E1_Pos += eR.E1_Pos
-				eL.E1_Neg += eR.E1_Neg
-
-				eL.E2_Pos += eR.E2_Pos
-				eL.E2_Neg += eR.E2_Neg
-
+				eL.NetCount += eR.NetCount
 				numConsolidated++
 			} else {
 				L++
-				Ge[L], Ge[R] = Ge[R], Ge[L] // finalize R into a new L *and* preserve L target (as an allocation)
+				edges[L], edges[R] = edges[R], edges[L] // finalize R into a new L *and* preserve L target (as an allocation)
 			}
 		}
 		Ne -= numConsolidated
-		gr.Edges = Ge[:Ne]
+		X.Edges = edges[:Ne]
 	}
-	
-	// "Normalize" loops (C1) and double edges (E2) into single edges (E1) since they are less nuanced 
-	// Is this even normalization or just more consolidation!?
-	{
-		for _, e := range gr.Edges {
-			
-			// normalize E2
-			neutralEdges := min(e.E2_Neg, e.E2_Pos)
-			e.E2_Pos -= neutralEdges
-			e.E2_Neg -= neutralEdges
-			
-			// normalize C1 (by definition 0 if e.SrcVtxID != e.DstVtxID)
-			neutralLoops := min(e.C1_Neg, e.C1_Pos) 
-			e.C1_Pos -= neutralLoops
-			e.C1_Neg -= neutralLoops
-			
-			// consolidate into E1
-			e.E1_Pos += neutralEdges + neutralLoops
-			e.E1_Neg += neutralEdges + neutralLoops
-		}
-	}
-		
-
-		
 
 }
-
 
 /*
 
@@ -768,7 +616,7 @@ func (X *VtxGraphVM) Normalize() {
 	// Choice normalize edges to loops or loops to edges?
 	//    - Loops to edges preserves particle count but can cause particlews to combine (e.g. Higgs factorization)
 	//    - Edges to loops can cause a particle to be broken up (e.g. Higgs) -- but is prolly better for factorization
-	//    - 
+	//    -
 	for _, gr := range X.groups {
 		for _, e := range gr.Edges {
 
@@ -778,13 +626,13 @@ func (X *VtxGraphVM) Normalize() {
 					if normE1 > 0 {
 						e.E1_Pos -= normE1
 						e.E1_Neg -= normE1
-						
+
 						e.C1_Pos += normE1
 						e.C1_Neg += normE1
 					}
 				}
 			}
-			
+
 			if edgesToLoops := true; edgesToLoops {
 				// Safety assert -- remove in future
 				if e.C1_Pos > 0 || e.C1_Neg > 0 {
@@ -792,12 +640,12 @@ func (X *VtxGraphVM) Normalize() {
 						panic("loops must be self edges")
 					}
 				}
-	
+
 				normC1 := min(e.C1_Pos, e.C1_Neg)
 				if normC1 > 0 {
 					e.C1_Pos -= normC1
 					e.C1_Neg -= normC1
-	
+
 					e.E1_Pos += normC1
 					e.E1_Neg += normC1
 				}
@@ -818,7 +666,7 @@ func (X *VtxGraphVM) Normalize() {
 
 					tst = append(tst, e.E1_Pos+e.E1_Neg + e.C1_Pos+e.C1_Neg)
 					tst = append(tst, e.E2_Pos+e.E2_Neg)
-					
+
 					for ti, t := range tst {
 						if t%int32(gr.VtxCount) != 0 {
 							fmt.Printf("tst[%d] == %d, gr.VtxCount = %d\n", ti, t, gr.VtxCount)
@@ -833,28 +681,26 @@ func (X *VtxGraphVM) Normalize() {
 }
 */
 
-
 func assert(cond bool, desc string) {
 	if !cond {
 		panic(desc)
 	}
 }
 
-func (X *VtxGraphVM) GetTraces(numTraces int) []int64 {
+func (X *VtxGraphVM) Traces(numTraces int) Traces {
+	if X.Status < VtxStatus_Validated {
+		return nil
+	}
+
 	Nc := numTraces
 	if Nc <= 0 {
 		Nc = X.VtxCount()
 	}
 
-	if X.Status < VtxStatus_Validated {
-		return nil
-	}
-
-	if len(X.Traces) < Nc {
+	if len(X.traces) < Nc {
 		X.calcTracesTo(Nc)
 	}
-
-	return X.Traces[:Nc]
+	return X.traces[:Nc]
 }
 
 func (X *VtxGraphVM) calcTracesTo(Nc int) {
@@ -873,19 +719,24 @@ func (X *VtxGraphVM) calcTracesTo(Nc int) {
 			vi.Ci0[j] = 0
 		}
 		vi.Ci0[i] = 1
+
+		for _, e := range vi.Edges {
+			for i := range e.Cycles {
+				e.Cycles[i] = 0
+			}
+		}
 	}
 
 	// Oh Lord, our Adonai and God, you alone are the Lord. You have made the heavens, the heaven of heavens, with all their host, the earth and all that is on it, the seas and all that is in them; and you preserve all of them; and the host of heaven worships you. You are the Lord, the God, who chose Abram and brought him out of Ur of the Chaldeans and gave him the name Abraham; you found his heart faithful before you, and made with him the covenant to give the land of the Canaanites, the Hittites, the Amorites, the Perizzites, the Jebusites, and the Girgashites—to give it to his offspring. You have kept your promise, for you are righteous. And you saw the affliction of our fathers in Egypt and heard their cry at the Red Sea; and you performed signs and wonders against Pharaoh and all his servants and all the people of his land, for you knew that they acted arrogantly against them. And you made a name for yourself, as it is this day, and you divided the sea before them, so that they went through the midst of the sea on dry land, and you cast their pursuers into the depths, as a stone into mighty waters. Moreover in a pillar of cloud you led them by day, and in a pillar of fire by night, to light for them the way in which they should go. You came down also upon Mount Sinai, and spoke with them from heaven, and gave them right ordinances and true laws, good statutes and commandments; and you made known to them your holy sabbath, and commanded them commandments and statutes, a law for ever. And you gave them bread from heaven for their hunger, and brought forth water for them out of the rock for their thirst, and you told them to go in to possess the land that you had sworn to give them. But they and our fathers acted presumptuously and stiffened their neck, and did not obey your commandments. They refused to obey, neither were mindful of the wonders that you performed among them, but hardened their necks, and in their rebellion appointed a leader to return to their bondage. But you are a God ready to pardon, gracious and merciful, slow to anger, and abounding in steadfast love, and did not forsake them. Even when they had made for themselves a calf of molten metal, and~.
 	// Yashhua is His name, Emmanuel, God with us!
 	for ci := 0; ci < Nc; ci++ {
-		odd := (ci & 1) != 0
-		X.Traces[ci] = 0
+		odd := (ci & 1) == 0 // in zero-based indexing so odd indexes are even cycle indices.
 
 		for _, vi := range Xv {
 
 			// Alternate which is the prev / next state store
 			Ci0, Ci1 := vi.Ci0, vi.Ci1
-			if odd {
+			if !odd {
 				Ci0, Ci1 = Ci1, Ci0
 			}
 
@@ -895,63 +746,50 @@ func (X *VtxGraphVM) calcTracesTo(Nc int) {
 				for _, e := range vj.Edges {
 					assert(int(e.DstVtxID) == j+1, "edge DstVtxID mismatch")
 
-					weight := int32(0)
-					weight += 1 * (e.E1_Pos - e.E1_Neg)
-					weight += 2 * (e.E2_Pos - e.E2_Neg)
-					if e.SrcVtxID == e.DstVtxID {
+					Ci_src := Ci0[e.SrcVtxID-1]
+					Ci1[j] += int64(e.NetCount) * Ci_src
 
-						// Inject odd self weight
-						weight += e.C1_Pos - e.C1_Neg
-					}
-
-					
-					flow := int64(weight) * Ci0[e.SrcVtxID-1]
+					// Tally cycle returning to the home vtx on this vertex
 					if int(vi.VtxID-1) == j {
-						//e.Cycles[ci] += flow // store cycle components contributed by each edge.
+						if e.NetCount < 0 {
+							Ci_src = -Ci_src // negative weights negate cycle count
+						}
+						e.Cycles[ci] += Ci_src // store cycle components contributed by each edge.
 					}
-					Ci1[j] += flow
 				}
 			}
 
 			vi_cycles_ci := Ci1[vi.VtxID-1]
-			X.Traces[ci] += vi_cycles_ci
+			X.traces[ci] += vi_cycles_ci
 			vi.Cycles[ci] = vi_cycles_ci
-
-			// // now add "even loop" generators
-			// for j, vj := range Xv {
-			// 	for _, e := range vj.Edges {
-			// 		Cin := Ci0[e.SrcVtxID-1]
-			// 		Ci1[j] += int64(e.EvenWeight) * Cin
-			// 	}
-			// }
-
 		}
 	}
 }
 
 func (X *VtxGraphVM) PrintCycleSpectrum(numTraces int, out io.Writer) {
-	TX := X.GetTraces(numTraces)
+	TX := X.Traces(numTraces)
 
 	//Xv := X.Vtx()
 	Nc := len(TX)
 
 	var buf [128]byte
 
+	blank := "         "
 	prOpts := PrintIntOpts{
-		MinWidth: 9,
+		MinWidth: len(blank),
 	}
 
 	// Write header
 	{
 		line := buf[:0]
-		line = append(line, "   DST  <=  SRC  x   2*      1*      C1*         Nv:       "...)
+		line = append(line, "   DST  <=  SRC                         "...)
 
 		for ti := range TX {
 			line = append(line, 'C', byte(ti)+'1')
 			line = append(line, "       "...)
 		}
 
-		line = append(line, "\n  ---------------------------------------           "...)
+		line = append(line, "\n  ---------------------------    "...)
 
 		// append traces
 		for _, Ti := range TX {
@@ -962,39 +800,45 @@ func (X *VtxGraphVM) PrintCycleSpectrum(numTraces int, out io.Writer) {
 		out.Write(line)
 	}
 
-
 	for _, vi := range X.Vtx() {
-		for j, ej := range vi.Edges {
+		for _, ej := range vi.Edges {
 			line := ej.AppendDesc(buf[:0])
 			line = append(line, "      "...)
 
-			if j == 0 {
-				line = fmt.Appendf(line, "%02d:", vi.VtxCount)
-				for _, c := range vi.Cycles[:Nc] {
-					line = AppendInt(line, c, prOpts)
-				}
-			} else {
-				line = append(line, "  :"...)
+			//line = fmt.Appendf(line, "%02d:", vi.VtxCount)
+			for _, c := range ej.Cycles[:Nc] {
+				line = AppendInt(line, c, prOpts)
 			}
 			line = append(line, '\n')
 			out.Write(line)
 		}
 	}
-	
-	out.Write([]byte(" -----===========---- \n"))
-	
-	for _, gi := range X.groups {
-		for j, ej := range gi.Edges {
-			line := ej.AppendDesc(buf[:0])
-			line = append(line, "      "...)
 
-			if j == 0 {
-				line = fmt.Appendf(line, "%02d:", gi.VtxCount)
-				for _, c := range gi.Cycles[:Nc] {
-					line = AppendInt(line, c, prOpts)
+	out.Write([]byte(" -----===========---- \n"))
+
+	{
+		for _, ei := range X.Edges {
+			line := ei.AppendDesc(buf[:0])
+			line = append(line, "       "...)
+
+			for i := 0; i < Nc; i++ {
+				isEven := (i & 1) != 0
+				switch ei.Domain {
+				case EdgeDomain_EvenOdd:
+					line = AppendInt(line, ei.Cycles[i], prOpts)
+				case EdgeDomain_Odd:
+					if isEven {
+						line = append(line, blank...)
+					} else {
+						line = AppendInt(line, ei.Cycles[i>>1], prOpts)
+					}
+				case EdgeDomain_Even:
+					if isEven {
+						line = AppendInt(line, ei.Cycles[i>>1], prOpts)
+					} else {
+						line = append(line, blank...)
+					}
 				}
-			} else {
-				line = append(line, "  :"...)
 			}
 			line = append(line, '\n')
 			out.Write(line)
@@ -1010,18 +854,54 @@ func (X *VtxGraphVM) setupBufs(Nc int) {
 		Nc = Nv
 	}
 
-	need := Nc + Nv*(Nv+Nv+Nc)
+	need := Nc + Nv*(Nc+Nc+Nc)
 	if len(X.calcBuf) < need {
 		X.calcBuf = make([]int64, (need+15)&^15)
 	}
 	buf := X.calcBuf
-	X.Traces, buf = chopBuf(buf, Nc)
+	X.traces, buf = chopBuf(buf, Nc)
+	for i := range X.traces {
+		X.traces[i] = 0
+	}
 
 	// Place bufs on each vtx
 	for _, v := range Xv {
-		v.Ci0, buf = chopBuf(buf, Nv)
-		v.Ci1, buf = chopBuf(buf, Nv)
+		v.Ci0, buf = chopBuf(buf, Nc)
+		v.Ci1, buf = chopBuf(buf, Nc)
 		v.Cycles, buf = chopBuf(buf, Nc)
+
+		for _, e := range v.Edges {
+			if cap(e.Cycles) < Nc {
+				e.Cycles = make([]int64, (need+3)&^3)
+			}
+			e.Cycles = e.Cycles[:Nc]
+		}
 	}
 
+}
+
+type GraphEncodingOpts int
+
+func (X *VtxGraphVM) AppendGraphEncoding(io []byte, opts GraphEncodingOpts) []byte {
+	X.Canonize()
+
+	// Next steps:
+	//   - use VtxStatus to prevent redundant work
+	//   - encode canonized vtx edges (gr.Edges) as graph encoding, encoding signs LAST
+	//   - at what point are graphs redundant and can be dropped?   for example:
+	//       1. same canonization but different sign distribution (e.g. elastance of two Higgs 24+08)
+	//             -- current view: counted as a dupe
+	//       2. graphs with canonization synonyms (e.g. K8 with or without C1)
+	//             -- "normalization" is to choose the canonic form
+	//       3. graph canonized with dropped sign "deltas" (e.g. Higgs normalized to 24)
+	//              -- requires a "normalization" step to choose the canonic form
+	//              -- must prove that the canonic form is unique (1:1 mapping of existing Traces and this new form)
+
+	// The key question to know more on is when (if) dupes need to be tallied (like Griggs said),
+	//     or maybe they don't matter, can be dropped, and all the matters is the canonic form (plus state offset).
+	// That is it of any importance there are 3 proton variants and 7 neutron variants, or if they can be dropped and only the canonic form matters?
+	// Gut says the latter since who cares how many conceptual Griggs graphs are possible compared to what is the information needed to reproduce a given state.
+	//    - Is "state" what graph is implied or is it the min information needed to reproduce a particles (traces) or a traces plus ????
+
+	return nil
 }

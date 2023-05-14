@@ -17,14 +17,32 @@ import (
 
 Catalog database format:
 
-	00 00 01 => CatalogState
 
-	Nv (byte)
-		Traces ([Nv]varint, NUL, NUL) (UserMeta uses kIsPrime flag)
-			GraphUID ([]byte hash)        => GraphDef
-			...
+
+
+
+	type TracesSpec := [Oi]varint, [Ei]varint, [±] (byte)
+
+	gCatalogStateKey => CatalogState
+
+
+	TracesSpec, NUL, NUL (UserMeta uses kIsPrime flag)
+		CanonicStateEncoding ([]byte hash)        => GraphDef
 		...
 	...
+
+
+
+	gPrimesCatalogKey
+		Nv (byte)
+			TraceSpec
+			..
+
+	TraceSpec, NUL, NUL,
+		CanonicStateEncoding  => GraphSpecDef
+		...
+	...
+
 
 The above structure allows to:
 	1) load all primes for a given Nv
@@ -67,7 +85,7 @@ Next steps / ideas:
 ***/
 
 var (
-	gStateKey = []byte{0x00, 0x00, 0x01}
+	gCatalogStateKey = []byte{0x00, 0x00, 0x01}
 )
 
 // Catalog is a db wrapper for a 2x3 particle catalog
@@ -80,6 +98,10 @@ type catalog struct {
 	db           *badger.DB
 	CatalogDesig string
 	primeCache   *lib2x3.FactorCatalog
+
+	// LSM double-lookup of a TracesID table:
+	//   TracesID <=> [1..TracesCount/2]varint64
+	//EdgeTrace symbol.Table
 }
 
 func init() {
@@ -145,7 +167,8 @@ func (ctx *catalogContext) Close() {
 func (ctx *catalogContext) OpenCatalog(opts lib2x3.CatalogOpts) (lib2x3.Catalog, error) {
 
 	if opts.TraceCount <= 0 {
-		opts.TraceCount = 12 // TODO: this does away now that a catalog doesn't store a set Traces size
+		opts.TraceCount = 12
+		//return nil, errors.Wrap(lib2x3.ErrBadCatalogParam, "TraceCount must be > 0")
 	}
 
 	cat := &catalog{
@@ -168,7 +191,7 @@ func (ctx *catalogContext) OpenCatalog(opts lib2x3.CatalogOpts) (lib2x3.Catalog,
 
 	if len(opts.DbPathName) == 0 {
 		if opts.ReadOnly {
-			return nil, lib2x3.ErrBadCatalogFilename
+			return nil, errors.Wrap(lib2x3.ErrBadCatalogParam, "DbPathName must be specified for read-only catalog")
 		}
 		dbOpts.InMemory = true
 	}
@@ -233,7 +256,7 @@ func (cat *catalog) NumPrimes(forVtxCount byte) int64 {
 
 func (cat *catalog) loadState() error {
 	err := cat.db.View(func(txn *badger.Txn) error {
-		item, err := txn.Get(gStateKey)
+		item, err := txn.Get(gCatalogStateKey)
 		if err == nil {
 			item.Value(func(val []byte) error {
 				return cat.state.Unmarshal(val)
@@ -251,7 +274,7 @@ func (cat *catalog) flushState() {
 			if err != nil {
 				return err
 			}
-			err = txn.Set(gStateKey, stateBuf)
+			err = txn.Set(gCatalogStateKey, stateBuf)
 			if err != nil {
 				return err
 			}
@@ -289,39 +312,43 @@ func (cat *catalog) IsReadOnly() bool {
 	return cat.readOnly
 }
 
-func (cat *catalog) issueNextTracesID(numVerts byte) lib2x3.TracesID {
+func (cat *catalog) issueNextTracesID(numVerts int) graph.TracesID {
 	tid := cat.state.NumTraces[numVerts] + 1
 	cat.state.NumTraces[numVerts] = tid
 	cat.stateDirty = true
 
-	return lib2x3.FormTracesID(numVerts, tid)
+	return graph.FormTracesID(uint32(numVerts), tid)
 }
 
-func (cat *catalog) issueNextPrimeID(numVerts byte) lib2x3.TracesID {
+func (cat *catalog) issueNextPrimeID(numVerts int) graph.TracesID {
 	tid := cat.state.NumPrimes[numVerts] + 1
 	cat.state.NumPrimes[numVerts] = tid
 	cat.stateDirty = true
 
-	return lib2x3.FormTracesID(numVerts, tid)
+	return graph.FormTracesID(uint32(numVerts), tid)
 }
 
-func (cat *catalog) formTracesKeyFromPrimeFactor(buf []byte, factor lib2x3.TracesID) []byte {
-	Nv := factor.NumVerts()
-	TX := cat.primeCache.GetFactorTraces(uint32(Nv), uint32(factor.SeriesID()))
+func (cat *catalog) formCatalogKeyFromPrimeFactor(key []byte, factor graph.TracesID) []byte {
+	Nv := uint32(factor.NumVertices())
+	TX := cat.primeCache.GetFactorTraces(Nv, uint32(factor.SeriesID()))
 
-	key := append(buf, Nv)
-	key = TX[:Nv].AppendTraceSpecTo(key)
+	key = append(key, byte(Nv)) // needed?  or use edge info sorter?
+	key = TX[:Nv].AppendOddEvenEncoding(key)
 	key = append(key, 0, 0)
 
 	return key
 }
 
-func (cat *catalog) formTracesKey(buf []byte, X *lib2x3.Graph) []byte {
-	Nv := X.NumVerts()
-	TX := X.Traces(0)
+func (cat *catalog) formTracesKey(key []byte, X graph.TracesProvider) []byte {
+	Nv := X.NumVertices()
+	Nt := Nv // cat.TraceCount()
+	TX := X.Traces(Nt)
+	// if len(TX) == 0 || len(TX) < Nt {
+	//     return nil, graph.ErrInsufficientTraces
+	// }
 
-	key := append(buf, Nv)
-	key = TX.AppendTraceSpecTo(key)
+	key = append(key, byte(Nv))
+	key = TX.AppendOddEvenEncoding(key)
 	key = append(key, 0, 0)
 
 	return key
@@ -729,12 +756,14 @@ func (cat *catalog) lookupGraph(X *lib2x3.Graph) (isNewTraces, isNewGraph bool) 
 //
 // If true is returned, X was not present and was added.
 //
-// If false is returned, X already exists in the particle registry.
+// If false is returned, X already exists in the particle registry (or the graph is not valid
 func (cat *catalog) TryAddGraph(X *lib2x3.Graph) bool {
 	var keyBuf [256]byte
-	//tracesKey := cat.formTracesKey(keyBuf[:0], X)
-	tracesKey, graphKey := X.FormLookupKeys(keyBuf[:0])
-
+	tracesKey := cat.formTracesKey(keyBuf[:0], X)
+	completeKey, err := X.ExportStateEncoding(tracesKey, graph.ExportGraphState)
+	if err != nil {
+		return false
+	}
 	isNewTraces := false
 	isNewGraph := false
 
@@ -742,12 +771,12 @@ func (cat *catalog) TryAddGraph(X *lib2x3.Graph) bool {
 	txn := cat.db.NewTransaction(true)
 	defer txn.Discard()
 
-	_, err := txn.Get(tracesKey)
+	_, err = txn.Get(tracesKey)
 	if err == badger.ErrKeyNotFound {
 		isNewTraces = true
 		isNewGraph = true
 	} else {
-		_, err = txn.Get(graphKey)
+		_, err = txn.Get(completeKey)
 		if err == badger.ErrKeyNotFound {
 			isNewGraph = true
 		}
@@ -755,7 +784,7 @@ func (cat *catalog) TryAddGraph(X *lib2x3.Graph) bool {
 
 	// If nothing new, we're done
 	if isNewTraces {
-		cat.issueNextTracesID(X.NumVerts())
+		cat.issueNextTracesID(X.NumVertices())
 	} else if !isNewGraph {
 		return false
 	}
@@ -766,7 +795,7 @@ func (cat *catalog) TryAddGraph(X *lib2x3.Graph) bool {
 	if isNewTraces && cat.state.IsPrimeCatalog {
 
 		// Importantly, prime testing only requires primes up to Nv-1
-		Nv := X.NumVerts()
+		Nv := X.NumVertices()
 		cat.cachePrimesAsNeeded(int(Nv - 1))
 
 		TX := X.Traces(0)
@@ -782,7 +811,7 @@ func (cat *catalog) TryAddGraph(X *lib2x3.Graph) bool {
 			txn.SetEntry(badger.NewEntry(tracesKey, nil).WithMeta(tracesFlags))
 		}
 		if isNewGraph {
-			txn.Set(graphKey, X.ExportGraphDef())
+			txn.Set(completeKey, X.ExportGraphDef())
 		}
 
 		err = txn.Commit()
@@ -1054,7 +1083,7 @@ func (cat *catalog) formGraphFromFactors(
 
 	var keyBuf [256]byte
 	for _, Pi := range primeFactors {
-		tracesKey := cat.formTracesKeyFromPrimeFactor(keyBuf[:0], Pi.ID)
+		tracesKey := cat.formCatalogKeyFromPrimeFactor(keyBuf[:0], Pi.ID)
 
 		err := seeker.SeekAndGetFirstSub(tracesKey, func(val []byte) error {
 			err := Xi.InitFromDef(val)

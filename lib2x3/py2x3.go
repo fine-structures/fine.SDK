@@ -77,7 +77,7 @@ func ph_NewGraph(module py.Object, args py.Tuple) (py.Object, error) {
 
 func ph_Graph_NumVerts(self py.Object, args py.Tuple) (py.Object, error) {
 	X := self.(*Graph)
-	return py.Object(py.Int(X.NumVerts())), nil
+	return py.Object(py.Int(X.NumVertices())), nil
 }
 
 func ph_Graph_NumParts(self py.Object, args py.Tuple) (py.Object, error) {
@@ -597,8 +597,8 @@ func getGraphSelector(graph_selector py.Object, sel *GraphSelector) error {
 		if err != nil {
 			return err
 		}
-		sel.Min.NumVerts = X.NumVerts()
-		sel.Max.NumVerts = X.NumVerts()
+		sel.Min.NumVerts = byte(X.NumVertices())
+		sel.Max.NumVerts = byte(X.NumVertices())
 		sel.Traces = X
 	}
 

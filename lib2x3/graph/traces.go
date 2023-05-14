@@ -1,4 +1,4 @@
-package lib2x3
+package graph
 
 import (
 	"bytes"
@@ -10,8 +10,6 @@ import (
 // Traces is an arbitrarily length sequence of a phoneix Graph "Trace" values.
 type Traces []int64
 
-type TraceSpecBuf [MaxVtxID * binary.MaxVarintLen64]byte
-
 // TracesRank is a deterministic numerical ranking based on Traces (for a constant number of elements -- typically 12+)
 // TracesRank:
 //      (a) serves as a hash for Traces, enhancing db query performance, and
@@ -22,16 +20,35 @@ type TracesRank uint64
 // The first byte is how many trace values follow and the remaining bytes are varint64 encodings of each trace value.
 type TraceSpec []byte
 
-func min(a, b int) int {
-	if a < b {
-		return a
-	} else {
-		return b
-	}
-}
 
-func max(a, b int) int {
-	if a > b {
+// // TODO: attach to graph struct
+// type SysTraces struct {
+	
+// 	//Terms []*TracesTerm
+// }
+
+// func (x *SysTraces) Clear() {
+	
+// }
+
+// func (x *SysTraces) AssignFromTraces(TX Traces)  {
+	
+// }
+
+// func (x *SysTraces) MakeCanonic() {
+	
+// 	sort.Slice(x.Terms, func(i, j int) bool {
+// 		return false	// TODO
+// 	})
+// }
+
+// func (sys *SysTraces) AppendLookupKey([]byte) []byte {
+// 	return nil // TODO
+// }
+
+
+func mini(a, b int) int {
+	if a < b {
 		return a
 	} else {
 		return b
@@ -41,7 +58,7 @@ func max(a, b int) int {
 // IsEqual returns if two traces have the same prefix.
 // The number of elements compared is the trace with the shorter length, so a Traces of length 0 will be equal to all other Traces.
 func (TX Traces) IsEqual(target Traces) bool {
-	N := min(len(TX), len(target))
+	N := mini(len(TX), len(target))
 	for i := 0; i < N; i++ {
 		if TX[i] != target[i] {
 			return false
@@ -63,7 +80,7 @@ func (TX Traces) IsZero() bool {
 // Computes TX-delta and places the result into diff.
 // Returns true of the result is all zeros.
 func (TX Traces) Subtract(delta Traces, diff *Traces) (isZero bool) {
-	N := min(len(TX), len(delta))
+	N := mini(len(TX), len(delta))
 
 	isZero = true
 	diff.SetLen(N)
@@ -125,7 +142,7 @@ func (TX *Traces) InitFromTraceSpec(spec TraceSpec, maxNumTraces int) error {
 //
 // The integer returned a the byte length in the returned TraceSpec after TX.VtxCount exported elements.
 func (TX Traces) AppendTraceSpecTo(out []byte) TraceSpec {
-	var scrap [binary.MaxVarintLen64]byte
+	var scrap [12]byte
 
 	for _, Ti := range TX {
 		n := binary.PutVarint(scrap[:], Ti)
@@ -135,9 +152,53 @@ func (TX Traces) AppendTraceSpecTo(out []byte) TraceSpec {
 	return out
 }
 
+func (TX Traces) AppendOddEvenEncoding(io []byte) TraceSpec {		
+	numTraces := len(TX)
+	var scrap [12]byte
+
+	// Odd traces first -- normalize sign to first non-zero off term
+	key := io
+	sign := TracesSign_Zero
+	for i := 0; i < numTraces; i+=2 {
+		Ti := TX[i]
+		if sign == TracesSign_Zero {
+            if Ti > 0 {
+                sign = TracesSign_Pos
+            } else if Ti < 0 {
+                sign = TracesSign_Neg
+            }
+        }
+		if sign == TracesSign_Neg {
+			Ti = -Ti
+		}
+		n := binary.PutVarint(scrap[:], Ti)
+		key = append(key, scrap[:n]...)
+    }
+		
+	
+	// Even traces
+	for i := 1; i < numTraces; i+=2 {
+		Ti := TX[i]
+		// if oddNorm == 0 {   
+		// 	if Ti & 1 != 0 {
+		// 		panic("even trace on boson is odd")
+		// 	}
+		// 	Ti = Ti >> 1
+		// }
+		n := binary.PutVarint(scrap[:], Ti)
+		key = append(key, scrap[:n]...)
+	}
+	
+	// Append sign (last)
+	key = append(key, byte(sign))
+	
+	return key
+}
+
+
 const TracesIDSz = 7
 
-func FormTracesID(numVerts byte, seriesID uint64) TracesID {
+func FormTracesID(numVerts uint32, seriesID uint64) TracesID {
 	return TracesID((uint64(numVerts) << 48) | uint64(seriesID))
 }
 
@@ -169,8 +230,8 @@ func (tid *TracesID) Unmarshal(in []byte) error {
 	return nil
 }
 
-func (tid TracesID) NumVerts() byte {
-	return byte(tid >> 48)
+func (tid TracesID) NumVertices() uint32 {
+	return uint32(byte(tid >> 48))
 }
 
 func (pid TracesID) SeriesID() uint64 {
@@ -178,5 +239,5 @@ func (pid TracesID) SeriesID() uint64 {
 }
 
 func (pid TracesID) WriteAsString(out io.Writer) {
-	fmt.Fprintf(out, "%d-%d", pid.NumVerts(), pid.SeriesID())
+	fmt.Fprintf(out, "%d-%d", pid.NumVertices(), pid.SeriesID())
 }

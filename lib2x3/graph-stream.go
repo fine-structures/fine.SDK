@@ -5,6 +5,8 @@ import (
 	"io"
 	"log"
 	"strings"
+
+	"github.com/2x3systems/go2x3/lib2x3/graph"
 )
 
 type GraphAdder interface {
@@ -164,16 +166,17 @@ func (stream *GraphStream) SelectFromStream(sel GraphSelector) *GraphStream {
 	}
 
 	go func() {
-		var matchTraces Traces
+		var matchTraces graph.Traces
 		if sel.Traces != nil {
 			matchTraces = sel.Traces.Traces(0)
 		}
+		matchLen := len(matchTraces)
 		for X := range stream.Outlet {
 			keep := false
 			if sel.AllowGraph(X) {
 				keep = true
-				if len(matchTraces) > 0 {
-					TX := X.Traces(len(matchTraces))
+				if matchLen > 0 {
+					TX := X.Traces(matchLen)
 					keep = matchTraces.IsEqual(TX)
 				}
 			}

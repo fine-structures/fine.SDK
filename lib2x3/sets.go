@@ -1,6 +1,11 @@
 package lib2x3
 
-import "github.com/dgraph-io/badger/v3"
+import (
+	"encoding/binary"
+
+	"github.com/2x3systems/go2x3/lib2x3/graph"
+	"github.com/dgraph-io/badger/v3"
+)
 
 // CanonicSet allows adding canonical encodings of particle graphs and returning if an equivalent graph has already been added.
 type CanonicSet interface {
@@ -28,7 +33,7 @@ type TracesSet interface {
 	// If TX isn't in this TracesSet, a copy of TX is added and true is returned.
 	//
 	// After one or more calls to TryAdd(), be sure to call Close() for cleanup.
-	TryAdd(TX Traces) bool
+	TryAdd(TX graph.Traces) bool
 
 	// Close removes all previously added items from this set.
 	//
@@ -40,8 +45,8 @@ func NewTracesSet() TracesSet {
 	return &tracesSet{}
 }
 
-func (ts *tracesSet) TryAdd(TX Traces) bool {
-	var buf TraceSpecBuf
+func (ts *tracesSet) TryAdd(TX graph.Traces) bool {
+	var buf [MaxVtxID * binary.MaxVarintLen64]byte
 	key := TX.AppendTraceSpecTo(buf[:0])
 	return ts.tryAdd(key)
 }

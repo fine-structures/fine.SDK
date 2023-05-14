@@ -4,6 +4,7 @@ import (
 	"sync"
 	"unsafe"
 
+	"github.com/2x3systems/go2x3/lib2x3/graph"
 	"github.com/emirpasic/gods/trees/redblacktree"
 )
 
@@ -11,11 +12,11 @@ import (
 type FactorSet []FactorRun
 
 type FactorRun struct {
-	ID    TracesID
+	ID    graph.TracesID
 	Count uint32
 }
 
-func (factors *FactorSet) Insert(toAdd TracesID) {
+func (factors *FactorSet) Insert(toAdd graph.TracesID) {
 	insertAt := len(*factors)
 
 	for i, Fi := range *factors {
@@ -68,10 +69,10 @@ func (factors *FactorSet) Clear() {
 	*factors = (*factors)[:0]
 }
 
-func (factors FactorSet) TotalVtxCount() byte {
-	Nv := byte(0)
+func (factors FactorSet) TotalVtxCount() uint32 {
+	Nv := uint32(0)
 	for _, Fi := range factors {
-		Nv += byte(Fi.Count) * Fi.ID.NumVerts()
+		Nv += Fi.Count * Fi.ID.NumVertices()
 	}
 	return Nv
 }
@@ -129,8 +130,8 @@ func (factors *PrimeFactors) InitFromEncoding(in []byte) error {
 }
 */
 type Factor struct {
-	Traces Traces
-	ID     TracesID
+	Traces graph.Traces
+	ID     graph.TracesID
 }
 
 type FactorTable struct {
@@ -139,7 +140,7 @@ type FactorTable struct {
 	numFactors      uint32
 }
 
-func (ft *FactorTable) AddCopy(factor Traces) {
+func (ft *FactorTable) AddCopy(factor graph.Traces) {
 	ft.FactorTraces = append(ft.FactorTraces, factor...)
 	ft.numFactors++
 }
@@ -150,7 +151,7 @@ func (ft *FactorTable) NumFactors() uint32 {
 
 // dst <= A - Factors[Fi]
 // Returns true if diff is all zeros.
-func (ft *FactorTable) SubtractFactor(dst Traces, A Traces, Fi uint32) bool {
+func (ft *FactorTable) SubtractFactor(dst graph.Traces, A graph.Traces, Fi uint32) bool {
 	numTraces := ft.TracesPerFactor
 	B := unsafe.Slice(&ft.FactorTraces[Fi*numTraces], numTraces)
 	isZero := true
@@ -169,10 +170,10 @@ type FactorCatalog struct {
 	maxNv int32
 }
 
-func (fcat *FactorCatalog) GetFactorTraces(Nv, Fi uint32) Traces {
+func (fcat *FactorCatalog) GetFactorTraces(Nv, Fi uint32) graph.Traces {
 	ft := fcat.forNv[Nv]
 	i0 := uint32(Fi) * ft.TracesPerFactor
-	return Traces(ft.FactorTraces[i0 : i0+ft.TracesPerFactor])
+	return graph.Traces(ft.FactorTraces[i0 : i0+ft.TracesPerFactor])
 }
 
 func (fcat *FactorCatalog) HasFactorsUpTo() int {
@@ -214,7 +215,7 @@ func (fcat *FactorCatalog) NumFactorsHint(Nv int, numFactors uint64) {
 	}
 }
 
-func (fcat *FactorCatalog) AddCopy(Nv byte, factor Traces) {
+func (fcat *FactorCatalog) AddCopy(Nv byte, factor graph.Traces) {
 	fcat.forNv[Nv].AddCopy(factor)
 }
 
@@ -224,7 +225,7 @@ var factorSearchPool = sync.Pool{
 	},
 }
 
-func (fcat *FactorCatalog) FindFactorizations(TX Traces) <-chan FactorSet {
+func (fcat *FactorCatalog) FindFactorizations(TX graph.Traces) <-chan FactorSet {
 	s := NewFactorSearch(TX, fcat)
 
 	go func() {
@@ -294,7 +295,7 @@ func (fcat *FactorCatalog) FindFactorizations(TX Traces) <-chan FactorSet {
 	return outlet
 }
 
-func (fcat *FactorCatalog) IsPrime(TX Traces) bool {
+func (fcat *FactorCatalog) IsPrime(TX graph.Traces) bool {
 	if len(TX) <= 1 {
 		return true
 	}
@@ -346,13 +347,13 @@ func (s *factorSearch) findFactors(depth, vi_start, Nv_remain int32) bool {
 
 type factorSearch struct {
 	stack       []FactorStep
-	onFactor    chan TracesID
+	onFactor    chan graph.TracesID
 	hitCount    int32
 	maxFactorSz int32
 	Nv          int32
 	fcat        *FactorCatalog
 	primeTest   bool
-	tracesBuf   Traces
+	tracesBuf   graph.Traces
 }
 
 func (s *factorSearch) sendFactorization(depth int32) bool {
@@ -364,19 +365,19 @@ func (s *factorSearch) sendFactorization(depth int32) bool {
 	for i := int32(1); i <= depth; i++ {
 		Nv := s.stack[i].Nv
 		Fi := s.stack[i].FactorIdx
-		s.onFactor <- FormTracesID(byte(Nv), uint64(Fi))
+		s.onFactor <- graph.FormTracesID(uint32(Nv), uint64(Fi))
 	}
 	s.onFactor <- 0 // factorization termination signal
 	return true
 }
 
-func NewFactorSearch(target Traces, fcat *FactorCatalog) *factorSearch {
+func NewFactorSearch(target graph.Traces, fcat *FactorCatalog) *factorSearch {
 	s := factorSearchPool.Get().(*factorSearch)
 
 	Nv := len(target)
 
 	if s.onFactor == nil {
-		s.onFactor = make(chan TracesID, 8)
+		s.onFactor = make(chan graph.TracesID, 8)
 	}
 	s.primeTest = false
 	s.hitCount = 0
@@ -393,7 +394,7 @@ func NewFactorSearch(target Traces, fcat *FactorCatalog) *factorSearch {
 
 		tracesSz := stackSz * Nv
 		if cap(s.tracesBuf) < tracesSz {
-			s.tracesBuf = make(Traces, max(stackSz*Nv, 9*8))
+			s.tracesBuf = make(graph.Traces, max(stackSz*Nv, 9*8))
 		}
 
 		for i := 0; i <= Nv; i++ {
@@ -416,5 +417,5 @@ func (s *factorSearch) Reclaim() {
 type FactorStep struct {
 	Nv        int32
 	FactorIdx uint32
-	Remainder Traces
+	Remainder graph.Traces
 }

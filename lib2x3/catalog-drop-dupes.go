@@ -3,6 +3,8 @@ package lib2x3
 import (
 	"bytes"
 	"hash/maphash"
+
+	"github.com/2x3systems/go2x3/lib2x3/graph"
 )
 
 type dropDupes struct {
@@ -44,7 +46,8 @@ func (cat *dropDupes) Close() {
 
 func (cat *dropDupes) TryAddGraph(X *Graph) bool {
 	var keyBuf [512]byte
-	_, Xkey := X.FormLookupKeys(keyBuf[:0])
+	tracesKey := X.Traces(0).AppendOddEvenEncoding(keyBuf[:0])
+	Xkey, _ := X.ExportStateEncoding(tracesKey, graph.ExportGraphState)
 
 	cat.hasher.Reset()
 	cat.hasher.Write(Xkey)

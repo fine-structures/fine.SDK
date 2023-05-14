@@ -135,9 +135,9 @@ func (edge EdgeID) VtxAB() (a, b VtxID) {
 	return
 }
 
-func (edge EdgeID) VtxIdx() (a, b int32) {
-	a = int32((VtxID(edge>>6) & VtxIDMask) - 1)
-	b = int32((VtxID(edge>>0) & VtxIDMask) - 1)
+func (edge EdgeID) VtxIdx() (a, b int) {
+	a = int((VtxID(edge>>6) & VtxIDMask) - 1)
+	b = int((VtxID(edge>>0) & VtxIDMask) - 1)
 	return
 }
 

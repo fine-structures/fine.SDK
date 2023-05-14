@@ -76,10 +76,12 @@ func (X *VtxGraph) IsCanonized() bool {
 	return X.Status >= VtxStatus_Canonized
 }
 
+/*
 func (e *VtxEdge) Ord() int64 {
 	return int64(e.DstVtxID)<<32 | int64(e.SrcVtxID) // sort by dst / "home" vtx ID first
 }
-
+*/
+/*
 func appendPair(io []byte, pos, neg int32) []byte {
 	if printAbs := true; printAbs {
 		if total := int64(pos+neg); total != 0 {
@@ -102,6 +104,8 @@ func appendPair(io []byte, pos, neg int32) []byte {
 	}
 	return io
 }
+*/
+
 
 func (e *VtxEdge) AppendDesc(io []byte) []byte {
 
@@ -116,9 +120,18 @@ func (e *VtxEdge) AppendDesc(io []byte) []byte {
 	io = append(io, str...)
 
 	// List edge types in LSM order
-	io = appendPair(io, 2*e.E2_Pos, 2*e.E2_Neg)
-	io = appendPair(io, 1*e.E1_Pos, 1*e.E1_Neg)
-	io = appendPair(io, e.C1_Pos, e.C1_Neg)
+	switch e.Domain {
+		case EdgeDomain_EvenOdd:
+			io = fmt.Appendf(io, "%+03d %+03d ", e.NetCount, e.NetCount)
+		case EdgeDomain_Odd:
+			io = fmt.Appendf(io, "%+03d    ", e.NetCount)
+		case EdgeDomain_Even:
+			io = fmt.Appendf(io, "    %+03d", e.NetCount)
+	}
+	
+	// io = appendPair(io, 0, 0)
+	// io = appendPair(io, c
+	// io = appendPair(io, 0, 0)
 
 	return io
 }
@@ -197,4 +210,10 @@ func PrintInt(dst []byte, val int64) []byte {
 		dst[j] = ' '
 	}
 	return dst[i:]
+}
+
+
+
+func chopBuf(consume []int64, N int) (alloc []int64, remain []int64) {
+	return consume[0:N], consume[N:]
 }
