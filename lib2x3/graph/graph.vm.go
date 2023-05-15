@@ -1,6 +1,7 @@
 package graph
 
 import (
+	"fmt"
 	"io"
 	"sort"
 )
@@ -156,11 +157,11 @@ func (X *VtxGraphVM) newVtxEdge() *VtxEdge {
 
 // Adds an edge using one-based indexing.
 func (X *VtxGraphVM) AddVtxEdge(
-	netCount int32,
+	numNeg, numPos int32,
 	vi, vj uint32,
 ) error {
 
-	if netCount == 0 {
+	if numNeg == 0 && numPos == 0 {
 		return nil
 	}
 
@@ -179,8 +180,8 @@ func (X *VtxGraphVM) AddVtxEdge(
 		ei := X.newVtxEdge()
 		ei.DstVtxID = vi
 		ei.SrcVtxID = vj
-
-		ei.NetCount = netCount
+		ei.CountNeg = numNeg
+		ei.CountPos = numPos
 
 		X.addEdgeToVtx(vi, ei)
 
@@ -491,40 +492,35 @@ func (X *VtxGraphVM) Canonize() {
 
 	X.Traces(12)
 
-	// Normalize edge signs
+	// Normalize edge signs -- duplicate every edge we find on a vtx
 	{
 		edges := X.Edges[:0]
 
-		for _, src_e := range X.edgePool {
+		for _, v := range X.Vtx() {
+			for _, src_e := range v.Edges {
 
-			// Spit edges into even and odd
-			for _, domain := range [2]EdgeDomain{EdgeDomain_Odd, EdgeDomain_Even} {
-				e := X.newVtxEdge()
-				e.Domain = domain
-
-				// Since edge signs have been baked into the cycle signature, edge counts have also normalized to positive.
-				e.NetCount = abs(src_e.NetCount)
-				e.Cycles = e.Cycles[:0]
-				for ci := int(domain - 1); ci < len(src_e.Cycles); ci += 2 {
-					e.Cycles = append(e.Cycles, src_e.Cycles[ci])
+				// Spit edges into even and odd
+				for _, di := range [2]EdgeDomain{EdgeDomain_Odd, EdgeDomain_Even} {
+					e := X.newVtxEdge()
+					e.Domain = di
+	
+					// Edge signs have been "baked" into the cycle signature that we are also going to sign-normalize, so also normalize counts
+					e.CountNeg = 0
+					e.CountPos = src_e.CountPos + src_e.CountNeg
+					e.Cycles = e.Cycles[:0]
+					for ci := int(di - 1); ci < len(src_e.Cycles); ci += 2 {
+						e.Cycles = append(e.Cycles, src_e.Cycles[ci])
+					}
+					edges = append(edges, e)
 				}
-				edges = append(edges, e)
 			}
 		}
-
 		X.Edges = edges
 	}
 
 	X.normalizeEdges()
-
 }
 
-func abs(x int32) int32 {
-	if x < 0 {
-		return -x
-	}
-	return x
-}
 
 func (X *VtxGraphVM) normalizeEdges() {
 
@@ -532,12 +528,14 @@ func (X *VtxGraphVM) normalizeEdges() {
 
 	// Sign and count normalization
 	for _, e := range edges {
-		sign := 0
+		sign := 0 // 0 means not yet determined
 		for i, ci := range e.Cycles {
+		
+			// find first non-zero cycle and if possible factor out sign to get canonic form 
 			if sign == 0 && ci != 0 {
 				if ci < 0 {
 					sign = -1
-					e.NetCount *= -1
+					e.CountNeg, e.CountPos = e.CountPos, e.CountNeg
 				} else {
 					sign = 1
 				}
@@ -545,9 +543,6 @@ func (X *VtxGraphVM) normalizeEdges() {
 			if sign < 0 {
 				e.Cycles[i] = -ci
 			}
-		}
-		if sign == 0 {
-			e.NetCount = 0
 		}
 	}
 
@@ -573,9 +568,10 @@ func (X *VtxGraphVM) normalizeEdges() {
 	// Consolidate edges (accumulate edges with compatible characteristics)
 	// Note that doing so invalidates edge.SrcVtxID values, so lets zero them out for safety.
 	// Work right to left as we overwrite the edge array in place
-	{
+	consolidateEdges := true
+	if consolidateEdges {
 		L := 0
-		Ne := len(edges)
+		Ne := len(edges) 
 		numConsolidated := 0
 		for R := 1; R < Ne; R++ {
 			eL := edges[L]
@@ -594,7 +590,8 @@ func (X *VtxGraphVM) normalizeEdges() {
 
 			// If exact match, absorb R into L, otherwise advance L (old R becomes new L)
 			if match {
-				eL.NetCount += eR.NetCount
+				eL.CountNeg += eR.CountNeg
+				eL.CountPos += eR.CountPos
 				numConsolidated++
 			} else {
 				L++
@@ -747,11 +744,12 @@ func (X *VtxGraphVM) calcTracesTo(Nc int) {
 					assert(int(e.DstVtxID) == j+1, "edge DstVtxID mismatch")
 
 					Ci_src := Ci0[e.SrcVtxID-1]
-					Ci1[j] += int64(e.NetCount) * Ci_src
+					netCount := int64(e.CountPos - e.CountNeg)
+					Ci1[j] += netCount * Ci_src
 
 					// Tally cycle returning to the home vtx on this vertex
 					if int(vi.VtxID-1) == j {
-						if e.NetCount < 0 {
+						if e.CountNeg > e.CountPos {
 							Ci_src = -Ci_src // negative weights negate cycle count
 						}
 						e.Cycles[ci] += Ci_src // store cycle components contributed by each edge.
@@ -782,14 +780,17 @@ func (X *VtxGraphVM) PrintCycleSpectrum(numTraces int, out io.Writer) {
 	// Write header
 	{
 		line := buf[:0]
-		line = append(line, "   DST  <=  SRC                         "...)
+		line = append(line, "   DST  <=  SRC                       "...)
 
-		for ti := range TX {
-			line = append(line, 'C', byte(ti)+'1')
-			line = append(line, "       "...)
+		for ti := range TX {    
+			ci := ti+1
+			if ci < 10 {
+				line = append(line, ' ')
+			}
+			line = fmt.Appendf(line, "C%d      ", ti+1)
 		}
 
-		line = append(line, "\n  ---------------------------    "...)
+		line = append(line, "\n  ---------------------------   "...)
 
 		// append traces
 		for _, Ti := range TX {
@@ -802,10 +803,7 @@ func (X *VtxGraphVM) PrintCycleSpectrum(numTraces int, out io.Writer) {
 
 	for _, vi := range X.Vtx() {
 		for _, ej := range vi.Edges {
-			line := ej.AppendDesc(buf[:0])
-			line = append(line, "      "...)
-
-			//line = fmt.Appendf(line, "%02d:", vi.VtxCount)
+			line := append(ej.AppendDesc(buf[:0]), "    "...)
 			for _, c := range ej.Cycles[:Nc] {
 				line = AppendInt(line, c, prOpts)
 			}
@@ -819,7 +817,7 @@ func (X *VtxGraphVM) PrintCycleSpectrum(numTraces int, out io.Writer) {
 	{
 		for _, ei := range X.Edges {
 			line := ei.AppendDesc(buf[:0])
-			line = append(line, "       "...)
+			line = append(line, "    "...)
 
 			for i := 0; i < Nc; i++ {
 				isEven := (i & 1) != 0

@@ -129,9 +129,8 @@ message VtxEdge {
     uint32              SrcVtxID = 3;
     
     // Number of instances of Traces
-    int32               NetCount = 4; // number of instances of Traces
-    //int32   WeightPos  = 4; // number of instances of Traces
-    //int32   WeightNeg  = 5; // number of instances of Traces
+    int32               CountPos  = 4; // number of instances of []Traces
+    int32               CountNeg  = 5; // number of instances of -[]Traces
     
     EdgeDomain          Domain = 7; // 1 if even, 0 if odd
 

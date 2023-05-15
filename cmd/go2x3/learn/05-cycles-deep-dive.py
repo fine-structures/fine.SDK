@@ -3,7 +3,7 @@ from py2x3 import *
 
 
 higgs = "1-2-3-4-1-5-6-7-8-5, 2-6, 3-7, 4-8"
-
+antiH = "1~2~3~4~1~5~6~7~8~5, 2~6, 3~7, 4~8"
     
 print("\n=================   v=1   =================  \n")
 ShowGraph("e-  (electron)",      "1")
@@ -48,7 +48,7 @@ ShowGraph("γ0.1 (photon)",       "1---2")
 ShowGraph("γ0.2 (photon)",       "1~~~2")
 ShowGraph("tetra",               "1-2-3-1-4-2, 4-3")
 ShowGraph(" H (higgs)",          higgs)
-ShowGraph("~H (higgs)",          higgs)
+ShowGraph("~H (higgs)",          antiH)
 
 print("\n===============================================  \n")
 ShowPhases("γ  (photon)",       "1---2",            True)

@@ -159,6 +159,33 @@ class GraphSelector:
     def SetTraces(self, X):
         self.traces = X.Traces()
     
+    
+# class GraphOutputParams:
+#     """
+#     GraphOutput contains parameters for specifying how graphs are output from a GraphStream.
+#     """
+    
+#     def __init__(self, src = None):
+#         if src == None:
+#             self.Init()
+#         else:
+#             self.InitFrom(src)
+        
+#     def Init(self):
+#         self.label  = None
+#         self.graph  = False
+#         self.matrix = False
+#         self.traces = 10
+#         self.codes  = True
+#         self.cycles = True
+    
+#     def InitFrom(self, src):
+#         self.label  = src.label
+#         self.graph  = src.graph
+#         self.matrix = src.matrix
+#         self.traces = src.traces
+#         self.codes  = src.codes
+#         self.cycles = src.cycles
 
 
 gPrintOptsVerbose = {
@@ -172,6 +199,7 @@ gPrintOptsVerbose = {
 gPrintOpts = {
     'codes':  True,
     'cycles': True,
+    'traces': 10,
 }
 
 def ShowGraph(desc, Xstr, verbose = True):

@@ -403,7 +403,7 @@ func (X *Graph) WriteAsString(out io.Writer, opts PrintOpts) {
 	if opts.Matrix {
 		X.WriteAsMatrixStr(out)
 	}
-	if opts.NumTraces < 0 {
+	if opts.NumTraces != 0 {
 		X.WriteTracesAsCSV(out, opts.NumTraces)
 	}
 
@@ -427,8 +427,7 @@ func (X *Graph) WriteAsString(out io.Writer, opts PrintOpts) {
 		}
 
 		X.vm.Canonize()
-		
-		X.vm.PrintCycleSpectrum(12, out)
+		X.vm.PrintCycleSpectrum(10, out)
 
 		out.Write(newline)
 	}
@@ -717,8 +716,9 @@ func ExportGraph(Xsrc *Graph, X *graph.VtxGraphVM) error {
 	// First, add edges that connect to the same vertex (loops)
 	for i, vtyp := range Xsrc.Vtx() {
 		vi := uint32(i+1)
-		netCount := int32(vtyp.NetLoops())
-		if err := X.AddVtxEdge(netCount, vi, vi); err != nil {
+		numPos := int32(vtyp.PosLoops())
+		numNeg := int32(vtyp.NegLoops())
+		if err := X.AddVtxEdge(numNeg, numPos, vi, vi); err != nil {
 			panic(err)
 		}
 	}
@@ -727,8 +727,8 @@ func ExportGraph(Xsrc *Graph, X *graph.VtxGraphVM) error {
 	for _, edge := range Xsrc.Edges() {
 		ai, bi := edge.VtxAB()
 		edgeType := edge.EdgeType()
-		netCount := edgeType.EdgeSum()
-		if err := X.AddVtxEdge(netCount, uint32(ai), uint32(bi)); err != nil {
+		numPos, numNeg := edgeType.NumPosNeg()
+		if err := X.AddVtxEdge(int32(numNeg), int32(numPos), uint32(ai), uint32(bi)); err != nil {
 			panic(err)
 		}
 	}

@@ -119,15 +119,26 @@ func (e *VtxEdge) AppendDesc(io []byte) []byte {
 		src, src, src)
 	io = append(io, str...)
 
-	// List edge types in LSM order
-	switch e.Domain {
-		case EdgeDomain_EvenOdd:
-			io = fmt.Appendf(io, "%+03d %+03d ", e.NetCount, e.NetCount)
-		case EdgeDomain_Odd:
-			io = fmt.Appendf(io, "%+03d    ", e.NetCount)
-		case EdgeDomain_Even:
-			io = fmt.Appendf(io, "    %+03d", e.NetCount)
+	if  e.CountPos > 0 {
+		io = fmt.Appendf(io, " +%02d", e.CountPos)
+	} else {
+		io = append(io, "    "...)	
 	}
+	if e.CountNeg > 0 {
+		io = fmt.Appendf(io, " -%02d ", e.CountNeg)
+	} else {
+		io = append(io, "     "...)	
+	}
+	
+	// // List edge types in LSM order
+	// switch e.Domain {
+	// 	case EdgeDomain_EvenOdd:
+	// 		io = fmt.Appendf(io, "+%03d -%03d ", e.CountPos, e.CountNeg)
+	// 	case EdgeDomain_Odd:
+	// 		io = fmt.Appendf(io, "%+03d    ", e.NetCount)
+	// 	case EdgeDomain_Even:
+	// 		io = fmt.Appendf(io, "    %+03d", e.NetCount)
+	// }
 	
 	// io = appendPair(io, 0, 0)
 	// io = appendPair(io, c
