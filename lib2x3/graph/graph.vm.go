@@ -499,14 +499,21 @@ func (X *VtxGraphVM) Canonize() {
 		for _, v := range X.Vtx() {
 			for _, src_e := range v.Edges {
 
+				// Edge signs have been "baked" into the cycle signature that we are also going to sign-normalize, so also normalize counts.
+				// Drop terms with a normalized count of zero.
+				countPos := abs(src_e.CountPos - src_e.CountNeg)
+				if countPos == 0 {
+					continue
+				}
+
 				// Spit edges into even and odd
 				for _, di := range [2]EdgeDomain{EdgeDomain_Odd, EdgeDomain_Even} {
 					e := X.newVtxEdge()
 					e.Domain = di
-	
+
 					// Edge signs have been "baked" into the cycle signature that we are also going to sign-normalize, so also normalize counts
 					e.CountNeg = 0
-					e.CountPos = src_e.CountPos + src_e.CountNeg
+					e.CountPos = countPos
 					e.Cycles = e.Cycles[:0]
 					for ci := int(di - 1); ci < len(src_e.Cycles); ci += 2 {
 						e.Cycles = append(e.Cycles, src_e.Cycles[ci])
@@ -521,7 +528,6 @@ func (X *VtxGraphVM) Canonize() {
 	X.normalizeEdges()
 }
 
-
 func (X *VtxGraphVM) normalizeEdges() {
 
 	edges := X.Edges
@@ -530,8 +536,8 @@ func (X *VtxGraphVM) normalizeEdges() {
 	for _, e := range edges {
 		sign := 0 // 0 means not yet determined
 		for i, ci := range e.Cycles {
-		
-			// find first non-zero cycle and if possible factor out sign to get canonic form 
+
+			// find first non-zero cycle and if possible factor out sign to get canonic form
 			if sign == 0 && ci != 0 {
 				if ci < 0 {
 					sign = -1
@@ -571,7 +577,7 @@ func (X *VtxGraphVM) normalizeEdges() {
 	consolidateEdges := true
 	if consolidateEdges {
 		L := 0
-		Ne := len(edges) 
+		Ne := len(edges)
 		numConsolidated := 0
 		for R := 1; R < Ne; R++ {
 			eL := edges[L]
@@ -782,8 +788,8 @@ func (X *VtxGraphVM) PrintCycleSpectrum(numTraces int, out io.Writer) {
 		line := buf[:0]
 		line = append(line, "   DST  <=  SRC                       "...)
 
-		for ti := range TX {    
-			ci := ti+1
+		for ti := range TX {
+			ci := ti + 1
 			if ci < 10 {
 				line = append(line, ' ')
 			}
@@ -902,4 +908,11 @@ func (X *VtxGraphVM) AppendGraphEncoding(io []byte, opts GraphEncodingOpts) []by
 	//    - Is "state" what graph is implied or is it the min information needed to reproduce a particles (traces) or a traces plus ????
 
 	return nil
+}
+
+func abs(x int32) int32 {
+	if x < 0 {
+		return -x
+	}
+	return x
 }
