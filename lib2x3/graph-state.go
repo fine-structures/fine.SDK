@@ -439,9 +439,6 @@ func (X *graphState) Canonize(normalize bool) {
 				v.edges[ei].FromGroup = from
 			}
 		}
-				src_vi := X.vtxByID[e.srcVtx]
-				v.edges[ei].GroupEdge = FormGroupEdge(src_vi.GroupID, src_vi.GroupID == v.GroupID, e.isLoop, e.sign < 0)
-			}
 
 		// A=vi-vj=B => A-vi-B, A-vj-B
 		//X.forEveryGroupVtxPair(func(vi, vj *graphVtx) {
