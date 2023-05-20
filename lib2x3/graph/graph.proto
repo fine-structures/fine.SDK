@@ -105,13 +105,14 @@ enum EdgeType {
 	EdgeType_Double       = 3;
 	EdgeType_Triple       = 4;
 }
-*/
+
 
 enum EdgeDomain {
     EdgeDomain_EvenOdd = 0;
     EdgeDomain_Odd     = 1;
     EdgeDomain_Even    = 2;
 }
+*/
 
 // VtxEdge is characterized by the Src and Dst VtxID and C1 and C2.
 // Identities that can transform one VtxEdge into another VtxEdge can be used in a process 
@@ -131,22 +132,19 @@ message VtxEdge {
     // Number of instances of Traces
     int32               CountPos  = 4; // number of instances of []Traces
     int32               CountNeg  = 5; // number of instances of -[]Traces
-    
-    EdgeDomain          Domain = 7; // 1 if even, 0 if odd
 
-    int64               MetricNumerator   = 8; // numerator of the metric
-    int64               MetricDenominator = 9; // numerator of the metric
+    //int64               MetricNumerator   = 8; // numerator of the metric
+    //int64               MetricDenominator = 9; // numerator of the metric
     
     // TracesID is a unique ID associated with the normalized []Cycles integer vector.
     // We could carry the odd and even Traces components separately inline, but this is more compact and efficient.
-    // TracesID == 0 is hardwired to [0, 0, 0,..], and occurs in many particles (e.g. TracesID_Even for bosons is 0) 
+    // TracesID == 0 is hardwired to [0,0,0,..], and occurs in many particles (e.g. TracesID_Even for bosons is 0) 
     uint64              TracesID = 11; 
     
+    // If non-zero, the Traces of this graph is prime and has a registered ID.
+    //uint64              PrimeID = 12;
+    
     // Cycles is an integer vector corresponding to the number of cycles of each "Ci" length.
-    // If Domain == EdgeDomain_EvenOdd:
-    //    [ odd[0], even[0],
-    //      odd[1], even[1],
-    //      odd[n], even[n]] 
     repeated int64      Cycles         = 19;
     
 

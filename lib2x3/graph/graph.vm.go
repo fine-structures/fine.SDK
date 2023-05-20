@@ -507,17 +507,13 @@ func (X *VtxGraphVM) Canonize() {
 				}
 
 				// Spit edges into even and odd
-				for _, di := range [2]EdgeDomain{EdgeDomain_Odd, EdgeDomain_Even} {
+				{
 					e := X.newVtxEdge()
-					e.Domain = di
 
 					// Edge signs have been "baked" into the cycle signature that we are also going to sign-normalize, so also normalize counts
 					e.CountNeg = 0
 					e.CountPos = countPos
-					e.Cycles = e.Cycles[:0]
-					for ci := int(di - 1); ci < len(src_e.Cycles); ci += 2 {
-						e.Cycles = append(e.Cycles, src_e.Cycles[ci])
-					}
+					e.Cycles = append(e.Cycles[:0], src_e.Cycles...)
 					edges = append(edges, e)
 				}
 			}
@@ -556,11 +552,6 @@ func (X *VtxGraphVM) normalizeEdges() {
 		ei := edges[i]
 		ej := edges[j]
 
-		// First, sort by domain
-		if d := int(ei.Domain) - int(ej.Domain); d != 0 {
-			return d < 0
-		}
-
 		// Then sort by cycle signature
 		for i, ci := range ei.Cycles {
 			d := ci - ej.Cycles[i]
@@ -583,14 +574,11 @@ func (X *VtxGraphVM) normalizeEdges() {
 			eL := edges[L]
 			eR := edges[R]
 
-			match := false
-			if eL.Domain == eR.Domain {
-				match = true
-				for i, ci := range eL.Cycles {
-					if ci != eR.Cycles[i] {
-						match = false
-						break
-					}
+			match := true
+			for i, ci := range eL.Cycles {
+				if ci != eR.Cycles[i] {
+					match = false
+					break
 				}
 			}
 
@@ -605,6 +593,24 @@ func (X *VtxGraphVM) normalizeEdges() {
 			}
 		}
 		Ne -= numConsolidated
+
+		// Remove the all-zeros edge (can only be the first entry since they are sorted)
+		if Ne > 0 {
+			e0 := edges[0]
+			zeros := true
+			for _, ci := range e0.Cycles {
+				if ci != 0 {
+					zeros = false
+					break
+				}
+			}
+			if zeros {
+				copy(edges[0:], edges[1:Ne])
+				Ne--
+				edges[Ne] = e0
+			}
+		}
+
 		X.Edges = edges[:Ne]
 	}
 
@@ -826,23 +832,7 @@ func (X *VtxGraphVM) PrintCycleSpectrum(numTraces int, out io.Writer) {
 			line = append(line, "    "...)
 
 			for i := 0; i < Nc; i++ {
-				isEven := (i & 1) != 0
-				switch ei.Domain {
-				case EdgeDomain_EvenOdd:
-					line = AppendInt(line, ei.Cycles[i], prOpts)
-				case EdgeDomain_Odd:
-					if isEven {
-						line = append(line, blank...)
-					} else {
-						line = AppendInt(line, ei.Cycles[i>>1], prOpts)
-					}
-				case EdgeDomain_Even:
-					if isEven {
-						line = AppendInt(line, ei.Cycles[i>>1], prOpts)
-					} else {
-						line = append(line, blank...)
-					}
-				}
+				line = AppendInt(line, ei.Cycles[i], prOpts)
 			}
 			line = append(line, '\n')
 			out.Write(line)
