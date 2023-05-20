@@ -257,7 +257,7 @@ func (ctx *canonizeCtx) goCanonize(X *Graph) error {
 
 	{
 		// var t1, t2 [128]byte
-		// T1 := X.Traces(0).AppendTraceSpecTo(t1[:0])
+		// T1 := X.Traces(0).AppendTracesLSM(t1[:0])
 
 		Ne := 0
 
@@ -273,7 +273,7 @@ func (ctx *canonizeCtx) goCanonize(X *Graph) error {
 
 		// ////
 		//         X.traces = X.traces[:0]
-		//         T2 := X.Traces(0).AppendTraceSpecTo(t2[:0])
+		//         T2 := X.Traces(0).AppendTracesLSM(t2[:0])
 		//         if !bytes.Equal(T1, T2) {
 		//             panic("traces not equal after canonize")
 		//         }

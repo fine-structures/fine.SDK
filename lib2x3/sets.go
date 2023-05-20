@@ -47,7 +47,7 @@ func NewTracesSet() TracesSet {
 
 func (ts *tracesSet) TryAdd(TX graph.Traces) bool {
 	var buf [MaxVtxID * binary.MaxVarintLen64]byte
-	key := TX.AppendTraceSpecTo(buf[:0])
+	key := TX.AppendTracesLSM(buf[:0])
 	return ts.tryAdd(key)
 }
 

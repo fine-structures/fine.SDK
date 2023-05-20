@@ -23,10 +23,10 @@ func TestTracesEnc(t *testing.T) {
 
 func checkEncoding(TX Traces, scrap []byte) {
 
-	enc := TX.AppendTraceSpecTo(scrap[:0])
+	enc := TX.AppendTracesLSM(scrap[:0])
 
 	var TXdec Traces
-	err := TXdec.InitFromTraceSpec(enc, 0)
+	err := TXdec.InitFromTracesLSM(enc, 0)
 	if err != nil {
 		gT.Fatalf("Traces encoding error: %v", err)
 	}

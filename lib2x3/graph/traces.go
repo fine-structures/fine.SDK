@@ -12,31 +12,33 @@ type Traces []int64
 
 // TracesRank is a deterministic numerical ranking based on Traces (for a constant number of elements -- typically 12+)
 // TracesRank:
-//      (a) serves as a hash for Traces, enhancing db query performance, and
-//      (b) orders a catalog's kTracesCatalog in a way pleasing to even the pickiest physicist (ok fine, that's physically impossible).
+//
+//	(a) serves as a hash for Traces, enhancing db query performance, and
+//	(b) orders a catalog's kTracesCatalog in a way pleasing to even the pickiest physicist (ok fine, that's physically impossible).
 type TracesRank uint64
 
-// TraceSpec is a binary encoding of Traces.
-// The first byte is how many trace values follow and the remaining bytes are varint64 encodings of each trace value.
-type TraceSpec []byte
+// TracesLSM is a LSM binary encoding / symbol of a Traces.
+type TracesLSM []byte
 
+// TracesID uniquely identifies a Graph's trace spectrum ("Traces")
+type TracesID uint64
 
 // // TODO: attach to graph struct
 // type SysTraces struct {
-	
+
 // 	//Terms []*TracesTerm
 // }
 
 // func (x *SysTraces) Clear() {
-	
+
 // }
 
 // func (x *SysTraces) AssignFromTraces(TX Traces)  {
-	
+
 // }
 
 // func (x *SysTraces) MakeCanonic() {
-	
+
 // 	sort.Slice(x.Terms, func(i, j int) bool {
 // 		return false	// TODO
 // 	})
@@ -45,7 +47,6 @@ type TraceSpec []byte
 // func (sys *SysTraces) AppendLookupKey([]byte) []byte {
 // 	return nil // TODO
 // }
-
 
 func mini(a, b int) int {
 	if a < b {
@@ -96,8 +97,9 @@ func (TX Traces) Subtract(delta Traces, diff *Traces) (isZero bool) {
 
 // CalcTracesRank calculates the TracesRank for this Traces (and assumes Nv == len(TX))
 // TracesRank:
-//      (a) serves as a hash for Traces, enhancing db query performance, and
-//      (b) orders a catalog's kTracesCatalog in a way pleasing to even the pickiest physicist (ok fine, that's physically impossible).
+//
+//	(a) serves as a hash for Traces, enhancing db query performance, and
+//	(b) orders a catalog's kTracesCatalog in a way pleasing to even the pickiest physicist (ok fine, that's physically impossible).
 func (TX Traces) CalcTracesRank() TracesRank {
 	return 0
 }
@@ -114,10 +116,10 @@ func (TX *Traces) SetLen(tracesLen int) {
 	}
 }
 
-// InitFromTraceSpec assigns this Traces from a binary encoding made from AppendTraceSpecTo()
-func (TX *Traces) InitFromTraceSpec(spec TraceSpec, maxNumTraces int) error {
+// InitFromTracesLSM assigns this Traces from a binary encoding made from AppendTracesLSM()
+func (TX *Traces) InitFromTracesLSM(Xkey TracesLSM, maxNumTraces int) error {
 	out := (*TX)[:0]
-	rdr := bytes.NewReader(spec)
+	rdr := bytes.NewReader(Xkey)
 
 	var err error
 	for {
@@ -138,48 +140,40 @@ func (TX *Traces) InitFromTraceSpec(spec TraceSpec, maxNumTraces int) error {
 	return err
 }
 
-// AppendTraceSpecTo appends a canonical binary encoding of TX to []out, returning it as TraceSpec.
+// AppendTracesLSM appends a canonical binary encoding of TX to []out, returning it as TracesLSM.
 //
-// The integer returned a the byte length in the returned TraceSpec after TX.VtxCount exported elements.
-func (TX Traces) AppendTraceSpecTo(out []byte) TraceSpec {
-	var scrap [12]byte
-
-	for _, Ti := range TX {
-		n := binary.PutVarint(scrap[:], Ti)
-		out = append(out, scrap[:n]...)
-	}
-
-	return out
+// The integer returned a the byte length in the returned TracesLSM after TX.VtxCount exported elements.
+func (TX Traces) AppendTracesLSM(out []byte) TracesLSM {
+	return TX.appendOddEvenEncoding(out)
 }
 
-func (TX Traces) AppendOddEvenEncoding(io []byte) TraceSpec {		
+func (TX Traces) appendOddEvenEncoding(out []byte) TracesLSM {
 	numTraces := len(TX)
 	var scrap [12]byte
 
 	// Odd traces first -- normalize sign to first non-zero off term
-	key := io
+	key := out
 	sign := TracesSign_Zero
-	for i := 0; i < numTraces; i+=2 {
+	for i := 0; i < numTraces; i += 2 {
 		Ti := TX[i]
 		if sign == TracesSign_Zero {
-            if Ti > 0 {
-                sign = TracesSign_Pos
-            } else if Ti < 0 {
-                sign = TracesSign_Neg
-            }
-        }
+			if Ti > 0 {
+				sign = TracesSign_Pos
+			} else if Ti < 0 {
+				sign = TracesSign_Neg
+			}
+		}
 		if sign == TracesSign_Neg {
 			Ti = -Ti
 		}
 		n := binary.PutVarint(scrap[:], Ti)
 		key = append(key, scrap[:n]...)
-    }
-		
-	
+	}
+
 	// Even traces
-	for i := 1; i < numTraces; i+=2 {
+	for i := 1; i < numTraces; i += 2 {
 		Ti := TX[i]
-		// if oddNorm == 0 {   
+		// if oddNorm == 0 {
 		// 	if Ti & 1 != 0 {
 		// 		panic("even trace on boson is odd")
 		// 	}
@@ -188,13 +182,12 @@ func (TX Traces) AppendOddEvenEncoding(io []byte) TraceSpec {
 		n := binary.PutVarint(scrap[:], Ti)
 		key = append(key, scrap[:n]...)
 	}
-	
+
 	// Append sign (last)
 	key = append(key, byte(sign))
-	
+
 	return key
 }
-
 
 const TracesIDSz = 7
 
@@ -234,10 +227,10 @@ func (tid TracesID) NumVertices() uint32 {
 	return uint32(byte(tid >> 48))
 }
 
-func (pid TracesID) SeriesID() uint64 {
-	return 0xFFFFFFFFFFFF & uint64(pid)
+func (tid TracesID) SeriesID() uint64 {
+	return 0xFFFFFFFFFFFF & uint64(tid)
 }
 
-func (pid TracesID) WriteAsString(out io.Writer) {
-	fmt.Fprintf(out, "%d-%d", pid.NumVertices(), pid.SeriesID())
+func (tid TracesID) WriteAsString(out io.Writer) {
+	fmt.Fprintf(out, "%d-%d", tid.NumVertices(), tid.SeriesID())
 }

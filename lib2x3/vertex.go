@@ -25,7 +25,7 @@ const (
 	MaxEdges       = 3 * MaxVtxID / 2
 	MaxEdgeEnds    = 3 * MaxVtxID
 	MaxTraces      = MaxVtxID
-	MaxTraceSpecSz = MaxVtxID * binary.MaxVarintLen64
+	MaxTracesLSMSz = MaxVtxID * binary.MaxVarintLen64
 )
 
 // VtxCount signals a count of vertexes or edge slots

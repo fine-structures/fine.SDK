@@ -11,9 +11,6 @@ var (
 	ErrInsufficientTraces = errors.New("insufficient traces")
 )
 
-// TracesID uniquely identifies a Graph's trace spectrum ("Traces")
-// The most significant byte is the number of vertices, and the lower bytes are the "series ID", identifying the Traces
-type TracesID uint64
 
 // // VtxID is one-based index that identifies a vertex in a given graph (1..VtxMax)
 // type VtxID byte
@@ -89,7 +86,7 @@ func ExportGraphEncoding(X GraphState, numTraces int, opts ExportOpts, io []byte
 // //	Nv + varint([Nv], NUL, NUL) + GraphUID
 // func FormExtendedKey(X GraphState, numTraces int, io []byte, opts ExportOpts) (tracesKey, graphKey []byte) {
 // 	key := append(in, X.NumVerts())
-// 	key = X.Traces(0).AppendTraceSpecTo(key)
+// 	key = X.Traces(0).AppendTracesLSM(key)
 // 	key = append(key, 0, 0)
 
 // 	full := X.xstate.ExportEncoding(key, opts)

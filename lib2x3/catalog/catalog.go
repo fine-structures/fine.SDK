@@ -333,7 +333,7 @@ func (cat *catalog) formCatalogKeyFromPrimeFactor(key []byte, factor graph.Trace
 	TX := cat.primeCache.GetFactorTraces(Nv, uint32(factor.SeriesID()))
 
 	key = append(key, byte(Nv)) // needed?  or use edge info sorter?
-	key = TX[:Nv].AppendOddEvenEncoding(key)
+	key = TX[:Nv].AppendTracesLSM(key)
 	key = append(key, 0, 0)
 
 	return key
@@ -348,7 +348,7 @@ func (cat *catalog) formTracesKey(key []byte, X graph.TracesProvider) []byte {
 	// }
 
 	key = append(key, byte(Nv))
-	key = TX.AppendOddEvenEncoding(key)
+	key = TX.AppendTracesLSM(key)
 	key = append(key, 0, 0)
 
 	return key
@@ -506,7 +506,7 @@ func sliceGraphEncoding(tracesKey []byte) []byte {
 		}
 	}
 
-	panic("didn't find end of TraceSpec")
+	panic("didn't find end of TracesLSM")
 }
 
 func (cat *catalog) lookupTracesID(txn *badger.Txn, X *lib2x3.Graph, autoAdd bool) (tid lib2x3.TracesID, wasAdded bool) {
@@ -834,7 +834,7 @@ func (cat *catalog) selectFactorizations(sel lib2x3.GraphSelector, onHit lib2x3.
 	Nv := len(TX)
 	cat.cachePrimesAsNeeded(Nv)
 
-	factorSetInlet := cat.primeCache.FindFactorizations(TX)
+	factorSetsIn := cat.primeCache.FindFactorizations(TX)
 
 	// With all factorizations in hand, we can now iterate and know we have unique instances (since we sorted canonically)
 	{
@@ -844,7 +844,7 @@ func (cat *catalog) selectFactorizations(sel lib2x3.GraphSelector, onHit lib2x3.
 		seeker := newEasySeeker(txnRO)
 		defer seeker.Close()
 
-		for factorSet := range factorSetInlet {
+		for factorSet := range factorSetsIn {
 			X := cat.formGraphFromFactors(seeker, factorSet)
 			onHit <- X
 		}
@@ -883,7 +883,7 @@ func (cat *catalog) selectFactorizations(sel lib2x3.GraphSelector, onHit lib2x3.
 // 			break
 // 		}
 // 		err := item.Value(func(val []byte) error {
-// 			return Ti.InitFromTraceSpec(val, int(maxNumTraces))
+// 			return Ti.InitFromTracesLSM(val, int(maxNumTraces))
 // 		})
 // 		if err != nil {
 // 			panic(err)
@@ -935,7 +935,7 @@ func (cat *catalog) calculateAllFactors(
 			break
 		}
 		err := item.Value(func(val []byte) error {
-			return Ti.InitFromTraceSpec(val, int(numVerts))
+			return Ti.InitFromTracesLSM(val, int(numVerts))
 		})
 		if err != nil {
 			panic(err)
