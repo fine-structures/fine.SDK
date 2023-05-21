@@ -20,7 +20,7 @@ import (
 )
 
 var (
-	LIB_VERSION = "v1.2023.1"
+	LIB_VERSION = "v1.2023.2"
 )
 
 var (
@@ -406,7 +406,7 @@ func ph_GraphStream_AddTo(self py.Object, args py.Tuple) (py.Object, error) {
 	}
 	cat := attr.(pyCatalog)
 	if cat.IsReadOnly() {
-		return nil, py.ExceptionNewf(py.PermissionError, "%v", errors.New("Catalog is in read-only mode"))
+		return nil, py.ExceptionNewf(py.PermissionError, "%v", errors.New("catalog is in read-only mode"))
 	}
 
 	next := stream.AddTo(cat)
