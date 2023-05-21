@@ -806,7 +806,7 @@ func (X *VtxGraphVM) PrintCycleSpectrum(numTraces int, out io.Writer) {
 			line = fmt.Appendf(line, "C%d      ", ti+1)
 		}
 
-		line = append(line, "\n  ---------------------------   "...)
+		line = append(line, "\n  ------------------------      "...)
 
 		// append traces
 		for _, Ti := range TX {
@@ -828,7 +828,7 @@ func (X *VtxGraphVM) PrintCycleSpectrum(numTraces int, out io.Writer) {
 		}
 	}
 
-	out.Write([]byte(" -----===========---- \n"))
+	out.Write([]byte(" -------------------------   \n"))
 
 	{
 		for _, ei := range X.Edges {
