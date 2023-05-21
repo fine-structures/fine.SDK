@@ -1,7 +1,7 @@
 package lib2x3
 
 import (
-	"encoding/binary"
+	"github.com/2x3systems/go2x3/go2x3"
 )
 
 // VtxID is one-based index that identifies a vertex in a given graph (1..VtxMax)
@@ -13,19 +13,15 @@ type VtxID byte
 const (
 
 	// VtxMax is the max possible value of a VtxID (a one-based index).
-	MaxVtxID = 31
-
+	MaxVtxID = go2x3.MaxVtxID
+	
 	// VtxIDBits is the number of bits dedicated for a VtxID.  It must be enough bits to represent MaxVtxID.
 	VtxIDBits byte = 5
 
 	// VtxIDMask is the corresponding bit mask for a VtxID
 	VtxIDMask VtxID = (1 << VtxIDBits) - 1
 
-	// MaxEdgeEnds is the max number of possible edge connections for the largest graph possible.
-	MaxEdges       = 3 * MaxVtxID / 2
-	MaxEdgeEnds    = 3 * MaxVtxID
-	MaxTraces      = MaxVtxID
-	MaxTracesLSMSz = MaxVtxID * binary.MaxVarintLen64
+	MaxEdges = go2x3.MaxEdges
 )
 
 // VtxCount signals a count of vertexes or edge slots
@@ -81,6 +77,7 @@ func (v VtxType) NetLoops() int8 {
 	return [...]int8{0, -3, -1, 1, 3, -2, 0, 2, -1, 1, 0}[v]
 }
 
+/*
 func (v VtxType) SelfEdgeType() EdgeType {
 	return [...]EdgeType{
 		NegNegNegEdge,
@@ -95,6 +92,7 @@ func (v VtxType) SelfEdgeType() EdgeType {
 		NilEdge,
 	}[v]
 }
+*/
 
 func (v VtxType) VtxPerm() VtxPerm {
 	return [...]VtxPerm{

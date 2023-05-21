@@ -8,6 +8,7 @@ import (
 	"sort"
 	"strconv"
 
+	"github.com/2x3systems/go2x3/go2x3"
 	"github.com/2x3systems/go2x3/lib2x3/graph"
 )
 
@@ -30,7 +31,7 @@ type graphState struct {
 	vtx       []*graphVtx // ordered list of vtx groups
 	numGroups int32       // count of unique vertex groups present
 	curCi     int
-	traces    graph.Traces
+	traces    go2x3.Traces
 	graph.VtxStatus
 }
 
@@ -775,14 +776,14 @@ func (X *graphState) getTraitRun(Xv []*graphVtx, vi int, trait EdgeTrait) int {
 
 
 
-func (X *graphState) ExportEncoding(io []byte, opts graph.ExportOpts) ([]byte, error) {
+func (X *graphState) ExportEncoding(io []byte, opts go2x3.ExportOpts) ([]byte, error) {
 	X.Canonize()
 
 	var buf [32]byte
 	
 	Xv := X.Vtx()
 	Nv := len(Xv)
-	ascii := (opts & graph.ExportAsAscii) != 0
+	ascii := (opts & go2x3.ExportAsAscii) != 0
 
 	traits := make([]EdgeTrait, 0, 4)
 
@@ -1001,7 +1002,7 @@ func (X *graphState) PrintCycleSpectrum(out io.Writer) {
 	}
 }
 
-func (X *graphState) Traces(numTraces int) graph.Traces {
+func (X *graphState) Traces(numTraces int) go2x3.Traces {
 	numTraces = max(X.vtxCount, numTraces)
 	X.calcCyclesUpTo(numTraces)
 	return X.traces[:numTraces]

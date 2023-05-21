@@ -3,7 +3,7 @@ package lib2x3
 import (
 	"fmt"
 
-	"github.com/2x3systems/go2x3/lib2x3/graph"
+	"github.com/2x3systems/go2x3/go2x3"
 	"github.com/alecthomas/participle/v2"
 )
 
@@ -55,7 +55,7 @@ func (Xb *graphBuilder) tallyVtx(vtx *Vtx) error {
 	vtxID := Xb.vtx0 + VtxID(vtx.ID)
 
 	if vtxID < 1 || vtxID > MaxVtxID {
-		return graph.ErrBadVtxID
+		return go2x3.ErrBadVtxID
 	}
 	if Xb.maxVtxID < vtxID {
 		Xb.maxVtxID = vtxID

@@ -1,4 +1,4 @@
-package graph
+package go2x3
 
 import (
 	"bytes"
@@ -7,46 +7,22 @@ import (
 	"io"
 )
 
-// Traces is an arbitrarily length sequence of a phoneix Graph "Trace" values.
-type Traces []int64
+/*
+// SystemTraces ->
+//    []ParticleTraces
+//        []EdgeTraces
+//             []EdgeFactorRuns
+//                 []EdgePrimeTraces
+type TracesPrimeFactorID uint32
 
-// TracesRank is a deterministic numerical ranking based on Traces (for a constant number of elements -- typically 12+)
-// TracesRank:
-//
-//	(a) serves as a hash for Traces, enhancing db query performance, and
-//	(b) orders a catalog's kTracesCatalog in a way pleasing to even the pickiest physicist (ok fine, that's physically impossible).
-type TracesRank uint64
+type Catalog struct {
+	//EdgeComponentPrimesByID map[TracesID]TracesLSM
 
-// TracesLSM is a LSM binary encoding / symbol of a Traces.
-type TracesLSM []byte
-
-// TracesID uniquely identifies a Graph's trace spectrum ("Traces")
-type TracesID uint64
-
-// // TODO: attach to graph struct
-// type SysTraces struct {
-
-// 	//Terms []*TracesTerm
-// }
-
-// func (x *SysTraces) Clear() {
-
-// }
-
-// func (x *SysTraces) AssignFromTraces(TX Traces)  {
-
-// }
-
-// func (x *SysTraces) MakeCanonic() {
-
-// 	sort.Slice(x.Terms, func(i, j int) bool {
-// 		return false	// TODO
-// 	})
-// }
-
-// func (sys *SysTraces) AppendLookupKey([]byte) []byte {
-// 	return nil // TODO
-// }
+	// Two way lookup table for EdgeComponentPrimes
+    EdgeComponentPrimes symbol.Table
+}
+// TracesLSM TracesLSM
+*/
 
 func mini(a, b int) int {
 	if a < b {
@@ -93,15 +69,6 @@ func (TX Traces) Subtract(delta Traces, diff *Traces) (isZero bool) {
 		}
 	}
 	return isZero
-}
-
-// CalcTracesRank calculates the TracesRank for this Traces (and assumes Nv == len(TX))
-// TracesRank:
-//
-//	(a) serves as a hash for Traces, enhancing db query performance, and
-//	(b) orders a catalog's kTracesCatalog in a way pleasing to even the pickiest physicist (ok fine, that's physically impossible).
-func (TX Traces) CalcTracesRank() TracesRank {
-	return 0
 }
 
 func (TX *Traces) SetLen(tracesLen int) {
@@ -151,40 +118,20 @@ func (TX Traces) appendOddEvenEncoding(out []byte) TracesLSM {
 	numTraces := len(TX)
 	var scrap [12]byte
 
-	// Odd traces first -- normalize sign to first non-zero off term
+	// Odd traces first
 	key := out
-	sign := TracesSign_Zero
 	for i := 0; i < numTraces; i += 2 {
 		Ti := TX[i]
-		if sign == TracesSign_Zero {
-			if Ti > 0 {
-				sign = TracesSign_Pos
-			} else if Ti < 0 {
-				sign = TracesSign_Neg
-			}
-		}
-		if sign == TracesSign_Neg {
-			Ti = -Ti
-		}
 		n := binary.PutVarint(scrap[:], Ti)
 		key = append(key, scrap[:n]...)
 	}
 
-	// Even traces
+	// Even traces second
 	for i := 1; i < numTraces; i += 2 {
 		Ti := TX[i]
-		// if oddNorm == 0 {
-		// 	if Ti & 1 != 0 {
-		// 		panic("even trace on boson is odd")
-		// 	}
-		// 	Ti = Ti >> 1
-		// }
 		n := binary.PutVarint(scrap[:], Ti)
 		key = append(key, scrap[:n]...)
 	}
-
-	// Append sign (last)
-	key = append(key, byte(sign))
 
 	return key
 }

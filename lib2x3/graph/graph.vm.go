@@ -4,13 +4,20 @@ import (
 	"fmt"
 	"io"
 	"sort"
+
+	"github.com/2x3systems/go2x3/go2x3"
 )
 
-type ComputeVtx struct {
-	VtxGroup
 
-	// group *VtxGroup use instead of GroupID lookup?
-	VtxID uint32
+type ComputeVtx struct {
+	
+	// When assigned from a 2x3 graph, each Vtx has 3 edges.
+	Edges []*VtxEdge
+	
+	// The product of this times VtxCount is the this groups total contribution to VtxGraph.Traces
+	Cycles []int64 
+	
+	VtxID int
 	Ci0   []int64
 	Ci1   []int64
 }
@@ -32,7 +39,6 @@ type VtxGraphVM struct {
 	edgePool []*VtxEdge
 	calcBuf  []int64
 	vtx      []*ComputeVtx // Vtx by VtxID (zero-based indexing)
-
 }
 
 // func (X *Graph) Reclaim() {
@@ -79,9 +85,7 @@ func (X *VtxGraphVM) addEdgeToVtx(dst uint32, e *VtxEdge) {
 			v.Edges = v.Edges[:0]
 		}
 
-		v.VtxID = uint32(i + 1)
-		v.GroupID = 0
-		v.VtxCount = 1
+		v.VtxID = i + 1
 		Nv++
 	}
 
@@ -166,7 +170,7 @@ func (X *VtxGraphVM) AddVtxEdge(
 	}
 
 	if vi < 1 || vj < 1 {
-		return ErrInvalidVtxID
+		return go2x3.ErrInvalidVtxID
 	}
 
 	// add a new flow edge for each "side" of the edge
@@ -696,7 +700,7 @@ func assert(cond bool, desc string) {
 	}
 }
 
-func (X *VtxGraphVM) Traces(numTraces int) Traces {
+func (X *VtxGraphVM) Traces(numTraces int) go2x3.Traces {
 	if X.Status < VtxStatus_Validated {
 		return nil
 	}

@@ -1,52 +1,29 @@
-package lib2x3
+package go2x3
 
 import (
 	"fmt"
 	"io"
-	"log"
 	"strings"
-
-	"github.com/2x3systems/go2x3/lib2x3/graph"
 )
 
-type GraphAdder interface {
-	TryAddGraph(X *Graph) bool
-	Close()
-}
 
-type AddGraphOpts struct {
-	AutoCloseCatalog bool
-}
 
 type GraphStream struct {
-	Outlet chan *Graph
-}
-
-func EnumPureParticles(v_min, v_max int, method string) *GraphStream {
-	gw, err := NewGraphWalker()
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	go func() {
-		gw.EnumPureParticles(v_min, v_max)
-	}()
-
-	return gw.EnumStream
+	Outlet chan GraphState
 }
 
 func NewGraphStream() *GraphStream {
 	stream := &GraphStream{
-		Outlet: make(chan *Graph),
+		Outlet: make(chan GraphState),
 	}
 	return stream
 }
 
-func StreamGraph(X *Graph) *GraphStream {
+func StreamGraph(X GraphState) *GraphStream {
 	next := NewGraphStream()
 
 	go func() {
-		next.Outlet <- NewGraph(X)
+		next.Outlet <- X.MakeCopy()
 		next.Close()
 	}()
 
@@ -59,11 +36,11 @@ func (stream *GraphStream) Close() {
 	}
 }
 
-func (stream *GraphStream) PushGraph(X *Graph) {
-	stream.Outlet <- NewGraph(X)
+func (stream *GraphStream) PushGraph(X GraphState) {
+	stream.Outlet <- X.MakeCopy()
 }
 
-func (stream *GraphStream) PullGraph() *Graph {
+func (stream *GraphStream) PullGraph() GraphState {
 	X := <-stream.Outlet
 	return X
 }
@@ -82,7 +59,7 @@ func (stream *GraphStream) Print(
 	opts PrintOpts) *GraphStream {
 
 	next := &GraphStream{
-		Outlet: make(chan *Graph, 1),
+		Outlet: make(chan GraphState, 1),
 	}
 
 	go func() {
@@ -111,9 +88,9 @@ func (stream *GraphStream) Print(
 	return next
 }
 
-func (stream *GraphStream) AddTo(target GraphAdder, opts AddGraphOpts) *GraphStream {
+func (stream *GraphStream) AddTo(target GraphAdder) *GraphStream {
 	next := &GraphStream{
-		Outlet: make(chan *Graph, 1),
+		Outlet: make(chan GraphState, 1),
 	}
 
 	go func() {
@@ -125,9 +102,6 @@ func (stream *GraphStream) AddTo(target GraphAdder, opts AddGraphOpts) *GraphStr
 				X.Reclaim()
 			}
 		}
-		if opts.AutoCloseCatalog {
-			target.Close()
-		}
 		next.Close()
 	}()
 
@@ -136,10 +110,10 @@ func (stream *GraphStream) AddTo(target GraphAdder, opts AddGraphOpts) *GraphStr
 
 func SelectFromCatalog(cat Catalog, sel GraphSelector) *GraphStream {
 	next := &GraphStream{
-		Outlet: make(chan *Graph, 1),
+		Outlet: make(chan GraphState, 1),
 	}
 
-	onHit := make(chan *Graph, 4)
+	onHit := make(chan GraphState, 4)
 
 	go func() {
 		cat.Select(sel, onHit)
@@ -148,7 +122,7 @@ func SelectFromCatalog(cat Catalog, sel GraphSelector) *GraphStream {
 
 	go func() {
 		for X := range onHit {
-			if sel.AllowGraph(X) {
+			if sel.SelectsGraph(X) {
 				next.Outlet <- X
 			} else {
 				X.Reclaim()
@@ -162,18 +136,18 @@ func SelectFromCatalog(cat Catalog, sel GraphSelector) *GraphStream {
 
 func (stream *GraphStream) SelectFromStream(sel GraphSelector) *GraphStream {
 	next := &GraphStream{
-		Outlet: make(chan *Graph, 1),
+		Outlet: make(chan GraphState, 1),
 	}
 
 	go func() {
-		var matchTraces graph.Traces
+		var matchTraces Traces
 		if sel.Traces != nil {
 			matchTraces = sel.Traces.Traces(0)
 		}
 		matchLen := len(matchTraces)
 		for X := range stream.Outlet {
 			keep := false
-			if sel.AllowGraph(X) {
+			if sel.SelectsGraph(X) {
 				keep = true
 				if matchLen > 0 {
 					TX := X.Traces(matchLen)
@@ -194,7 +168,7 @@ func (stream *GraphStream) SelectFromStream(sel GraphSelector) *GraphStream {
 
 func (stream *GraphStream) Canonize(normalize bool) *GraphStream {
 	next := &GraphStream{
-		Outlet: make(chan *Graph, 1),
+		Outlet: make(chan GraphState, 1),
 	}
 
 	go func() {
@@ -286,16 +260,12 @@ func (ctx *canonizeCtx) goCanonize(X *Graph) error {
 
 func (stream *GraphStream) PermuteVtxSigns() *GraphStream {
 	next := &GraphStream{
-		Outlet: make(chan *Graph, 1),
+		Outlet: make(chan GraphState, 1),
 	}
 
 	go func() {
 		for Xsrc := range stream.Outlet {
-			Xsrc.PermuteVtxSigns(func(Xperm *Graph) bool {
-				X := NewGraph(Xperm)
-				next.Outlet <- X
-				return true
-			})
+			Xsrc.PermuteVtxSigns(next)
 			Xsrc.Reclaim()
 		}
 		next.Close()
@@ -306,16 +276,12 @@ func (stream *GraphStream) PermuteVtxSigns() *GraphStream {
 
 func (stream *GraphStream) PermuteEdgeSigns() *GraphStream {
 	next := &GraphStream{
-		Outlet: make(chan *Graph, 1),
+		Outlet: make(chan GraphState, 1),
 	}
 
 	go func() {
 		for Xsrc := range stream.Outlet {
-			Xsrc.PermuteEdgeSigns(func(Xperm *Graph) bool {
-				X := NewGraph(Xperm)
-				next.Outlet <- X
-				return true
-			})
+			Xsrc.PermuteEdgeSigns(next)
 			Xsrc.Reclaim()
 		}
 		next.Close()

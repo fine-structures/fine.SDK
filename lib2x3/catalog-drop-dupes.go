@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"hash/maphash"
 
-	"github.com/2x3systems/go2x3/lib2x3/graph"
+	"github.com/2x3systems/go2x3/go2x3"
 )
 
 type dropDupes struct {
@@ -18,17 +18,17 @@ type dropDupes struct {
 const DefaultPoolSz = 32 * 1024
 
 type DropDupeOpts struct {
-	PoolSz        int  // 0 denotes DefaultPoolSz (32k)
+	PoolSz int // 0 denotes DefaultPoolSz (32k)
 	//UseTracesOnly bool // if set, two graphs with equal traces are considered equal (vs equivalent graphs)
 }
 
-func NewDropDupes(opts DropDupeOpts) GraphAdder {
+func NewDropDupes(opts DropDupeOpts) go2x3.GraphAdder {
 	if opts.PoolSz <= 0 {
 		opts.PoolSz = DefaultPoolSz
 	}
 	return &dropDupes{
-		hashMap: make(map[uint64]GraphEncoding),
-		opts:    opts,
+		hashMap:  make(map[uint64]GraphEncoding),
+		opts:     opts,
 	}
 }
 
@@ -39,15 +39,16 @@ func (cat *dropDupes) Reset() {
 	}
 }
 
-func (cat *dropDupes) Close() {
-	cat.Reset()
-	cat.hashMap = nil
-}
+// func (cat *dropDupes) Close() error {
+// 	cat.Reset()
+// 	cat.hashMap = nil
+// 	return nil
+// }
 
-func (cat *dropDupes) TryAddGraph(X *Graph) bool {
+func (cat *dropDupes) TryAddGraph(X go2x3.GraphState) bool {
 	var keyBuf [512]byte
 	tracesKey := X.Traces(0).AppendTracesLSM(keyBuf[:0])
-	Xkey, _ := X.ExportStateEncoding(tracesKey, graph.ExportGraphState)
+	Xkey, _ := X.ExportStateEncoding(tracesKey, go2x3.ExportGraphState)
 
 	cat.hasher.Reset()
 	cat.hasher.Write(Xkey)

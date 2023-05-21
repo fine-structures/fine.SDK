@@ -1,4 +1,4 @@
-package graph
+package go2x3
 
 import (
 	"testing"

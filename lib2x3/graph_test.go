@@ -5,6 +5,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/2x3systems/go2x3/go2x3"
 	"github.com/2x3systems/go2x3/lib2x3"
 )
 
@@ -92,7 +93,7 @@ func PrintCycles(Xstr string) {
 
 	b := strings.Builder{}
 	b.Grow(192)
-	X.WriteAsString(&b, lib2x3.PrintOpts{
+	X.WriteAsString(&b, go2x3.PrintOpts{
 		Graph:     true,
 		Matrix:    true,
 		NumTraces: 10,

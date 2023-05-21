@@ -3,13 +3,14 @@ module github.com/2x3systems/go2x3
 go 1.19
 
 // List versions of a module:
-//    go list -m -versions github.com/arcspace/go-cedar
+//    go list -m -versions github.com/arcspace/go-arc-sdk
 //
 // go list & get cheatsheet:
 //    https://stackoverflow.com/a/61312937/3958082
 
 require (
 	github.com/alecthomas/participle/v2 v2.0.0
+	github.com/arcspace/go-arc-sdk v0.0.0-20230515171510-a7903dbeb29e
 	github.com/dgraph-io/badger/v3 v3.2103.5
 	github.com/emirpasic/gods v1.18.1
 	github.com/go-python/gpython v0.1.1-0.20220817145246-18159950c925
@@ -33,7 +34,6 @@ require (
 	github.com/mattn/go-runewidth v0.0.14 // indirect
 	github.com/peterh/liner v1.2.2 // indirect
 	github.com/rivo/uniseg v0.4.4 // indirect
-	github.com/stretchr/testify v1.8.2 // indirect
 	go.opencensus.io v0.24.0 // indirect
 	golang.org/x/net v0.10.0 // indirect
 	golang.org/x/sys v0.8.0 // indirect

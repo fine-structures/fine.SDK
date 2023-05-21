@@ -1,81 +1,12 @@
-package lib2x3
+package factor
 
 import (
 	"sync"
 	"unsafe"
 
-	"github.com/2x3systems/go2x3/lib2x3/graph"
+	"github.com/2x3systems/go2x3/go2x3"
 	"github.com/emirpasic/gods/trees/redblacktree"
 )
-
-// FactorSet specifies for many times each possible prime appears
-type FactorSet []FactorRun
-
-type FactorRun struct {
-	ID    graph.TracesID
-	Count uint32
-}
-
-func (factors *FactorSet) Insert(toAdd graph.TracesID) {
-	insertAt := len(*factors)
-
-	for i, Fi := range *factors {
-		if Fi.ID == toAdd {
-			(*factors)[i].Count++
-			return
-		} else if Fi.ID > toAdd {
-			insertAt = i
-			break
-		}
-	}
-
-	fax := append((*factors), FactorRun{})
-	N := len(fax)
-	copy(fax[insertAt+1:N], fax[insertAt:N-1])
-	fax[insertAt] = FactorRun{
-		ID:    toAdd,
-		Count: 1,
-	}
-	*factors = fax
-}
-
-func FactorSetComparator(A, B FactorSet) int {
-	lenB := len(B)
-
-	for i, ai := range A {
-		if lenB == i {
-			return 1
-		}
-
-		bi := B[i]
-		dID := int(ai.ID) - int(bi.ID)
-		if dID != 0 {
-			return dID
-		}
-		dCount := int(ai.Count) - int(bi.Count)
-		if dCount != 0 {
-			return dCount
-		}
-	}
-
-	if len(A) > lenB {
-		return -1
-	}
-
-	return 0
-}
-
-func (factors *FactorSet) Clear() {
-	*factors = (*factors)[:0]
-}
-
-func (factors FactorSet) TotalVtxCount() uint32 {
-	Nv := uint32(0)
-	for _, Fi := range factors {
-		Nv += Fi.Count * Fi.ID.NumVertices()
-	}
-	return Nv
-}
 
 /*
 func (factors FactorSet) AppendEncodingTo(out []byte) []byte {
@@ -129,10 +60,6 @@ func (factors *PrimeFactors) InitFromEncoding(in []byte) error {
 	return nil
 }
 */
-type Factor struct {
-	Traces graph.Traces
-	ID     graph.TracesID
-}
 
 type FactorTable struct {
 	TracesPerFactor uint32
@@ -140,7 +67,7 @@ type FactorTable struct {
 	numFactors      uint32
 }
 
-func (ft *FactorTable) AddCopy(factor graph.Traces) {
+func (ft *FactorTable) AddCopy(factor go2x3.Traces) {
 	ft.FactorTraces = append(ft.FactorTraces, factor...)
 	ft.numFactors++
 }
@@ -151,7 +78,7 @@ func (ft *FactorTable) NumFactors() uint32 {
 
 // dst <= A - Factors[Fi]
 // Returns true if diff is all zeros.
-func (ft *FactorTable) SubtractFactor(dst graph.Traces, A graph.Traces, Fi uint32) bool {
+func (ft *FactorTable) SubtractFactor(dst go2x3.Traces, A go2x3.Traces, Fi uint32) bool {
 	numTraces := ft.TracesPerFactor
 	B := unsafe.Slice(&ft.FactorTraces[Fi*numTraces], numTraces)
 	isZero := true
@@ -170,10 +97,10 @@ type FactorCatalog struct {
 	maxNv int32
 }
 
-func (fcat *FactorCatalog) GetFactorTraces(Nv, Fi uint32) graph.Traces {
+func (fcat *FactorCatalog) GetFactorTraces(Nv, Fi uint32) go2x3.Traces {
 	ft := fcat.forNv[Nv]
 	i0 := uint32(Fi) * ft.TracesPerFactor
-	return graph.Traces(ft.FactorTraces[i0 : i0+ft.TracesPerFactor])
+	return go2x3.Traces(ft.FactorTraces[i0 : i0+ft.TracesPerFactor])
 }
 
 func (fcat *FactorCatalog) HasFactorsUpTo() int {
@@ -215,7 +142,7 @@ func (fcat *FactorCatalog) NumFactorsHint(Nv int, numFactors uint64) {
 	}
 }
 
-func (fcat *FactorCatalog) AddCopy(Nv byte, factor graph.Traces) {
+func (fcat *FactorCatalog) AddCopy(Nv byte, factor go2x3.Traces) {
 	fcat.forNv[Nv].AddCopy(factor)
 }
 
@@ -225,7 +152,7 @@ var factorSearchPool = sync.Pool{
 	},
 }
 
-func (fcat *FactorCatalog) FindFactorizations(TX graph.Traces) <-chan FactorSet {
+func (fcat *FactorCatalog) FindFactorizations(TX go2x3.Traces) <-chan go2x3.FactorSet {
 	s := NewFactorSearch(TX, fcat)
 
 	go func() {
@@ -235,9 +162,9 @@ func (fcat *FactorCatalog) FindFactorizations(TX graph.Traces) <-chan FactorSet 
 
 	factorizations := redblacktree.Tree{
 		Comparator: func(A, B interface{}) int {
-			A0 := A.(FactorSet)
-			B0 := B.(FactorSet)
-			return FactorSetComparator(A0, B0)
+			A0 := A.(go2x3.FactorSet)
+			B0 := B.(go2x3.FactorSet)
+			return go2x3.FactorSetComparator(A0, B0)
 		},
 	}
 
@@ -248,8 +175,8 @@ func (fcat *FactorCatalog) FindFactorizations(TX graph.Traces) <-chan FactorSet 
 			readingRun  = 1
 		)
 
-		var factorsBuf [MaxVtxID]FactorRun
-		curSet := FactorSet(factorsBuf[:0])
+		var factorsBuf [go2x3.MaxVtxID]go2x3.FactorRun
+		curSet := go2x3.FactorSet(factorsBuf[:0])
 
 		state := groundState
 
@@ -264,7 +191,7 @@ func (fcat *FactorCatalog) FindFactorizations(TX graph.Traces) <-chan FactorSet 
 				// If the given (canonical) factor set is not yet added, do so
 				_, found := factorizations.Get(curSet)
 				if !found {
-					newSet := append(FactorSet{}, curSet...)
+					newSet := append(go2x3.FactorSet{}, curSet...)
 					factorizations.Put(newSet, nil)
 				}
 
@@ -282,12 +209,12 @@ func (fcat *FactorCatalog) FindFactorizations(TX graph.Traces) <-chan FactorSet 
 	// We can now iterate through our canonical tree and therefore eliminate dupes.
 	s.Reclaim()
 
-	outlet := make(chan FactorSet)
+	outlet := make(chan go2x3.FactorSet)
 
 	go func() {
 		itr := factorizations.Iterator()
 		for itr.Next() {
-			outlet <- itr.Key().(FactorSet)
+			outlet <- itr.Key().(go2x3.FactorSet)
 		}
 		close(outlet)
 	}()
@@ -295,7 +222,7 @@ func (fcat *FactorCatalog) FindFactorizations(TX graph.Traces) <-chan FactorSet 
 	return outlet
 }
 
-func (fcat *FactorCatalog) IsPrime(TX graph.Traces) bool {
+func (fcat *FactorCatalog) IsPrime(TX go2x3.Traces) bool {
 	if len(TX) <= 1 {
 		return true
 	}
@@ -347,13 +274,13 @@ func (s *factorSearch) findFactors(depth, vi_start, Nv_remain int32) bool {
 
 type factorSearch struct {
 	stack       []FactorStep
-	onFactor    chan graph.TracesID
+	onFactor    chan go2x3.TracesID
 	hitCount    int32
 	maxFactorSz int32
 	Nv          int32
 	fcat        *FactorCatalog
 	primeTest   bool
-	tracesBuf   graph.Traces
+	tracesBuf   go2x3.Traces
 }
 
 func (s *factorSearch) sendFactorization(depth int32) bool {
@@ -365,19 +292,19 @@ func (s *factorSearch) sendFactorization(depth int32) bool {
 	for i := int32(1); i <= depth; i++ {
 		Nv := s.stack[i].Nv
 		Fi := s.stack[i].FactorIdx
-		s.onFactor <- graph.FormTracesID(uint32(Nv), uint64(Fi))
+		s.onFactor <- go2x3.FormTracesID(uint32(Nv), uint64(Fi))
 	}
 	s.onFactor <- 0 // factorization termination signal
 	return true
 }
 
-func NewFactorSearch(target graph.Traces, fcat *FactorCatalog) *factorSearch {
+func NewFactorSearch(target go2x3.Traces, fcat *FactorCatalog) *factorSearch {
 	s := factorSearchPool.Get().(*factorSearch)
 
 	Nv := len(target)
 
 	if s.onFactor == nil {
-		s.onFactor = make(chan graph.TracesID, 8)
+		s.onFactor = make(chan go2x3.TracesID, 8)
 	}
 	s.primeTest = false
 	s.hitCount = 0
@@ -394,7 +321,7 @@ func NewFactorSearch(target graph.Traces, fcat *FactorCatalog) *factorSearch {
 
 		tracesSz := stackSz * Nv
 		if cap(s.tracesBuf) < tracesSz {
-			s.tracesBuf = make(graph.Traces, max(stackSz*Nv, 9*8))
+			s.tracesBuf = make(go2x3.Traces, max(stackSz*Nv, 9*8))
 		}
 
 		for i := 0; i <= Nv; i++ {
@@ -417,5 +344,12 @@ func (s *factorSearch) Reclaim() {
 type FactorStep struct {
 	Nv        int32
 	FactorIdx uint32
-	Remainder graph.Traces
+	Remainder go2x3.Traces
+}
+
+func max(a, b int) int {
+	if a > b {
+		return a
+	}
+	return b
 }

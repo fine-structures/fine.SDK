@@ -4,14 +4,6 @@ package graph;
 //option go_package = "github.com/2x3systems/go2x3/lib2x3/graph";
 
 
-
-enum TracesSign {
-    TracesSign_Zero = 0;
-    TracesSign_Pos  = 1;
-    TracesSign_Neg  = 2;
-}
-
-
 message CatalogState {
 
     int32               MajorVers                   = 1;
@@ -152,7 +144,7 @@ message VtxEdge {
 
 
 
-
+/*
 
 // VtxGroup generally aren't used for Graph serialization but is used to model runtime processing and state 
 message VtxGroup {
@@ -178,7 +170,7 @@ message VtxGroup {
     // The product of this times VtxCount is the this groups total contribution to VtxGraph.Traces
     repeated int64      Cycles                      = 10;
 }
-
+*/
 message Tag {
     string              Label                      = 1;
     string              TagURI                     = 2;
