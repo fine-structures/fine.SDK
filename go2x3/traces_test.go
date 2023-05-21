@@ -1,4 +1,4 @@
-package lib2x3
+package go2x3
 
 import (
 	"testing"
@@ -23,10 +23,10 @@ func TestTracesEnc(t *testing.T) {
 
 func checkEncoding(TX Traces, scrap []byte) {
 
-	T1enc := TX.AppendTraceSpecTo(scrap[:])
+	enc := TX.AppendTracesLSM(scrap[:0])
 
 	var TXdec Traces
-	err := TXdec.InitFromTraceSpec(T1enc, 0)
+	err := TXdec.InitFromTracesLSM(enc, 0)
 	if err != nil {
 		gT.Fatalf("Traces encoding error: %v", err)
 	}

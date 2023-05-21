@@ -3,7 +3,7 @@ from py2x3 import *
 
 
 higgs = "1-2-3-4-1-5-6-7-8-5, 2-6, 3-7, 4-8"
-
+antiH = "1~2~3~4~1~5~6~7~8~5, 2~6, 3~7, 4~8"
     
 print("\n=================   v=1   =================  \n")
 ShowGraph("e-  (electron)",      "1")
@@ -14,10 +14,10 @@ ShowGraph("~e+ (positron)",      "1^^^")
 
 print("\n=================   ELECTRON SERIES   =================  \n")
 ShowGraph("e-  (electron) ",     "1")
-ShowGraph("~e+ (positron) ",     "1^^^")
 ShowGraph("µ-  (muon)     ",     "1-2--3")
-ShowGraph("~µ+ (anti-muon)",     "1^^~2~~3^")
 ShowGraph("τ-  (tau)      ",     "1-2--3-4--5")
+ShowGraph("~e+ (positron) ",     "1^^^")
+ShowGraph("~µ+ (anti-muon)",     "1^^~2~~3^")
 ShowGraph("~τ- (anti-tau) ",     "1^^~2~~3~4~~5^")
 
 
@@ -48,7 +48,7 @@ ShowGraph("γ0.1 (photon)",       "1---2")
 ShowGraph("γ0.2 (photon)",       "1~~~2")
 ShowGraph("tetra",               "1-2-3-1-4-2, 4-3")
 ShowGraph(" H (higgs)",          higgs)
-ShowGraph("~H (higgs)",          higgs)
+ShowGraph("~H (higgs)",          antiH)
 
 print("\n===============================================  \n")
 ShowPhases("γ  (photon)",       "1---2",            True)
@@ -60,6 +60,7 @@ ShowPhases("tricky_tri_3",      "1^~2^~3~1",        True)
 ShowPhases("tricky_bravo",      "1^-~2-3-~4",       )
 ShowPhases("tricky_whiskey",    "1^=2-3-~4",        )
 ShowPhases("tricky_boson",      "1^-2^-3-4^",       )
+ShowPhases("E0 <=> C1",         "1^-2-3-4, 3-5-6^"  )
 ShowPhases("τ-  (tau)      ",   "1-2--3-4--5",      )
 ShowPhases("~τ- (anti-tau) ",   "1^^~2~~3~4~~5^",   )
 ShowPhases("K4",                "1-2-3^-4-1, 2-4",  )

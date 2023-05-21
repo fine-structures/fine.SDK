@@ -1,6 +1,9 @@
 package graph
 
-import "sort"
+import (
+	"fmt"
+	"sort"
+)
 
 // Adds the given graph expr string to .GraphExprs[] if it is not already present.
 // Returns true if the string was added.
@@ -66,9 +69,162 @@ func (g GroupID) GroupRune() byte {
 }
 
 func (X *VtxGraph) IsNormalized() bool {
-	return X.Status >= VtxStatus_Canonized_Normalized
+	return X.Status >= VtxStatus_Normalized
 }
 
 func (X *VtxGraph) IsCanonized() bool {
 	return X.Status >= VtxStatus_Canonized
+}
+
+/*
+func (e *VtxEdge) Ord() int64 {
+	return int64(e.DstVtxID)<<32 | int64(e.SrcVtxID) // sort by dst / "home" vtx ID first
+}
+*/
+/*
+func appendPair(io []byte, pos, neg int32) []byte {
+	if printAbs := true; printAbs {
+		if total := int64(pos+neg); total != 0 {
+			io = fmt.Appendf(io, "%3d", total)
+		} else {
+			io = append(io, "   "...)
+		}
+	
+		if delta := pos - neg; delta != 0 {
+			io = fmt.Appendf(io, "%+-3d  ", delta)
+		} else {
+			io = append(io, "-    "...)
+		}
+	} else {
+		if (pos == 0 && neg == 0) {
+			io = append(io, "   -    "...)
+		} else {
+			io = fmt.Appendf(io, "%+3d-%-3d ", pos, neg)		
+		}
+	}
+	return io
+}
+*/
+
+
+func (e *VtxEdge) AppendDesc(io []byte) []byte {
+
+	dst := 'A' - 1 + byte(e.DstVtxID)
+	src := 'A' - 1 + byte(e.SrcVtxID)
+	if src == dst {
+		src = ' '
+	}
+	str := fmt.Sprintf("   %c%c%c  <=  %c%c%c    ",
+		dst, dst, dst,
+		src, src, src)
+	io = append(io, str...)
+
+	if  e.CountPos > 0 {
+		io = fmt.Appendf(io, " +%02d", e.CountPos)
+	} else {
+		io = append(io, "    "...)	
+	}
+	if e.CountNeg > 0 {
+		io = fmt.Appendf(io, " -%02d ", e.CountNeg)
+	} else {
+		io = append(io, "     "...)	
+	}
+	
+	// // List edge types in LSM order
+	// switch e.Domain {
+	// 	case EdgeDomain_EvenOdd:
+	// 		io = fmt.Appendf(io, "+%03d -%03d ", e.CountPos, e.CountNeg)
+	// 	case EdgeDomain_Odd:
+	// 		io = fmt.Appendf(io, "%+03d    ", e.NetCount)
+	// 	case EdgeDomain_Even:
+	// 		io = fmt.Appendf(io, "    %+03d", e.NetCount)
+	// }
+	
+	// io = appendPair(io, 0, 0)
+	// io = appendPair(io, c
+	// io = appendPair(io, 0, 0)
+
+	return io
+}
+
+type PrintIntOpts struct {
+	MinWidth   int
+	AlwaysSign bool
+	SpaceZero  bool
+}
+
+func AppendInt(io []byte, val int64, opts PrintIntOpts) []byte {
+	var digits [24]byte
+	sgn := byte(0)
+	if val < 0 {
+		sgn = '-'
+		val = -val
+	} else if opts.AlwaysSign && val > 0 {
+		sgn = '+'
+	}
+
+	N := 0
+	for {
+		next := val / 10
+		digit := val - 10*next
+		val = next
+		digits[N] = '0' + byte(digit)
+		N++
+		if val == 0 {
+			break
+		}
+	}
+	if sgn != 0 {
+		digits[N] = sgn
+		N++
+	}
+
+	for i := N; i < opts.MinWidth; i++ {
+		io = append(io, ' ')
+	}
+	if opts.SpaceZero && N == 1 && digits[0] == '0' {
+		io = append(io, ' ')
+	} else {
+		for i := N - 1; i >= 0; i-- {
+			io = append(io, digits[i])
+		}
+	}
+
+	return io
+}
+
+// PrintInt prints the given integer in base 10, right justified in the buffer.
+// Returns the tight-fitting slice of the output digits (a slice of []dst)
+func PrintInt(dst []byte, val int64) []byte {
+	sign := int(1)
+	if val < 0 {
+		sign = -1
+		val = -val
+	}
+	L := len(dst)
+	i := L
+	for {
+		next := val / 10
+		digit := val - 10*next
+		val = next
+		i--
+		dst[i] = '0' + byte(digit)
+		if val == 0 {
+			break
+		}
+	}
+	if sign < 0 {
+		i--
+		dst[i] = '-'
+	}
+	for j := i - 1; j >= 0; j-- {
+		dst[j] = ' '
+	}
+	return dst[i:]
+}
+
+
+
+func chopBuf(consume []int64, N int) (alloc []int64, remain []int64) {
+	return consume[0:N], consume[N:]
 }

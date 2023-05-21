@@ -2,6 +2,8 @@ package lib2x3
 
 import (
 	"sort"
+
+	"github.com/2x3systems/go2x3/go2x3"
 )
 
 // EdgeID contains a two VtxIDs and an EdgeType
@@ -113,7 +115,7 @@ func parseEdgeStr(str string) (EdgeType, int, error) {
 	}
 	total := pos + neg
 	if pos+neg > 3 {
-		return NilEdge, i, ErrGraphBadEdgeType
+		return NilEdge, i, go2x3.ErrBadEdgeType
 	}
 	edgeType := EdgeType((total << 2) | neg)
 	return edgeType, i, nil
@@ -133,9 +135,9 @@ func (edge EdgeID) VtxAB() (a, b VtxID) {
 	return
 }
 
-func (edge EdgeID) VtxIdx() (a, b int32) {
-	a = int32((VtxID(edge>>6) & VtxIDMask) - 1)
-	b = int32((VtxID(edge>>0) & VtxIDMask) - 1)
+func (edge EdgeID) VtxIdx() (a, b int) {
+	a = int((VtxID(edge>>6) & VtxIDMask) - 1)
+	b = int((VtxID(edge>>0) & VtxIDMask) - 1)
 	return
 }
 

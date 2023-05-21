@@ -20,10 +20,5 @@ light_of_yeshua = [
 ]
 
 
-for Xname, graphStr in light_of_yeshua:
-    X = Graph(graphStr)
-    print("\n  ===   %s phases  === \n" % Xname)
-    X.PhaseModes().Print(Xname + " phase", **printOpts).Go()
-    
-    print("\n  ===   %s prime factors  === \n" % Xname)
-    X.PrimeModes().Print(Xname + " prime factors", **printOpts).Go()
+for Xdesc, Xstr in light_of_yeshua:
+    ShowPhases(Xdesc, Xstr, True)

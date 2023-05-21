@@ -9,6 +9,7 @@ printOpts = {
     'graph':  True,
     'codes':  True,
     'traces': 10,
+    'cycles': True,
 }
 
 

@@ -5,6 +5,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/2x3systems/go2x3/go2x3"
 	"github.com/2x3systems/go2x3/lib2x3"
 )
 
@@ -49,14 +50,26 @@ func TestMisc(t *testing.T) {
 
 func TestBasics(t *testing.T) {
 
-	PrintCycles("1-2-3")
+	PrintCycles("1---2")
+	PrintCycles("1--~2")
+	PrintCycles("1-~~2")
+	PrintCycles("1~~~2")
+
+	PrintCycles("1~2~3-1-4-5-2,3-6~7~4,5-8~6,7-8")
+	
+	PrintCycles("1^-2~3~6-7^-8~5~4-2,6-8,1-4")                         //
+
+	PrintCycles("1^-~2~3~~4")
+	
+
+	PrintCycles("1~2-3")
 
 	PrintCycles("1^-~2-3=4")
 
 	PrintCycles("1-2,2=3")
 	PrintCycles("1-2,1-4,2-3,2-4,3-4")
 
-	// PrintCycles("1-2-3-4-1-5-6-7-8-5, 2-6, 3-7, 4-8")                         //
+	PrintCycles("1~2-3~1-4-5-2,3-6-7~4,5-8-6,7-8")                         //
 	// PrintCycles("1-2, 1-3, 1-4, 2-5, 4-5, 2-6, 3-6, 3-7, 4-7, 5-8, 6-8, 7-8") // 001
 	// PrintCycles("1~2, 1~3, 1~4, 2-5, 3-5, 2-6, 4-6, 3-7, 4-7, 5~8, 6~8, 7~8") // 002
 	// PrintCycles("1~2, 1~3, 1~4, 2-5, 4-5, 2-6, 3-6, 3-7, 4-7, 5-8, 6-8, 7-8") // 003
@@ -80,7 +93,7 @@ func PrintCycles(Xstr string) {
 
 	b := strings.Builder{}
 	b.Grow(192)
-	X.WriteAsString(&b, lib2x3.PrintOpts{
+	X.WriteAsString(&b, go2x3.PrintOpts{
 		Graph:     true,
 		Matrix:    true,
 		NumTraces: 10,

@@ -1,15 +1,16 @@
 package lib2x3
 
 import (
-	"errors"
 	"fmt"
 	"io"
+	"log"
 	"sort"
-	"strings"
 	"sync"
 
+	"github.com/2x3systems/go2x3/go2x3"
 	"github.com/2x3systems/go2x3/lib2x3/graph"
 )
+
 
 func NewGraph(Xsrc *Graph) *Graph {
 	X := graphPool.Get().(*Graph)
@@ -26,15 +27,6 @@ func NewGraphFromDef(graphDef []byte) (*Graph, error) {
 	return X, nil
 }
 
-var (
-	ErrGraphBadEncoding   = errors.New("bad graph encoding")
-	ErrGraphBadVtxID      = errors.New("bad graph vertex ID")
-	ErrGraphMissingVtxID  = errors.New("missing vertex ID")
-	ErrGraphBadEdge       = errors.New("bad graph edge")
-	ErrGraphBadEdgeType   = errors.New("bad graph edge type")
-	ErrGraphVtxExpected   = errors.New("vertex ID expected")
-	ErrGraphSitesExceeded = errors.New("number of loops and edges exceeds 3")
-)
 
 // VtxList is an ordered sequence of VtxTypes
 type VtxList []VtxType
@@ -43,41 +35,13 @@ func (V VtxList) Len() int           { return len(V) }
 func (V VtxList) Less(i, j int) bool { return V[i] < V[j] }
 func (V VtxList) Swap(i, j int)      { V[i], V[j] = V[j], V[i] }
 
-type GraphInfo struct {
-	NumParticles byte
-	NumVerts     byte
-	NegLoops     byte
-	PosLoops     byte
-	NegEdges     byte
-	PosEdges     byte
-}
 
-// Appends the defining info about a Graph to the given buffer.
-//
-// The order of fields is such that, lexicographically, graphs with all-positive edges and vertices appear first,
-// then graphs with only with all-positive edges, then all other graphs.
-func (info *GraphInfo) AppendGraphEncodingHeader(prefix []byte) []byte {
-	prefix = append(prefix,
-		info.NumParticles,
-		info.NumVerts,
-		info.NegEdges,
-		info.NegLoops,
-		info.PosLoops,
-	)
-	return prefix
-}
-
-// NumEdges returns the number of edges implied for a graph that has a given number of vertices and total loop count.
-func (info *GraphInfo) NumEdges() byte {
-	return (3*info.NumVerts - info.PosLoops - info.NegLoops) / 2
-
-}
 
 // GraphEncoding a fully serialized Graph. See initFromEncoding() for format info.
 type GraphEncoding []byte
 
-func (Xenc GraphEncoding) GetInfo() GraphInfo {
-	info := GraphInfo{
+func (Xenc GraphEncoding) GetInfo() go2x3.GraphInfo {
+	info := go2x3.GraphInfo{
 		NumParticles: Xenc[0],
 		NumVerts:     Xenc[1],
 		NegEdges:     Xenc[2],
@@ -154,15 +118,21 @@ func (cmd EncoderCmd) IsAddEdgeCmd() (isAddEdge bool, Va, Vb VtxID) {
 }
 
 type Graph struct {
-	partCount int32             // number of particles (i.e. matrix partitions).  Zero if not yet calculated
-	vtxCount  int32             // number of assigned Vtx in []vtx
-	edgeCount int32             // number of assigned EdgeIDs in []edges
+	partCount int               // number of particles (i.e. matrix partitions).  Zero if not yet calculated
+	vtxCount  int               // number of assigned Vtx in []vtx
+	edgeCount int               // number of assigned EdgeIDs in []edges
 	vtx       [MaxVtxID]VtxType // poles assignment
 	edges     [MaxEdges]EdgeID  // edges assignment
 	dirty     bool
 	xstate    graphState
+	vm        graph.VtxGraphVM
 	Def       graph.GraphDef
 }
+
+func (X *Graph) MakeCopy() go2x3.GraphState {
+	return NewGraph(X)
+}
+
 
 func (X *Graph) Edges() EdgeList {
 	return X.edges[:X.edgeCount]
@@ -172,7 +142,7 @@ func (X *Graph) Vtx() []VtxType {
 	return X.vtx[:X.vtxCount]
 }
 
-func (X *Graph) Len() int           { return int(X.vtxCount) }
+func (X *Graph) Len() int           { return X.vtxCount }
 func (X *Graph) Less(i, j int) bool { return X.vtx[i] < X.vtx[j] }
 func (X *Graph) Swap(i, j int) {
 	X.vtx[i], X.vtx[j] = X.vtx[j], X.vtx[i]
@@ -215,13 +185,13 @@ func (X *Graph) NumParticles() byte {
 	}
 
 	// The number of unique values in the vtx list is the number of partitions
-	pcount := int32(0)
+	pcount := 0
 	if Nv > 0 {
 		pcount++
 	}
 	for _, vi := range vtx {
 		newPart := true
-		for j := int32(0); j < pcount; j++ {
+		for j := 0; j < pcount; j++ {
 			if vtx[j] == vi {
 				newPart = false
 			}
@@ -236,8 +206,8 @@ func (X *Graph) NumParticles() byte {
 	return byte(X.partCount)
 }
 
-func (X *Graph) NumVerts() byte {
-	return byte(X.vtxCount)
+func (X *Graph) NumVertices() int {
+	return X.vtxCount
 }
 
 func (X *Graph) CountLoops() (negLoops, posLoops byte) {
@@ -257,13 +227,13 @@ func (X *Graph) CountEdges() (totalPos, totalNeg byte) {
 	return
 }
 
-func (X *Graph) GetInfo() GraphInfo {
+func (X *Graph) GetInfo() go2x3.GraphInfo {
 	negLoops, posLoops := X.CountLoops()
 	posEdges, negEdges := X.CountEdges()
 
-	return GraphInfo{
+	return go2x3.GraphInfo{
 		NumParticles: X.NumParticles(),
-		NumVerts:     X.NumVerts(),
+		NumVerts:     byte(X.NumVertices()),
 		NegEdges:     negEdges,
 		PosEdges:     posEdges,
 		NegLoops:     negLoops,
@@ -358,17 +328,10 @@ func (X *Graph) combineMultiEdges() {
 		L = R
 	}
 	if D != Ne {
-		X.edgeCount = int32(D)
+		X.edgeCount = D
 	}
 }
 
-func (X *Graph) Println(prefix string) {
-	b := strings.Builder{}
-	b.Grow(192)
-	b.WriteString(prefix)
-	X.WriteAsString(&b, PrintOpts{})
-	fmt.Println(b.String())
-}
 
 var (
 	quote   = []byte("\"")
@@ -377,35 +340,19 @@ var (
 	newline = []byte("\n")
 )
 
-// PrintOpts specifies what is printing when printing a graph
-type PrintOpts struct {
-	Label     string // Prefix label
-	Graph     bool   // If set, prints graph construction expr
-	Matrix    bool   // if set, prints matrix representation of graph
-	NumTraces int    // Num of Traces to print (-1 denotes natural length, 0 denotes no traces)
-	Tricodes  bool   // If set, the canonic tricode sequence is printed
-	CycleSpec bool   // If set, the cycles spectrum is printed -- i.e. a canonic column of "cycles" vectors
-}
-
-// DefaultPrintOpts{}
-var DefaultPrintOpts = PrintOpts{
-	Graph:     true,
-	NumTraces: -1,
-}
 
 func (X *Graph) Canonize(normalize bool) error {
 	X.Traces(0) // Make sure graph is flushed to X.xstate
-	X.xstate.Canonize(normalize)
+	X.xstate.Canonize()
 	return nil
 }
 
-func (X *Graph) WriteAsString(out io.Writer, opts PrintOpts) {
+func (X *Graph) WriteAsString(out io.Writer, opts go2x3.PrintOpts) {
 	X.Canonize(false) // TODO: remove this when we can print output for any case: 1) un-canonized, 2) canonized, 3) canonized+normalized
 
 	var scrap [512]byte
-	encFull := X.xstate.AppendGraphEncoding(scrap[:0], EncodeHumanReadable|EncodeProperties)
-	//encNorm := X.xstate.AppendGraphEncoding(encFull[len(encFull):], EncodeHumanReadable|EncodeState) . TODO: output the normalized and non-normalized encoding
-	fmt.Fprintf(out, "p=%d,v=%d,%q,%q,", X.NumParticles(), X.NumVerts(), encFull, "")
+	encFull, _ := X.ExportStateEncoding(scrap[:0], go2x3.ExportAsAscii)
+	fmt.Fprintf(out, "p=%d,v=%d,%q,%q,", X.NumParticles(), X.NumVertices(), encFull, "")
 
 	if opts.Graph {
 		X.WriteAsGraphExprStr(out)
@@ -427,6 +374,21 @@ func (X *Graph) WriteAsString(out io.Writer, opts PrintOpts) {
 	if opts.CycleSpec {
 		X.xstate.PrintCycleSpectrum(out)
 	}
+	
+	if opts.Tricodes {
+		out.Write(newline)
+		
+		TX := X.Traces(0)
+		if !TX.IsEqual(X.vm.Traces(0)) {
+			panic("traces failed to cross-check")
+		}
+
+		X.vm.Canonize()
+		X.vm.PrintCycleSpectrum(10, out)
+
+		out.Write(newline)
+	}
+
 }
 
 func (X *Graph) WriteTracesAsCSV(out io.Writer, numTraces int) {
@@ -435,7 +397,7 @@ func (X *Graph) WriteTracesAsCSV(out io.Writer, numTraces int) {
 	var buf [24]byte
 
 	for _, TXi := range TX {
-		out.Write(PrintInt(buf[:], TXi))
+		out.Write(graph.PrintInt(buf[:], TXi))
 		out.Write(comma)
 	}
 }
@@ -450,7 +412,7 @@ func (X *Graph) WriteAsGraphExprStr(out io.Writer) {
 
 	printVtx := func(vi VtxID) {
 		var buf [8]byte
-		s := PrintInt(buf[:4], int64(vi))
+		s := graph.PrintInt(buf[:4], int64(vi))
 		neg := negLoops[vi-1]
 
 		if neg > 0 {
@@ -485,7 +447,7 @@ func (X *Graph) WriteAsGraphExprStr(out io.Writer) {
 		}
 
 		var b_prev VtxID
-		for i := int32(0); i < Ne; i++ {
+		for i := 0; i < Ne; i++ {
 
 			// Look for an edge we can combine
 			edge := e[i]
@@ -523,13 +485,13 @@ func (X *Graph) WriteAsGraphExprStr(out io.Writer) {
 }
 
 func (X *Graph) WriteAsMatrixStr(out io.Writer) {
-	Nv := int32(X.NumVerts())
+	Nv := X.NumVertices()
 
 	var buf [8]byte
 	var Xm [16 * 16]int8
 
 	// Set matrix diagonal values from vertices
-	for i := int32(0); i < Nv; i++ {
+	for i := 0; i < Nv; i++ {
 		v := X.vtx[i]
 		Xm[i+i*Nv] = v.NetLoops()
 	}
@@ -543,17 +505,17 @@ func (X *Graph) WriteAsMatrixStr(out io.Writer) {
 	}
 
 	out.Write([]byte("\"{"))
-	for row := int32(0); row < Nv; row++ {
+	for row := 0; row < Nv; row++ {
 		if row > 0 {
 			out.Write(comma)
 		}
 		out.Write([]byte("{"))
-		for j := int32(0); j < Nv; j++ {
+		for j := 0; j < Nv; j++ {
 			Xij := int64(Xm[j+row*Nv])
 			if j > 0 {
 				out.Write(comma)
 			}
-			out.Write(PrintInt(buf[:], Xij))
+			out.Write(graph.PrintInt(buf[:], Xij))
 		}
 		out.Write([]byte("}"))
 	}
@@ -561,32 +523,7 @@ func (X *Graph) WriteAsMatrixStr(out io.Writer) {
 
 }
 
-// PrintInt prints the given integer in base 10, right justified in the buffer.
-// Returns the tight-fitting slice of the output digits (a slice of []dst)
-func PrintInt(dst []byte, val int64) []byte {
-	sign := int(1)
-	if val < 0 {
-		sign = -1
-		val = -val
-	}
-	L := len(dst)
-	i := L
-	for {
-		next := val / 10
-		digit := val - 10*next
-		val = next
-		i--
-		dst[i] = '0' + byte(digit)
-		if val == 0 {
-			break
-		}
-	}
-	if sign < 0 {
-		i--
-		dst[i] = '-'
-	}
-	return dst[i:]
-}
+
 
 func (X *Graph) Reclaim() {
 	if X != nil {
@@ -618,19 +555,19 @@ func (X *Graph) initFromEncoding(Xe GraphEncoding) error {
 	X.Init(nil)
 
 	info := Xe.GetInfo()
-	X.vtxCount = int32(info.NumVerts)
+	X.vtxCount = int(info.NumVerts)
 
-	if int32(info.NumParticles) > X.vtxCount {
-		return ErrGraphBadEncoding
+	if int(info.NumParticles) > X.vtxCount {
+		return go2x3.ErrBadEncoding
 	}
 
 	idx := int32(5)
 
 	// read VtxTypes
-	for i := int32(0); i < X.vtxCount; i++ {
+	for i := 0; i < X.vtxCount; i++ {
 		v := VtxType(Xe[idx])
 		if v <= 0 || v > V_𝛾 {
-			return ErrGraphBadEncoding
+			return go2x3.ErrBadEncoding
 		}
 		X.vtx[i] = v
 		info.NegLoops -= v.NegLoops()
@@ -640,15 +577,15 @@ func (X *Graph) initFromEncoding(Xe GraphEncoding) error {
 
 	// consistency check
 	if info.NegLoops != 0 || info.PosLoops != 0 {
-		return ErrGraphBadEncoding
+		return go2x3.ErrBadEncoding
 	}
 
 	// Note this edge count is for edge *types*, so for example, PosPosEdge would be one edge.
-	X.edgeCount = int32(Xe[idx])
+	X.edgeCount = int(Xe[idx])
 	idx++
 
 	// read edges
-	for i := int32(0); i < X.edgeCount; i++ {
+	for i := 0; i < X.edgeCount; i++ {
 		edge := (EdgeID(Xe[idx]) << 8) | EdgeID(Xe[idx+1])
 		numPos, numNeg := edge.EdgeType().NumPosNeg()
 		info.NegEdges -= numNeg
@@ -659,17 +596,10 @@ func (X *Graph) initFromEncoding(Xe GraphEncoding) error {
 
 	// consistency check
 	if info.NegEdges != 0 || info.PosEdges != 0 {
-		return ErrGraphBadEncoding
+		return go2x3.ErrBadEncoding
 	}
 
 	return nil
-}
-
-func (X *Graph) ExportGraphDef() []byte {
-	X.Def.GraphEncoding = X.appendGraphEncodingTo(X.Def.GraphEncoding[:0])
-
-	buf, _ := X.Def.Marshal()
-	return buf
 }
 
 func (X *Graph) appendGraphEncodingTo(buf []byte) []byte {
@@ -707,7 +637,7 @@ func (X *Graph) Concatenate(Xsrc *Graph) {
 	X.edgeCount += Xsrc.edgeCount
 	for i, edge := range Xsrc.Edges() {
 		a, b := edge.VtxAB()
-		X.edges[e0+int32(i)] = edge.EdgeType().FormEdge(a+v0, b+v0)
+		X.edges[e0+i] = edge.EdgeType().FormEdge(a+v0, b+v0)
 	}
 
 	X.onGraphChanged()
@@ -720,22 +650,59 @@ func (X *Graph) onGraphChanged() {
 	X.dirty = true
 }
 
-// Appends this graph's traces and canonic signature to the given buffer:
-//
-//	Nv + varint([Nv], NUL, NUL) + GraphUID
-func (X *Graph) FormLookupKeys(in []byte) (tracesKey, graphKey []byte) {
-	key := append(in, X.NumVerts())
-	key = X.Traces(0).AppendTraceSpecTo(key)
-	key = append(key, 0, 0)
-
-	full := X.xstate.AppendGraphEncoding(key, EncodeProperties|EncodeState)
-	return key, full
+func (X *Graph) ExportStateEncoding(out []byte, opts go2x3.ExportOpts) ([]byte, error) {
+	if opts & go2x3.ExportGraphDef != 0 {
+		X.Def.GraphEncoding = X.appendGraphEncodingTo(X.Def.GraphEncoding[:0])
+		buf, err := X.Def.Marshal()
+		if err != nil {
+			return nil, err
+		}
+		return append(out, buf...), nil
+	} else {
+		return X.xstate.ExportEncoding(out, opts)
+	}
 }
+
+
+
+func ExportGraph(Xsrc *Graph, X *graph.VtxGraphVM) error {
+	X.ResetGraph()
+	Nv := Xsrc.NumVertices()
+	if Xsrc == nil || Nv == 0 {
+		return ErrNilGraph
+	}
+		
+	// First, add edges that connect to the same vertex (loops)
+	for i, vtyp := range Xsrc.Vtx() {
+		vi := uint32(i+1)
+		numPos := int32(vtyp.PosLoops())
+		numNeg := int32(vtyp.NegLoops())
+		if err := X.AddVtxEdge(numNeg, numPos, vi, vi); err != nil {
+			panic(err)
+		}
+	}
+
+	// Second, add edges connecting two different vertices
+	for _, edge := range Xsrc.Edges() {
+		ai, bi := edge.VtxAB()
+		edgeType := edge.EdgeType()
+		numPos, numNeg := edgeType.NumPosNeg()
+		if err := X.AddVtxEdge(int32(numNeg), int32(numPos), uint32(ai), uint32(bi)); err != nil {
+			panic(err)
+		}
+	}
+	
+	return X.Validate()
+}
+
 
 // Traces returns a slice of the requested number of Traces.  If numTraces == 0, then the Traces length defaults to X.NumVerts()
 // The slice should be considered immediate read-only.
-func (X *Graph) Traces(numTraces int) Traces {
+func (X *Graph) Traces(numTraces int) go2x3.Traces {
 	if X.dirty {
+		if err := ExportGraph(X, &X.vm); err != nil {
+			panic(err)
+		}
 		X.xstate.AssignGraph(X)
 		X.dirty = false
 	}
@@ -746,10 +713,9 @@ func (X *Graph) Traces(numTraces int) Traces {
 // PermuteVtxSigns emits a Graph for every possible vertex pole permutation of the given Graph.
 //
 // The callback handler should not make any changes to Xperm (with the exception of calling Traces())
-func (X *Graph) PermuteVtxSigns(handler func(Xperm *Graph) bool) {
-	var span [MaxVtxID][4]VtxType
+func (X *Graph) PermuteVtxSigns(dst *go2x3.GraphStream) {
 
-	Nv := int(X.NumVerts())
+	Nv := X.NumVertices()
 	if Nv == 0 {
 		return
 	}
@@ -758,6 +724,7 @@ func (X *Graph) PermuteVtxSigns(handler func(Xperm *Graph) bool) {
 	defer Xi.Reclaim()
 
 	// Build the permutation we will traverse
+	var span [MaxVtxID][4]VtxType
 	permCount := int64(1)
 	for vi := 0; vi < Nv; vi++ {
 		vtxPerm := X.vtx[vi].VtxPerm()
@@ -766,7 +733,8 @@ func (X *Graph) PermuteVtxSigns(handler func(Xperm *Graph) bool) {
 		Xi.vtx[vi] = span[vi][0]
 	}
 
-	for handler(Xi) {
+	for {
+		dst.Outlet <- Xi.MakeCopy()
 		permCount--
 
 		// "Increment" to the next permutation
@@ -811,19 +779,19 @@ func (X *Graph) PermuteVtxSigns(handler func(Xperm *Graph) bool) {
 			break
 		}
 	}
+	
 }
 
 // PermuteEdgeSigns emits a Graph for every possible edge sign permutation of the given Graph.
 //
 // The callback handler should not make any changes to Xperm (with the exception of calling Traces())
-func (X *Graph) PermuteEdgeSigns(handler func(Xperm *Graph) bool) {
-	var span [MaxEdges][4]EdgeID
+func (X *Graph) PermuteEdgeSigns(dst *go2x3.GraphStream) {
 
 	// If there's no edges to permute over, export only the given graph (which is just 0 or more single vertex particles).
 	// Note that X.edgeCount is vertex pair count, so 2 or 3 edges of matching type will only show up as *one* element.
-	Ne := int(X.edgeCount)
+	Ne := X.edgeCount
 	if Ne == 0 {
-		handler(X)
+		dst.Outlet <- X.MakeCopy()
 		return
 	}
 
@@ -832,6 +800,7 @@ func (X *Graph) PermuteEdgeSigns(handler func(Xperm *Graph) bool) {
 
 	// Build the permutation we will traverse
 	permCount := int64(1)
+	var span [MaxEdges][4]EdgeID
 	for ei, edgeID := range Xi.Edges() {
 		edgePerm := edgeID.EdgePerm()
 		span[ei] = edgePerm.Edges
@@ -839,7 +808,8 @@ func (X *Graph) PermuteEdgeSigns(handler func(Xperm *Graph) bool) {
 		Xi.edges[ei] = span[ei][0]
 	}
 
-	for handler(Xi) {
+	for {
+		dst.Outlet <- Xi.MakeCopy()
 		permCount--
 
 		// "Increment" to the next permutation
@@ -880,6 +850,20 @@ func (X *Graph) PermuteEdgeSigns(handler func(Xperm *Graph) bool) {
 	}
 }
 
+
+func EnumPureParticles(v_min, v_max int, method string) *go2x3.GraphStream {
+	gw, err := NewGraphWalker()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	go func() {
+		gw.EnumPureParticles(v_min, v_max)
+	}()
+
+	return gw.EnumStream
+}
+
 // PBuilder
 // PWalker
 type GraphWalker struct {
@@ -887,17 +871,15 @@ type GraphWalker struct {
 	vtxChoices     []VtxType
 	openSlotsScrap [MaxVtxID]VtxEdgeSlots
 	encoderScrap   [MaxVtxID * 4]EncoderCmd //  max cmds: max vertices + 3 edges per vertex
-	EnumStream     *GraphStream
-	emitted        TracesSet
+	EnumStream     *go2x3.GraphStream
 }
 
 func NewGraphWalker() (*GraphWalker, error) {
 
 	gw := &GraphWalker{
-		EnumStream: &GraphStream{
-			Outlet: make(chan *Graph, 1),
+		EnumStream: &go2x3.GraphStream{
+			Outlet: make(chan go2x3.GraphState, 1),
 		},
-		emitted:    NewTracesSet(),
 		vtxChoices: []VtxType{V_u, V_d, V_𝛾},
 	}
 
@@ -923,7 +905,6 @@ func (gw *GraphWalker) EnumPureParticles(Nv_lo, Nv_hi int) {
 	}
 
 	gw.EnumStream.Close()
-	gw.emitted.Close()
 	// 	for ID, pname := range pxs {
 	// 		fmt.Printf("   %5d, %4d, %s\n", ID+1, gw.particleCatalog[pname], pname)
 	// 	}
@@ -1036,7 +1017,7 @@ func (gw *GraphWalker) onParticleCompleted(cmds []EncoderCmd) {
 	// Since the particle enumeration process only makes positive edges, a Traces vector uniquely identifies
 	//     a graph and we are thus spared from doing a full canonicalization in order to detect duplicate enumerations.
 	//
-	// However, for texting, we emit all particlees and so the canonizer can be properly tested.
+	// However, for testing, we emit all particles.
 	if true { //|| gw.emitted.TryAdd(X.Traces(0)) {
 		gw.EnumStream.Outlet <- X
 	}

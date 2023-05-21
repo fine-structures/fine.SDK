@@ -1,11 +1,15 @@
 package catalog_test
 
 import (
+	"fmt"
 	"os"
 	"path"
+	"strings"
 	"testing"
 
+	"github.com/2x3systems/go2x3/go2x3"
 	"github.com/2x3systems/go2x3/lib2x3"
+	"github.com/2x3systems/go2x3/lib2x3/catalog"
 )
 
 var primes = []string{
@@ -17,9 +21,7 @@ var primes = []string{
 var (
 	gT *testing.T
 
-	gWorkspace = &lib2x3.Workspace{
-		CatalogCtx: lib2x3.NewCatalogContext(),
-	}
+	gCtx = go2x3.NewCatalogContext()
 )
 
 func TestBasics(t *testing.T) {
@@ -31,11 +33,11 @@ func TestBasics(t *testing.T) {
 	}
 	defer os.RemoveAll(dir)
 
-	opts := lib2x3.CatalogOpts{
+	opts := go2x3.CatalogOpts{
 		NeedPrimes: true,
 		DbPathName: path.Join(dir, "TestBasics"),
 	}
-	cat, err := gWorkspace.CatalogCtx.OpenCatalog(opts)
+	cat, err := catalog.OpenCatalog(gCtx, opts)
 	if err != nil {
 		gT.Fatal(err)
 	}
@@ -68,13 +70,13 @@ func TestBasics(t *testing.T) {
 	// Select -- we should get all the particles we've added so far
 	{
 		total := 0
-		onHit := make(chan *lib2x3.Graph)
+		onHit := make(chan go2x3.GraphState)
 		go func() {
-			cat.Select(lib2x3.DefaultGraphSelector, onHit)
+			cat.Select(go2x3.DefaultGraphSelector, onHit)
 			close(onHit)
 		}()
 		for X := range onHit {
-			X.Println(">>>")
+			PrintGraph(">>>", X)
 			total++
 		}
 		if total != 9 {
@@ -87,18 +89,18 @@ func TestBasics(t *testing.T) {
 		Xsrc := lib2x3.NewGraph(nil)
 		Xsrc.InitFromString("1---2")
 
-		sel := lib2x3.DefaultGraphSelector
+		sel := go2x3.DefaultGraphSelector
 		sel.Factor = true
 		sel.Traces = Xsrc
 
 		total := 0
-		onHit := make(chan *lib2x3.Graph)
+		onHit := make(chan go2x3.GraphState)
 		go func() {
 			cat.Select(sel, onHit)
 			close(onHit)
 		}()
 		for X := range onHit {
-			X.Println(">>>")
+			PrintGraph(">>>", X)
 			total++
 			if !X.Traces(10).IsEqual(Xsrc.Traces(10)) {
 				t.Fatal("traces don't match")
@@ -108,4 +110,14 @@ func TestBasics(t *testing.T) {
 			t.Fatal("factorization fail")
 		}
 	}
+}
+
+
+
+func PrintGraph(prefix string, X go2x3.GraphState) {
+	b := strings.Builder{}
+	b.Grow(192)
+	b.WriteString(prefix)
+	X.WriteAsString(&b, go2x3.PrintOpts{})
+	fmt.Println(b.String())
 }

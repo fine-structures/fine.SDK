@@ -3,6 +3,7 @@ package lib2x3
 import (
 	"fmt"
 
+	"github.com/2x3systems/go2x3/go2x3"
 	"github.com/alecthomas/participle/v2"
 )
 
@@ -54,7 +55,7 @@ func (Xb *graphBuilder) tallyVtx(vtx *Vtx) error {
 	vtxID := Xb.vtx0 + VtxID(vtx.ID)
 
 	if vtxID < 1 || vtxID > MaxVtxID {
-		return ErrGraphBadVtxID
+		return go2x3.ErrBadVtxID
 	}
 	if Xb.maxVtxID < vtxID {
 		Xb.maxVtxID = vtxID
@@ -133,7 +134,7 @@ func (X *Graph) InitFromString(graphExpr string) error {
 	}
 
 	// After we've absorbed all the edge parts, update X
-	X.edgeCount = int32(len(Xb.edges))
+	X.edgeCount = len(Xb.edges)
 	X.Def.TryAddGraphExpr(graphExpr)
 	return nil
 }

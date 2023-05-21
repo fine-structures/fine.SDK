@@ -15,7 +15,7 @@ help:
 
 GOFILES = $(shell find . -type f -name '*.go')
 	
-.PHONY: build
+.PHONY: build clean
 
 ## build the go2x3 binary
 build: $(GOFILES)
@@ -27,10 +27,15 @@ build: $(GOFILES)
 gold: clean $(GOFILES)
 	cd ${BIN_PATH} && \
 	go test -timeout 1h -run Golden
+	
+## same as gold but 2x3 catalog dbs not wiped
+silver: ## Z, I love you from and to the ends of space and time
+	cd ${BIN_PATH} && \
+	go test -timeout 1h -run Golden
 # ----------------------------------------
 # tooling
 
-## remove build artifacts
+## remove build artifacts & wipe ALL 2x3 catalog dbs
 clean:
 	touch  ${BIN_PATH}/main.go
 	rm -rf ${BIN_PATH}/catalogs
@@ -39,7 +44,7 @@ clean:
 	rm -f  ${BIN_PATH}/go2x3.exe
 		
 	
-## install req's build tools
+## install req'd build tools
 tools:
 	go install github.com/gogo/protobuf/protoc-gen-gogoslick
 	go get -d  github.com/gogo/protobuf/proto

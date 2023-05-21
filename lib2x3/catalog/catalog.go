@@ -5,9 +5,10 @@ import (
 	"runtime"
 	"sync"
 
+	"github.com/2x3systems/go2x3/go2x3"
 	"github.com/2x3systems/go2x3/lib2x3"
+	"github.com/2x3systems/go2x3/lib2x3/factor"
 	"github.com/2x3systems/go2x3/lib2x3/graph"
-	"github.com/go-python/gpython/py"
 	"github.com/pkg/errors"
 
 	"github.com/dgraph-io/badger/v3"
@@ -17,14 +18,42 @@ import (
 
 Catalog database format:
 
-	00 00 01 => CatalogState
 
-	Nv (byte)
-		Traces ([Nv]varint, NUL, NUL) (UserMeta uses kIsPrime flag)
-			GraphUID ([]byte hash)        => GraphDef
-			...
+
+
+
+	type TracesSpec := [Oi]varint, [Ei]varint, [±] (byte)
+
+	gCatalogStateKey => CatalogState
+
+
+	TracesSpec, NUL, NUL (UserMeta uses kIsPrime flag)
+		CanonicStateEncoding ([]byte hash)        => GraphDef
 		...
 	...
+
+
+	gCatalogTracesKey
+
+
+	gPrimesCatalogKey (EdgePrimeTracesID <-> TracesLSM)
+			TracesLSM  (EdgePrimeTraces)
+			..
+
+	TracesLSM, NUL, NUL,
+		CanonicStateEncoding  => GraphSpecDef
+		...
+	...
+
+
+EdgePrimeTraces
+
+// SystemTraces ->
+//    []ParticleTraces
+//        []EdgeTraces
+//             []EdgeFactorRuns
+//                 []EdgePrimeTraces
+
 
 The above structure allows to:
 	1) load all primes for a given Nv
@@ -67,85 +96,30 @@ Next steps / ideas:
 ***/
 
 var (
-	gStateKey = []byte{0x00, 0x00, 0x01}
+	gCatalogStateKey = []byte{0x00, 0x00, 0x01}
 )
 
 // Catalog is a db wrapper for a 2x3 particle catalog
 type catalog struct {
-	ctx          *catalogContext
+	ctx          go2x3.CatalogContext
 	closeOnce    sync.Once
 	readOnly     bool
 	stateDirty   bool
 	state        graph.CatalogState
 	db           *badger.DB
 	CatalogDesig string
-	primeCache   *lib2x3.FactorCatalog
+	primeCache   *factor.FactorCatalog
+
+	// LSM double-lookup of a TracesID table:
+	//   TracesID <=> [1..TracesCount/2]varint64
+	//EdgeTrace symbol.Table
 }
 
-func init() {
-	lib2x3.NewCatalogContext = func() lib2x3.CatalogContext {
-		ctx := &catalogContext{
-			openCatalogs: make(map[*catalog]struct{}),
-			closing:      make(chan struct{}),
-			closed:       make(chan struct{}),
-		}
-		ctx.openCount.Add(1)
-		go func() {
-			<-ctx.Closing()
-			ctx.openCount.Done()
-			ctx.openCount.Wait()
-			close(ctx.closed)
-		}()
-		return ctx
-	}
-}
-
-type catalogContext struct {
-	mu           sync.Mutex
-	openCount    sync.WaitGroup
-	openCatalogs map[*catalog]struct{}
-	closing      chan struct{}
-	closed       chan struct{}
-}
-
-func (ctx *catalogContext) AddCatalog(cat *catalog) {
-	ctx.openCount.Add(1)
-	ctx.mu.Lock()
-	ctx.openCatalogs[cat] = struct{}{}
-	ctx.mu.Unlock()
-}
-
-func (ctx *catalogContext) RemoveCatalog(cat *catalog) {
-	ctx.mu.Lock()
-	if _, exists := ctx.openCatalogs[cat]; exists {
-		delete(ctx.openCatalogs, cat)
-		ctx.openCount.Done()
-	}
-	ctx.mu.Unlock()
-}
-
-func (ctx *catalogContext) Closing() <-chan struct{} {
-	return ctx.closing
-}
-
-func (ctx *catalogContext) Done() <-chan struct{} {
-	return ctx.closed
-}
-
-func (ctx *catalogContext) Close() {
-	close(ctx.closing)
-	ctx.mu.Lock()
-	for cat := range ctx.openCatalogs {
-		go cat.Close()
-	}
-	ctx.mu.Unlock()
-
-}
-
-func (ctx *catalogContext) OpenCatalog(opts lib2x3.CatalogOpts) (lib2x3.Catalog, error) {
+func OpenCatalog(ctx go2x3.CatalogContext, opts go2x3.CatalogOpts) (go2x3.Catalog, error) {
 
 	if opts.TraceCount <= 0 {
-		opts.TraceCount = 12 // TODO: this does away now that a catalog doesn't store a set Traces size
+		opts.TraceCount = 12
+		//return nil, errors.Wrap(lib2x3.ErrBadCatalogParam, "TraceCount must be > 0")
 	}
 
 	cat := &catalog{
@@ -168,7 +142,7 @@ func (ctx *catalogContext) OpenCatalog(opts lib2x3.CatalogOpts) (lib2x3.Catalog,
 
 	if len(opts.DbPathName) == 0 {
 		if opts.ReadOnly {
-			return nil, lib2x3.ErrBadCatalogFilename
+			return nil, errors.Wrap(go2x3.ErrBadCatalogParam, "DbPathName must be specified for read-only catalog")
 		}
 		dbOpts.InMemory = true
 	}
@@ -179,7 +153,7 @@ func (ctx *catalogContext) OpenCatalog(opts lib2x3.CatalogOpts) (lib2x3.Catalog,
 	}
 
 	// Once the db is open, we consider thx catalog ctx blocked until the catalog closes
-	ctx.AddCatalog(cat)
+	ctx.AttachCatalog(cat)
 
 	err = cat.loadState()
 	if err == badger.ErrKeyNotFound {
@@ -207,14 +181,10 @@ func (ctx *catalogContext) OpenCatalog(opts lib2x3.CatalogOpts) (lib2x3.Catalog,
 	}
 
 	if cat.IsPrimeCatalog() {
-		cat.primeCache = lib2x3.NewFactorCatalog(cat.state.TraceCount)
+		cat.primeCache = factor.NewFactorCatalog(cat.state.TraceCount)
 	}
 
 	return cat, nil
-}
-
-func (cat *catalog) Type() *py.Type {
-	return lib2x3.PyCatalogType
 }
 
 func (cat *catalog) NumTraces(forVtxCount byte) int64 {
@@ -233,7 +203,7 @@ func (cat *catalog) NumPrimes(forVtxCount byte) int64 {
 
 func (cat *catalog) loadState() error {
 	err := cat.db.View(func(txn *badger.Txn) error {
-		item, err := txn.Get(gStateKey)
+		item, err := txn.Get(gCatalogStateKey)
 		if err == nil {
 			item.Value(func(val []byte) error {
 				return cat.state.Unmarshal(val)
@@ -251,7 +221,7 @@ func (cat *catalog) flushState() {
 			if err != nil {
 				return err
 			}
-			err = txn.Set(gStateKey, stateBuf)
+			err = txn.Set(gCatalogStateKey, stateBuf)
 			if err != nil {
 				return err
 			}
@@ -264,16 +234,15 @@ func (cat *catalog) flushState() {
 	}
 }
 
-func (cat *catalog) Close() {
-	cat.closeOnce.Do(func() {
-		cat.flushState()
-		if cat.db != nil {
-			cat.db.Close()
-			cat.db = nil
-			cat.ctx.RemoveCatalog(cat)
-			cat.ctx = nil
-		}
-	})
+func (cat *catalog) Close() error {
+	cat.flushState()
+	if cat.db != nil {
+		cat.db.Close()
+		cat.db = nil
+		cat.ctx.DetachCatalog(cat)
+		cat.ctx = nil
+	}
+	return nil
 }
 
 // TraceCount is the Traces size for each entry in the Traces catalog
@@ -289,39 +258,43 @@ func (cat *catalog) IsReadOnly() bool {
 	return cat.readOnly
 }
 
-func (cat *catalog) issueNextTracesID(numVerts byte) lib2x3.TracesID {
+func (cat *catalog) issueNextTracesID(numVerts int) go2x3.TracesID {
 	tid := cat.state.NumTraces[numVerts] + 1
 	cat.state.NumTraces[numVerts] = tid
 	cat.stateDirty = true
 
-	return lib2x3.FormTracesID(numVerts, tid)
+	return go2x3.FormTracesID(uint32(numVerts), tid)
 }
 
-func (cat *catalog) issueNextPrimeID(numVerts byte) lib2x3.TracesID {
+func (cat *catalog) issueNextPrimeID(numVerts int) go2x3.TracesID {
 	tid := cat.state.NumPrimes[numVerts] + 1
 	cat.state.NumPrimes[numVerts] = tid
 	cat.stateDirty = true
 
-	return lib2x3.FormTracesID(numVerts, tid)
+	return go2x3.FormTracesID(uint32(numVerts), tid)
 }
 
-func (cat *catalog) formTracesKeyFromPrimeFactor(buf []byte, factor lib2x3.TracesID) []byte {
-	Nv := factor.NumVerts()
-	TX := cat.primeCache.GetFactorTraces(uint32(Nv), uint32(factor.SeriesID()))
+func (cat *catalog) formCatalogKeyFromPrimeFactor(key []byte, factor go2x3.TracesID) []byte {
+	Nv := uint32(factor.NumVertices())
+	TX := cat.primeCache.GetFactorTraces(Nv, uint32(factor.SeriesID()))
 
-	key := append(buf, Nv)
-	key = TX[:Nv].AppendTraceSpecTo(key)
+	key = append(key, byte(Nv)) // needed?  or use edge info sorter?
+	key = TX[:Nv].AppendTracesLSM(key)
 	key = append(key, 0, 0)
 
 	return key
 }
 
-func (cat *catalog) formTracesKey(buf []byte, X *lib2x3.Graph) []byte {
-	Nv := X.NumVerts()
-	TX := X.Traces(0)
+func (cat *catalog) formTracesKey(key []byte, X go2x3.TracesProvider) []byte {
+	Nv := X.NumVertices()
+	Nt := Nv // cat.TraceCount()
+	TX := X.Traces(Nt)
+	// if len(TX) == 0 || len(TX) < Nt {
+	//     return nil, go2x3.ErrInsufficientTraces
+	// }
 
-	key := append(buf, Nv)
-	key = TX.AppendTraceSpecTo(key)
+	key = append(key, byte(Nv))
+	key = TX.AppendTracesLSM(key)
 	key = append(key, 0, 0)
 
 	return key
@@ -332,15 +305,15 @@ func (cat *catalog) formTracesKey(buf []byte, X *lib2x3.Graph) []byte {
 // Warning: if onHit() retains the given GraphEncoding, then it must make a copy.
 //
 // Enumeration stops when there are no more matches or if onHit() returns false.
-func (cat *catalog) Select(sel lib2x3.GraphSelector, onHit lib2x3.OnGraphHit) {
+func (cat *catalog) Select(sel go2x3.GraphSelector, onHit go2x3.OnGraphHit) {
 	if sel.Traces != nil {
 		if sel.Factor {
-			cat.selectFactorizations(sel, onHit)
+			cat.selectFactorizations(&sel, onHit)
 		} else {
-			cat.selectByTraces(sel, onHit)
+			cat.selectByTraces(&sel, onHit)
 		}
 	} else {
-		cat.selectEncodings(sel, onHit)
+		cat.selectEncodings(&sel, onHit)
 	}
 }
 
@@ -349,7 +322,7 @@ const (
 	kIsPrime  = byte(0x01)
 )
 
-func loadAndPushGraph(item *badger.Item, onHit lib2x3.OnGraphHit) error {
+func loadAndPushGraph(item *badger.Item, onHit go2x3.OnGraphHit) error {
 	err := item.Value(func(val []byte) error {
 		X, err := lib2x3.NewGraphFromDef(val)
 		if err != nil {
@@ -364,7 +337,7 @@ func loadAndPushGraph(item *badger.Item, onHit lib2x3.OnGraphHit) error {
 	return err
 }
 
-func (cat *catalog) selectEncodings(sel lib2x3.GraphSelector, onHit lib2x3.OnGraphHit) {
+func (cat *catalog) selectEncodings(sel *go2x3.GraphSelector, onHit go2x3.OnGraphHit) {
 	minKey := [1]byte{sel.Min.NumVerts}
 
 	txn := cat.db.NewTransaction(false)
@@ -428,7 +401,7 @@ func (cat *catalog) selectEncodings(sel lib2x3.GraphSelector, onHit lib2x3.OnGra
 func (cat *catalog) readPrimes(
 	txn *badger.Txn,
 	Nv byte,
-	onHit lib2x3.OnGraphHit,
+	onHit go2x3.OnGraphHit,
 ) {
 	minKey := [1]byte{Nv}
 
@@ -479,10 +452,10 @@ func sliceGraphEncoding(tracesKey []byte) []byte {
 		}
 	}
 
-	panic("didn't find end of TraceSpec")
+	panic("didn't find end of TracesLSM")
 }
 
-func (cat *catalog) lookupTracesID(txn *badger.Txn, X *lib2x3.Graph, autoAdd bool) (tid lib2x3.TracesID, wasAdded bool) {
+func (cat *catalog) lookupTracesID(txn *badger.Txn, X *lib2x3.Graph, autoAdd bool) (tid go2x3.TracesID, wasAdded bool) {
 	var keyBuf [256]byte
 	tracesKey := cat.formTracesKey(keyBuf[:0], X)
 	item, err := txn.Get(tracesKey)
@@ -495,7 +468,7 @@ func (cat *catalog) lookupTracesID(txn *badger.Txn, X *lib2x3.Graph, autoAdd boo
 
 		// Alloc a scrap buf since we can't use the stack for commit bufs
 		trLen := len(tracesKey)
-		obuf := make([]byte, trLen + lib2x3.TracesIDSz)
+		obuf := make([]byte, trLen + go2x3.TracesIDSz)
 		tracesKey = append(obuf[:0], tracesKey...)
 		trVal := tid.Marshal(tracesKey[trLen:trLen])
 
@@ -518,7 +491,7 @@ func (cat *catalog) lookupTracesID(txn *badger.Txn, X *lib2x3.Graph, autoAdd boo
 }
 */
 
-func (cat *catalog) selectByTraces(sel lib2x3.GraphSelector, onHit lib2x3.OnGraphHit) {
+func (cat *catalog) selectByTraces(sel *go2x3.GraphSelector, onHit go2x3.OnGraphHit) {
 	if sel.Traces == nil {
 		return
 	}
@@ -577,7 +550,7 @@ func (cat *catalog) selectByTraces(sel lib2x3.GraphSelector, onHit lib2x3.OnGrap
 }
 
 /*
-func (cat *catalog) selectByTracesID(tid lib2x3.TracesID, onHit lib2x3.OnGraphHit) {
+func (cat *catalog) selectByTracesID(tid go2x3.TracesID, onHit lib2x3.OnGraphHit) {
 	if tid == 0 {
 		return
 	}
@@ -679,7 +652,7 @@ func (cat *catalog) lookupGraph(X *lib2x3.Graph) (isNewTraces, isNewGraph bool) 
 
 		// Alloc a scrap buf since we can't use the stack for commit bufs
 		trLen := len(tracesKey)
-		obuf := make([]byte, trLen + lib2x3.TracesIDSz)
+		obuf := make([]byte, trLen + go2x3.TracesIDSz)
 		tracesKey = append(obuf[:0], tracesKey...)
 		trVal := tid.Marshal(tracesKey[trLen:trLen])
 
@@ -729,12 +702,14 @@ func (cat *catalog) lookupGraph(X *lib2x3.Graph) (isNewTraces, isNewGraph bool) 
 //
 // If true is returned, X was not present and was added.
 //
-// If false is returned, X already exists in the particle registry.
-func (cat *catalog) TryAddGraph(X *lib2x3.Graph) bool {
+// If false is returned, X already exists in the particle registry (or the graph is not valid
+func (cat *catalog) TryAddGraph(X go2x3.GraphState) bool {
 	var keyBuf [256]byte
-	//tracesKey := cat.formTracesKey(keyBuf[:0], X)
-	tracesKey, graphKey := X.FormLookupKeys(keyBuf[:0])
-
+	tracesKey := cat.formTracesKey(keyBuf[:0], X)
+	completeKey, err := X.ExportStateEncoding(tracesKey, go2x3.ExportGraphState)
+	if err != nil {
+		return false
+	}
 	isNewTraces := false
 	isNewGraph := false
 
@@ -742,12 +717,12 @@ func (cat *catalog) TryAddGraph(X *lib2x3.Graph) bool {
 	txn := cat.db.NewTransaction(true)
 	defer txn.Discard()
 
-	_, err := txn.Get(tracesKey)
+	_, err = txn.Get(tracesKey)
 	if err == badger.ErrKeyNotFound {
 		isNewTraces = true
 		isNewGraph = true
 	} else {
-		_, err = txn.Get(graphKey)
+		_, err = txn.Get(completeKey)
 		if err == badger.ErrKeyNotFound {
 			isNewGraph = true
 		}
@@ -755,7 +730,7 @@ func (cat *catalog) TryAddGraph(X *lib2x3.Graph) bool {
 
 	// If nothing new, we're done
 	if isNewTraces {
-		cat.issueNextTracesID(X.NumVerts())
+		cat.issueNextTracesID(X.NumVertices())
 	} else if !isNewGraph {
 		return false
 	}
@@ -766,7 +741,7 @@ func (cat *catalog) TryAddGraph(X *lib2x3.Graph) bool {
 	if isNewTraces && cat.state.IsPrimeCatalog {
 
 		// Importantly, prime testing only requires primes up to Nv-1
-		Nv := X.NumVerts()
+		Nv := X.NumVertices()
 		cat.cachePrimesAsNeeded(int(Nv - 1))
 
 		TX := X.Traces(0)
@@ -782,7 +757,11 @@ func (cat *catalog) TryAddGraph(X *lib2x3.Graph) bool {
 			txn.SetEntry(badger.NewEntry(tracesKey, nil).WithMeta(tracesFlags))
 		}
 		if isNewGraph {
-			txn.Set(graphKey, X.ExportGraphDef())
+			var encBuf [128]byte 
+			val, err := X.ExportStateEncoding(encBuf[:0], go2x3.ExportGraphDef)
+			if err == nil {
+				txn.Set(completeKey, val)
+			}
 		}
 
 		err = txn.Commit()
@@ -795,7 +774,7 @@ func (cat *catalog) TryAddGraph(X *lib2x3.Graph) bool {
 }
 
 // TODO: move to factor.go, i.e. factorCatalog.SelectFactorizations(cat, sel, onHit)
-func (cat *catalog) selectFactorizations(sel lib2x3.GraphSelector, onHit lib2x3.OnGraphHit) {
+func (cat *catalog) selectFactorizations(sel *go2x3.GraphSelector, onHit go2x3.OnGraphHit) {
 	if sel.Traces == nil {
 		return
 	}
@@ -805,7 +784,7 @@ func (cat *catalog) selectFactorizations(sel lib2x3.GraphSelector, onHit lib2x3.
 	Nv := len(TX)
 	cat.cachePrimesAsNeeded(Nv)
 
-	factorSetInlet := cat.primeCache.FindFactorizations(TX)
+	factorSetsIn := cat.primeCache.FindFactorizations(TX)
 
 	// With all factorizations in hand, we can now iterate and know we have unique instances (since we sorted canonically)
 	{
@@ -815,7 +794,7 @@ func (cat *catalog) selectFactorizations(sel lib2x3.GraphSelector, onHit lib2x3.
 		seeker := newEasySeeker(txnRO)
 		defer seeker.Close()
 
-		for factorSet := range factorSetInlet {
+		for factorSet := range factorSetsIn {
 			X := cat.formGraphFromFactors(seeker, factorSet)
 			onHit <- X
 		}
@@ -854,7 +833,7 @@ func (cat *catalog) selectFactorizations(sel lib2x3.GraphSelector, onHit lib2x3.
 // 			break
 // 		}
 // 		err := item.Value(func(val []byte) error {
-// 			return Ti.InitFromTraceSpec(val, int(maxNumTraces))
+// 			return Ti.InitFromTracesLSM(val, int(maxNumTraces))
 // 		})
 // 		if err != nil {
 // 			panic(err)
@@ -906,7 +885,7 @@ func (cat *catalog) calculateAllFactors(
 			break
 		}
 		err := item.Value(func(val []byte) error {
-			return Ti.InitFromTraceSpec(val, int(numVerts))
+			return Ti.InitFromTracesLSM(val, int(numVerts))
 		})
 		if err != nil {
 			panic(err)
@@ -974,7 +953,7 @@ func (cat *catalog) cachePrimesAsNeeded(Nv int) error {
 		cat.primeCache.NumFactorsHint(vi, cat.state.NumPrimes[vi])
 
 		// Used a buffered channel so that db I/O blocks don't stall Traces computation
-		onPrime := make(chan *lib2x3.Graph, 8)
+		onPrime := make(chan go2x3.GraphState, 4)
 
 		go func() {
 			cat.readPrimes(txnRO, byte(vi), onPrime)
@@ -995,7 +974,7 @@ func (cat *catalog) cachePrimesAsNeeded(Nv int) error {
 func (cat *catalog) readPrimes(
 	txn *badger.Txn,
 	v_lo, v_hi byte,
-	onHit func(tid lib2x3.TracesID, tracesKey []byte),
+	onHit func(tid go2x3.TracesID, tracesKey []byte),
 ) {
 	itr := txn.NewIterator(badger.IteratorOptions{
 		PrefetchValues: true,
@@ -1046,7 +1025,7 @@ func (cat *catalog) readPrimes(
 
 func (cat *catalog) formGraphFromFactors(
 	seeker easySeeker,
-	primeFactors lib2x3.FactorSet,
+	primeFactors go2x3.FactorSet,
 ) *lib2x3.Graph {
 
 	X := lib2x3.NewGraph(nil)
@@ -1054,7 +1033,7 @@ func (cat *catalog) formGraphFromFactors(
 
 	var keyBuf [256]byte
 	for _, Pi := range primeFactors {
-		tracesKey := cat.formTracesKeyFromPrimeFactor(keyBuf[:0], Pi.ID)
+		tracesKey := cat.formCatalogKeyFromPrimeFactor(keyBuf[:0], Pi.ID)
 
 		err := seeker.SeekAndGetFirstSub(tracesKey, func(val []byte) error {
 			err := Xi.InitFromDef(val)
@@ -1074,14 +1053,14 @@ func (cat *catalog) formGraphFromFactors(
 }
 
 /*
-func (cat *catalog) selectPrimes(sel lib2x3.GraphSelector, onHit func(primeTID lib2x3.TracesID, Xenc lib2x3.GraphEncoding)) {
+func (cat *catalog) selectPrimes(sel lib2x3.GraphSelector, onHit func(primeTID go2x3.TracesID, Xenc lib2x3.GraphEncoding)) {
 	txnRO := cat.db.NewTransaction(false)
 	defer txnRO.Discard()
 
 	encReader := newEasySeeker(txnRO)
 	defer encReader.Close()
 
-	cat.readPrimes(txnRO, sel.Min.NumVerts, sel.Max.NumVerts, func(primeTID lib2x3.TracesID, tracesKey []byte) {
+	cat.readPrimes(txnRO, sel.Min.NumVerts, sel.Max.NumVerts, func(primeTID go2x3.TracesID, tracesKey []byte) {
 		Xenc, found := encReader.SeekPrefix(tracesKey, tracesKey[len(tracesKey):])
 		if found {
 			onHit(primeTID, Xenc)

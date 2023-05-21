@@ -90,29 +90,27 @@ const (
 	// VtxID, E_FromVtx. E_Sign have been assigned.
 	// Each Vtx is in its own separate group and has exactly 3 VtxEdges.
 	VtxStatus_Validated VtxStatus = 2
-	// GroupOrd and GroupT0 have been determined via canonic vertex comparison.
-	// Vtx with the same cycle vector will be assigned the same GroupID.
-	VtxStatus_Canonized VtxStatus = 4
-	// E_FromVtx and E_Sign values have been normalized and have been canonically ordered.
-	// VtxIDs have been normalized.
-	//
-	// Each VtxEdge with the same "home" GroupID are combined into a single (group) Vtx
-	// and edges are canonically consolidated and reordered.
-	VtxStatus_Canonized_Normalized VtxStatus = 6
+	// First, edges are sorted by DstVtxID then SrcVtxID.
+	// Next, edges that have matching DstVtxID and SrcVtxID are combined (summed).
+	VtxStatus_Normalized VtxStatus = 4
+	// A cycle spectrum is performed on the graph to canonically order vtx groups.
+	// Vtx determined to be in the same group are merged into a single vtx group.
+	// Finally, all edges are normalized.
+	VtxStatus_Canonized VtxStatus = 6
 )
 
 var VtxStatus_name = map[int32]string{
 	0: "VtxStatus_Invalid",
 	2: "VtxStatus_Validated",
-	4: "VtxStatus_Canonized",
-	6: "VtxStatus_Canonized_Normalized",
+	4: "VtxStatus_Normalized",
+	6: "VtxStatus_Canonized",
 }
 
 var VtxStatus_value = map[string]int32{
-	"VtxStatus_Invalid":              0,
-	"VtxStatus_Validated":            2,
-	"VtxStatus_Canonized":            4,
-	"VtxStatus_Canonized_Normalized": 6,
+	"VtxStatus_Invalid":    0,
+	"VtxStatus_Validated":  2,
+	"VtxStatus_Normalized": 4,
+	"VtxStatus_Canonized":  6,
 }
 
 func (VtxStatus) EnumDescriptor() ([]byte, []int) {
@@ -301,17 +299,27 @@ func (m *GraphDef) GetGraphExprs() []string {
 	return nil
 }
 
+// VtxEdge is characterized by the Src and Dst VtxID and C1 and C2.
+// Identities that can transform one VtxEdge into another VtxEdge can be used in a process
+//    called normalization where edge signs and degree are rotated to a canonical form.
+//
+// Working hypothesis:  any valid 2x3 graph expressed as a set of VtxEdges since normalizations of C1 and C2
+//     are enough on their own to uniquely identify a graph.  Since the graph is known to exist and be a valid construction,.
+//     by the given set ensures that C1 and C2 *alone* are enough to represent the graph (and thus reconstruct it if need be).
 type VtxEdge struct {
-	// Initially assigned label: 1, 2, 3, ..  (a one-based index ID)
-	HomeVtxID uint32 `protobuf:"varint,1,opt,name=HomeVtxID,proto3" json:"HomeVtxID,omitempty"`
+	// Initially assigned label: 1, 2, 3,..  (a one-based index ID)
+	DstVtxID uint32 `protobuf:"varint,1,opt,name=DstVtxID,proto3" json:"DstVtxID,omitempty"`
 	// Specifies the remote vertex of this edge (a one-based vtx index ID)
-	FromVtxID    uint32 `protobuf:"varint,2,opt,name=FromVtxID,proto3" json:"FromVtxID,omitempty"`
-	EdgeSign     int32  `protobuf:"varint,4,opt,name=EdgeSign,proto3" json:"EdgeSign,omitempty"`
-	EdgeSign_Raw int32  `protobuf:"varint,7,opt,name=EdgeSign_Raw,json=EdgeSignRaw,proto3" json:"EdgeSign_Raw,omitempty"`
-	// Note that if Sign has been normalized to 0, then FromGroup is also normalized to nil.
-	// Sort edges by normalized values first, then by raw / unnormalized values
-	FromGroup     GroupID `protobuf:"varint,3,opt,name=FromGroup,proto3,enum=graph.GroupID" json:"FromGroup,omitempty"`
-	FromGroup_Raw GroupID `protobuf:"varint,6,opt,name=FromGroup_Raw,json=FromGroupRaw,proto3,enum=graph.GroupID" json:"FromGroup_Raw,omitempty"`
+	SrcVtxID uint32 `protobuf:"varint,3,opt,name=SrcVtxID,proto3" json:"SrcVtxID,omitempty"`
+	// Number of instances of Traces
+	CountPos int32 `protobuf:"varint,4,opt,name=CountPos,proto3" json:"CountPos,omitempty"`
+	CountNeg int32 `protobuf:"varint,5,opt,name=CountNeg,proto3" json:"CountNeg,omitempty"`
+	// TracesID is a unique ID associated with the normalized []Cycles integer vector.
+	// We could carry the odd and even Traces components separately inline, but this is more compact and efficient.
+	// TracesID == 0 is hardwired to [0,0,0,..], and occurs in many particles (e.g. TracesID_Even for bosons is 0)
+	TracesID uint64 `protobuf:"varint,11,opt,name=TracesID,proto3" json:"TracesID,omitempty"`
+	// Cycles is an integer vector corresponding to the number of cycles of each "Ci" length.
+	Cycles []int64 `protobuf:"varint,19,rep,packed,name=Cycles,proto3" json:"Cycles,omitempty"`
 }
 
 func (m *VtxEdge) Reset()      { *m = VtxEdge{} }
@@ -346,76 +354,91 @@ func (m *VtxEdge) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_VtxEdge proto.InternalMessageInfo
 
-func (m *VtxEdge) GetHomeVtxID() uint32 {
+func (m *VtxEdge) GetDstVtxID() uint32 {
 	if m != nil {
-		return m.HomeVtxID
+		return m.DstVtxID
 	}
 	return 0
 }
 
-func (m *VtxEdge) GetFromVtxID() uint32 {
+func (m *VtxEdge) GetSrcVtxID() uint32 {
 	if m != nil {
-		return m.FromVtxID
+		return m.SrcVtxID
 	}
 	return 0
 }
 
-func (m *VtxEdge) GetEdgeSign() int32 {
+func (m *VtxEdge) GetCountPos() int32 {
 	if m != nil {
-		return m.EdgeSign
+		return m.CountPos
 	}
 	return 0
 }
 
-func (m *VtxEdge) GetEdgeSign_Raw() int32 {
+func (m *VtxEdge) GetCountNeg() int32 {
 	if m != nil {
-		return m.EdgeSign_Raw
+		return m.CountNeg
 	}
 	return 0
 }
 
-func (m *VtxEdge) GetFromGroup() GroupID {
+func (m *VtxEdge) GetTracesID() uint64 {
 	if m != nil {
-		return m.FromGroup
+		return m.TracesID
 	}
-	return GroupID_void
+	return 0
 }
 
-func (m *VtxEdge) GetFromGroup_Raw() GroupID {
+func (m *VtxEdge) GetCycles() []int64 {
 	if m != nil {
-		return m.FromGroup_Raw
+		return m.Cycles
 	}
-	return GroupID_void
+	return nil
 }
 
-// Vtx generally isn't used for Graph serialization but is used to model runtime processing and state
-type Vtx struct {
-	// Initially assigned label: 1, 2, 3, ..  (a one-based index ID)
-	VtxID uint32 `protobuf:"varint,2,opt,name=VtxID,proto3" json:"VtxID,omitempty"`
-	// When assigned from a 2x3 graph, each Vtx has 3 edges but after canonicalization,
-	// edges are pooled together into their respective grouops.
-	Edges []*VtxEdge `protobuf:"bytes,4,rep,name=Edges,proto3" json:"Edges,omitempty"`
-	// Group ID assignment of home Vtx based on canonic cycle vector comparison ordering.
-	// Init to 0 to denote unknown; the first valid GroupID for a Vtx starts at GroupID_G1.
-	GroupID GroupID `protobuf:"varint,6,opt,name=GroupID,proto3,enum=graph.GroupID" json:"GroupID,omitempty"`
-	// Traces sum of path length 1 (net sum of vtx loop signs in group)
-	GroupT0 int32   `protobuf:"varint,7,opt,name=GroupT0,proto3" json:"GroupT0,omitempty"`
-	Cycles  []int64 `protobuf:"varint,10,rep,packed,name=Cycles,proto3" json:"Cycles,omitempty"`
-	Ci0     []int64 `protobuf:"varint,11,rep,packed,name=Ci0,proto3" json:"Ci0,omitempty"`
-	Ci1     []int64 `protobuf:"varint,12,rep,packed,name=Ci1,proto3" json:"Ci1,omitempty"`
+//
+//
+//// VtxGroup generally aren't used for Graph serialization but is used to model runtime processing and state
+//message VtxGroup {
+//
+//// Number of total Vtx instances in this group
+//uint32              VtxCount                    = 1;
+//
+//// Initially assigned label: 1, 2, 3, ..  (a one-based index ID)
+////uint32              VtxID                       = 2;
+//
+//// Group ID assignment of home Vtx based on canonic cycle vector comparison ordering.
+//// 0 denotes unassigned; first valid GroupID is 1.
+//uint32              GroupID                     = 3;
+//
+//// VtxEdge             EdgeA                  = 4;
+//// VtxEdge             EdgeB                  = 4;
+//// VtxEdge             EdgeC                  = 4;
+//
+//// When assigned from a 2x3 graph, each Vtx has 3 edges.
+//// After canonization, the edges of vertices having the same Cycles are consolidated into corresponding groups.
+//repeated VtxEdge    Edges                       = 5;
+//
+//// The product of this times VtxCount is the this groups total contribution to VtxGraph.Traces
+//repeated int64      Cycles                      = 10;
+//}
+type Tag struct {
+	Label  string `protobuf:"bytes,1,opt,name=Label,proto3" json:"Label,omitempty"`
+	TagURI string `protobuf:"bytes,2,opt,name=TagURI,proto3" json:"TagURI,omitempty"`
+	Expr   string `protobuf:"bytes,3,opt,name=Expr,proto3" json:"Expr,omitempty"`
 }
 
-func (m *Vtx) Reset()      { *m = Vtx{} }
-func (*Vtx) ProtoMessage() {}
-func (*Vtx) Descriptor() ([]byte, []int) {
+func (m *Tag) Reset()      { *m = Tag{} }
+func (*Tag) ProtoMessage() {}
+func (*Tag) Descriptor() ([]byte, []int) {
 	return fileDescriptor_23d0cecb80079ca5, []int{3}
 }
-func (m *Vtx) XXX_Unmarshal(b []byte) error {
+func (m *Tag) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-func (m *Vtx) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+func (m *Tag) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
-		return xxx_messageInfo_Vtx.Marshal(b, m, deterministic)
+		return xxx_messageInfo_Tag.Marshal(b, m, deterministic)
 	} else {
 		b = b[:cap(b)]
 		n, err := m.MarshalToSizedBuffer(b)
@@ -425,70 +448,43 @@ func (m *Vtx) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 		return b[:n], nil
 	}
 }
-func (m *Vtx) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_Vtx.Merge(m, src)
+func (m *Tag) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_Tag.Merge(m, src)
 }
-func (m *Vtx) XXX_Size() int {
+func (m *Tag) XXX_Size() int {
 	return m.Size()
 }
-func (m *Vtx) XXX_DiscardUnknown() {
-	xxx_messageInfo_Vtx.DiscardUnknown(m)
+func (m *Tag) XXX_DiscardUnknown() {
+	xxx_messageInfo_Tag.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_Vtx proto.InternalMessageInfo
+var xxx_messageInfo_Tag proto.InternalMessageInfo
 
-func (m *Vtx) GetVtxID() uint32 {
+func (m *Tag) GetLabel() string {
 	if m != nil {
-		return m.VtxID
+		return m.Label
 	}
-	return 0
+	return ""
 }
 
-func (m *Vtx) GetEdges() []*VtxEdge {
+func (m *Tag) GetTagURI() string {
 	if m != nil {
-		return m.Edges
+		return m.TagURI
 	}
-	return nil
+	return ""
 }
 
-func (m *Vtx) GetGroupID() GroupID {
+func (m *Tag) GetExpr() string {
 	if m != nil {
-		return m.GroupID
+		return m.Expr
 	}
-	return GroupID_void
-}
-
-func (m *Vtx) GetGroupT0() int32 {
-	if m != nil {
-		return m.GroupT0
-	}
-	return 0
-}
-
-func (m *Vtx) GetCycles() []int64 {
-	if m != nil {
-		return m.Cycles
-	}
-	return nil
-}
-
-func (m *Vtx) GetCi0() []int64 {
-	if m != nil {
-		return m.Ci0
-	}
-	return nil
-}
-
-func (m *Vtx) GetCi1() []int64 {
-	if m != nil {
-		return m.Ci1
-	}
-	return nil
+	return ""
 }
 
 type VtxGraph struct {
-	Status VtxStatus `protobuf:"varint,1,opt,name=Status,proto3,enum=graph.VtxStatus" json:"Status,omitempty"`
-	Vtx    []*Vtx    `protobuf:"bytes,2,rep,name=Vtx,proto3" json:"Vtx,omitempty"`
+	Status VtxStatus  `protobuf:"varint,1,opt,name=Status,proto3,enum=graph.VtxStatus" json:"Status,omitempty"`
+	Tags   []*Tag     `protobuf:"bytes,2,rep,name=Tags,proto3" json:"Tags,omitempty"`
+	Edges  []*VtxEdge `protobuf:"bytes,3,rep,name=Edges,proto3" json:"Edges,omitempty"`
 }
 
 func (m *VtxGraph) Reset()      { *m = VtxGraph{} }
@@ -530,9 +526,16 @@ func (m *VtxGraph) GetStatus() VtxStatus {
 	return VtxStatus_Invalid
 }
 
-func (m *VtxGraph) GetVtx() []*Vtx {
+func (m *VtxGraph) GetTags() []*Tag {
 	if m != nil {
-		return m.Vtx
+		return m.Tags
+	}
+	return nil
+}
+
+func (m *VtxGraph) GetEdges() []*VtxEdge {
+	if m != nil {
+		return m.Edges
 	}
 	return nil
 }
@@ -544,57 +547,55 @@ func init() {
 	proto.RegisterType((*CatalogState)(nil), "graph.CatalogState")
 	proto.RegisterType((*GraphDef)(nil), "graph.GraphDef")
 	proto.RegisterType((*VtxEdge)(nil), "graph.VtxEdge")
-	proto.RegisterType((*Vtx)(nil), "graph.Vtx")
+	proto.RegisterType((*Tag)(nil), "graph.Tag")
 	proto.RegisterType((*VtxGraph)(nil), "graph.VtxGraph")
 }
 
 func init() { proto.RegisterFile("lib2x3/graph/graph.proto", fileDescriptor_23d0cecb80079ca5) }
 
 var fileDescriptor_23d0cecb80079ca5 = []byte{
-	// 685 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x74, 0x94, 0xcd, 0x6e, 0xd3, 0x40,
-	0x10, 0xc7, 0xb3, 0x71, 0x3e, 0x27, 0x69, 0x6a, 0xb6, 0x85, 0xae, 0x50, 0xb5, 0x0a, 0x51, 0x85,
-	0xac, 0x08, 0x95, 0x7e, 0xf0, 0x04, 0x24, 0xa5, 0x44, 0x82, 0x0a, 0x6d, 0x4b, 0x10, 0xa7, 0xc8,
-	0x4d, 0xdc, 0x60, 0x94, 0x78, 0x23, 0xdb, 0x69, 0x0d, 0x27, 0x1e, 0x81, 0xc7, 0xe0, 0x35, 0xb8,
-	0x71, 0x42, 0x3d, 0xf6, 0xc0, 0x81, 0xba, 0x07, 0x38, 0xf6, 0x11, 0xd0, 0x7e, 0xd8, 0x4e, 0xa1,
-	0x5c, 0xa2, 0x99, 0xdf, 0x7f, 0x77, 0xb2, 0xff, 0x99, 0x5d, 0x03, 0x99, 0xb8, 0xc7, 0x3b, 0xd1,
-	0xee, 0xe3, 0xb1, 0x6f, 0xcf, 0xde, 0xa9, 0xdf, 0xcd, 0x99, 0xcf, 0x43, 0x8e, 0x8b, 0x32, 0x69,
-	0x7d, 0x47, 0x50, 0xef, 0xd8, 0xa1, 0x3d, 0xe1, 0xe3, 0xc3, 0xd0, 0x0e, 0x1d, 0xbc, 0x0e, 0xd5,
-	0x97, 0xf6, 0x7b, 0xee, 0xf7, 0x1d, 0x3f, 0x20, 0xa8, 0x89, 0xac, 0x22, 0xcb, 0x80, 0x54, 0x5d,
-	0x4f, 0xab, 0x79, 0xad, 0x26, 0x00, 0x53, 0x80, 0x23, 0xdf, 0x1e, 0x3a, 0x1d, 0x3e, 0xf7, 0x42,
-	0x02, 0x52, 0x5e, 0x20, 0x62, 0xf7, 0xc1, 0x7c, 0x2a, 0x41, 0x40, 0x6a, 0x4d, 0xc3, 0x2a, 0xb0,
-	0x0c, 0x68, 0xf5, 0x95, 0xef, 0x4e, 0x9d, 0x80, 0xd4, 0x53, 0x55, 0x01, 0xfc, 0x10, 0x1a, 0xbd,
-	0x40, 0xc6, 0xfa, 0xb8, 0x64, 0xb5, 0x89, 0xac, 0x0a, 0xfb, 0x8b, 0xb6, 0x7e, 0x20, 0xa8, 0xec,
-	0x0b, 0x6b, 0x5d, 0xe7, 0x04, 0x5b, 0x50, 0xd6, 0xb2, 0xb4, 0xd2, 0xd8, 0x69, 0x6c, 0xaa, 0x1e,
-	0x68, 0xca, 0x12, 0x19, 0xdf, 0x87, 0x8a, 0x3a, 0x46, 0xaf, 0x2b, 0x7d, 0x15, 0x58, 0x9a, 0x63,
-	0x02, 0x65, 0x59, 0xb1, 0xd7, 0x25, 0x86, 0x94, 0x92, 0x14, 0x6f, 0xc0, 0x92, 0x0c, 0xf7, 0xbc,
-	0x21, 0x1f, 0xb9, 0xde, 0x98, 0x54, 0x9a, 0xc8, 0xaa, 0xb3, 0x9b, 0x10, 0xb7, 0xc1, 0xec, 0xd8,
-	0x1e, 0xf7, 0xdc, 0xa1, 0xe2, 0xd1, 0xcc, 0x27, 0xd5, 0x26, 0xb2, 0xaa, 0xec, 0x1f, 0x2e, 0x5a,
-	0x98, 0x26, 0xaa, 0x0b, 0x55, 0xb6, 0x40, 0x5a, 0xbf, 0x10, 0x94, 0xfb, 0x61, 0xb4, 0x37, 0x1a,
-	0xcb, 0x51, 0x3d, 0xe7, 0x53, 0xa7, 0x1f, 0x46, 0xbd, 0xae, 0xf4, 0xb7, 0xc4, 0x32, 0x20, 0xd4,
-	0x67, 0x3e, 0x9f, 0x2a, 0x35, 0xaf, 0xd4, 0x14, 0x08, 0xbf, 0xa2, 0xc6, 0xa1, 0x3b, 0xf6, 0x48,
-	0x41, 0x0e, 0x2a, 0xcd, 0xf1, 0x03, 0xa8, 0x27, 0xf1, 0x80, 0xd9, 0x67, 0xa4, 0x2c, 0xf5, 0x5a,
-	0xc2, 0x98, 0x7d, 0x86, 0x1f, 0xa9, 0xe2, 0xfb, 0x3e, 0x9f, 0xcf, 0x64, 0x53, 0xb2, 0xd6, 0x4a,
-	0xd6, 0xeb, 0xb2, 0x6c, 0x01, 0xde, 0x85, 0xa5, 0x34, 0x91, 0x15, 0x4b, 0xb7, 0xee, 0xa8, 0xa7,
-	0x8b, 0x98, 0x7d, 0xd6, 0xfa, 0x8a, 0xc0, 0xe8, 0x87, 0x11, 0x5e, 0x85, 0xe2, 0xa2, 0x07, 0x95,
-	0xe0, 0x0d, 0x28, 0x8a, 0xf3, 0x04, 0xa4, 0xd0, 0x34, 0xac, 0x5a, 0x5a, 0x4a, 0xb7, 0x86, 0x29,
-	0x51, 0xcc, 0x5f, 0x17, 0xff, 0xcf, 0x5f, 0x26, 0xb2, 0x9a, 0x31, 0x9f, 0xcf, 0x8e, 0xb6, 0xb4,
-	0xdd, 0x24, 0xc5, 0xf7, 0xa0, 0xd4, 0xf9, 0x30, 0x9c, 0x38, 0x01, 0x81, 0xa6, 0x61, 0x19, 0x4c,
-	0x67, 0xd8, 0x04, 0xa3, 0xe3, 0x6e, 0xc9, 0x6b, 0x6c, 0x30, 0x11, 0x2a, 0xb2, 0x2d, 0x87, 0x26,
-	0xc9, 0x76, 0x8b, 0x41, 0xa5, 0x1f, 0x46, 0x72, 0x7c, 0xd8, 0x82, 0x92, 0x78, 0x61, 0xf3, 0x40,
-	0x5f, 0x45, 0x33, 0x3b, 0xb2, 0xe2, 0x4c, 0xeb, 0x78, 0x5d, 0x1a, 0x27, 0x79, 0xe9, 0x0c, 0xb2,
-	0x65, 0x4c, 0xe0, 0x76, 0x27, 0xbd, 0xd3, 0x78, 0x0d, 0x56, 0x74, 0x38, 0x78, 0xed, 0x05, 0x33,
-	0x67, 0xe8, 0x9e, 0xb8, 0xce, 0xc8, 0xcc, 0xe1, 0x65, 0xa8, 0x25, 0xc2, 0x5b, 0x27, 0x30, 0x11,
-	0x6e, 0x00, 0x24, 0xe0, 0x80, 0x9b, 0xf9, 0xf6, 0x9b, 0xb4, 0x31, 0xd8, 0x84, 0xba, 0x0e, 0x07,
-	0xa7, 0xdc, 0x15, 0xbb, 0x57, 0x60, 0x39, 0x21, 0x2f, 0x38, 0x9f, 0xf5, 0xc3, 0xc8, 0x44, 0xf8,
-	0x2e, 0xdc, 0x59, 0x84, 0x32, 0x36, 0xf3, 0xa2, 0x70, 0x82, 0xf7, 0xb7, 0x4d, 0xa3, 0x1d, 0x41,
-	0x35, 0x35, 0x24, 0xf6, 0xa4, 0xc9, 0xa0, 0xe7, 0x9d, 0xda, 0x13, 0x59, 0x7f, 0x0d, 0x56, 0x32,
-	0xdc, 0x17, 0xd0, 0x0e, 0x9d, 0x91, 0x99, 0xbf, 0x29, 0xa8, 0xa7, 0xf1, 0xd1, 0x19, 0x99, 0x05,
-	0xdc, 0x02, 0x7a, 0x8b, 0x30, 0x38, 0xe0, 0xfe, 0xd4, 0x9e, 0xc8, 0x35, 0xa5, 0xa7, 0x4f, 0xce,
-	0x2f, 0x69, 0xee, 0xe2, 0x92, 0xe6, 0xae, 0x2f, 0x29, 0xfa, 0x14, 0x53, 0xf4, 0x25, 0xa6, 0xe8,
-	0x5b, 0x4c, 0xd1, 0x79, 0x4c, 0xd1, 0xcf, 0x98, 0xa2, 0xdf, 0x31, 0xcd, 0x5d, 0xc7, 0x14, 0x7d,
-	0xbe, 0xa2, 0xb9, 0xf3, 0x2b, 0x9a, 0xbb, 0xb8, 0xa2, 0xb9, 0xe3, 0x92, 0xfc, 0x1a, 0xee, 0xfe,
-	0x09, 0x00, 0x00, 0xff, 0xff, 0xaa, 0xef, 0xff, 0x4a, 0x29, 0x05, 0x00, 0x00,
+	// 650 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x64, 0x94, 0xc1, 0x4e, 0xdb, 0x4a,
+	0x14, 0x86, 0x33, 0x71, 0x12, 0x92, 0x93, 0x10, 0x7c, 0x27, 0xdc, 0xcb, 0xe8, 0xea, 0x6a, 0x14,
+	0x45, 0xe8, 0xca, 0xca, 0x82, 0xaa, 0xd0, 0x27, 0x68, 0x82, 0x50, 0x24, 0x1a, 0xa1, 0x21, 0xb8,
+	0xea, 0x0a, 0x0d, 0xc9, 0xe0, 0xba, 0x0a, 0x9e, 0xc8, 0x76, 0x90, 0xcb, 0xaa, 0x8f, 0xd0, 0xc7,
+	0xe8, 0xa6, 0xef, 0xd1, 0x55, 0xc5, 0x92, 0x45, 0x17, 0xc5, 0x6c, 0xba, 0xe4, 0x11, 0xaa, 0x19,
+	0x8f, 0x9d, 0x40, 0x37, 0xd1, 0xf9, 0xbf, 0xcf, 0x33, 0x9a, 0x39, 0x73, 0x14, 0x20, 0x73, 0xff,
+	0x62, 0x3f, 0x39, 0x78, 0xe1, 0x85, 0x7c, 0xf1, 0x3e, 0xfb, 0xdd, 0x5b, 0x84, 0x32, 0x96, 0xb8,
+	0xaa, 0x43, 0xef, 0x3b, 0x82, 0xd6, 0x80, 0xc7, 0x7c, 0x2e, 0xbd, 0xd3, 0x98, 0xc7, 0x02, 0xff,
+	0x07, 0x8d, 0x37, 0xfc, 0x83, 0x0c, 0x5d, 0x11, 0x46, 0x04, 0x75, 0x91, 0x53, 0x65, 0x2b, 0xa0,
+	0xad, 0x1f, 0x18, 0x5b, 0x36, 0x36, 0x07, 0x98, 0x02, 0x4c, 0x42, 0x3e, 0x15, 0x03, 0xb9, 0x0c,
+	0x62, 0x02, 0x5a, 0xaf, 0x11, 0xb5, 0x7a, 0xbc, 0xbc, 0xd2, 0x20, 0x22, 0xcd, 0xae, 0xe5, 0x54,
+	0xd8, 0x0a, 0x18, 0x7b, 0x12, 0xfa, 0x57, 0x22, 0x22, 0xad, 0xc2, 0x66, 0x00, 0xff, 0x0f, 0xed,
+	0x51, 0xa4, 0x6b, 0x73, 0x5c, 0xb2, 0xdd, 0x45, 0x4e, 0x9d, 0x3d, 0xa3, 0xbd, 0x1f, 0x08, 0xea,
+	0x47, 0xea, 0x6a, 0x43, 0x71, 0x89, 0x1d, 0xd8, 0x30, 0x5a, 0x5f, 0xa5, 0xbd, 0xdf, 0xde, 0xcb,
+	0x7a, 0x60, 0x28, 0xcb, 0x35, 0xfe, 0x17, 0xea, 0xd9, 0x31, 0x46, 0x43, 0x7d, 0xaf, 0x0a, 0x2b,
+	0x32, 0x26, 0xb0, 0xa1, 0x77, 0x1c, 0x0d, 0x89, 0xa5, 0x55, 0x1e, 0xf1, 0x2e, 0x6c, 0xea, 0xf2,
+	0x30, 0x98, 0xca, 0x99, 0x1f, 0x78, 0xa4, 0xde, 0x45, 0x4e, 0x8b, 0x3d, 0x85, 0xb8, 0x0f, 0xf6,
+	0x80, 0x07, 0x32, 0xf0, 0xa7, 0x19, 0x4f, 0x16, 0x21, 0x69, 0x74, 0x91, 0xd3, 0x60, 0x7f, 0x70,
+	0xd5, 0xc2, 0x22, 0x64, 0x5d, 0x68, 0xb0, 0x35, 0xd2, 0xfb, 0x8a, 0x60, 0xc3, 0x8d, 0x93, 0xc3,
+	0x99, 0xa7, 0xcf, 0x3c, 0x8c, 0x62, 0x37, 0x4e, 0x46, 0x43, 0x7d, 0xbd, 0x4d, 0x56, 0x64, 0xe5,
+	0x4e, 0xc3, 0x69, 0xe6, 0xac, 0xcc, 0xe5, 0x59, 0x39, 0xfd, 0x1e, 0x27, 0x32, 0x22, 0x15, 0xfd,
+	0x48, 0x45, 0x2e, 0xdc, 0x58, 0x78, 0xa4, 0xba, 0xe6, 0xc6, 0xc2, 0x7b, 0xd2, 0xa3, 0xe6, 0xb3,
+	0x1e, 0xfd, 0x03, 0xb5, 0xc1, 0xc7, 0xe9, 0x5c, 0x44, 0xa4, 0xd3, 0xb5, 0x1c, 0x8b, 0x99, 0xd4,
+	0x3b, 0x02, 0x6b, 0xc2, 0x3d, 0xbc, 0x0d, 0xd5, 0x63, 0x7e, 0x21, 0xe6, 0xfa, 0x9c, 0x0d, 0x96,
+	0x05, 0xb5, 0x68, 0xc2, 0xbd, 0x33, 0x36, 0xd2, 0x2d, 0x6f, 0x30, 0x93, 0x30, 0x86, 0x8a, 0x6e,
+	0x92, 0xa5, 0xa9, 0xae, 0x7b, 0x37, 0x50, 0x77, 0xe3, 0x44, 0x77, 0x02, 0x3b, 0x50, 0x53, 0xc3,
+	0xba, 0x8c, 0xcc, 0xab, 0xda, 0xe6, 0x55, 0xdd, 0x38, 0xc9, 0x38, 0x33, 0x1e, 0x53, 0xa8, 0x4c,
+	0xb8, 0xa7, 0x46, 0xd5, 0x72, 0x9a, 0xfb, 0x60, 0xbe, 0x9b, 0x70, 0x8f, 0x69, 0x8e, 0x77, 0xa1,
+	0xaa, 0x5a, 0x19, 0x11, 0x4b, 0x7f, 0xd0, 0x5e, 0x6d, 0xa4, 0x30, 0xcb, 0x64, 0x7f, 0x50, 0x8c,
+	0x11, 0xde, 0x81, 0x8e, 0x29, 0xcf, 0xcf, 0x82, 0x68, 0x21, 0xa6, 0xfe, 0xa5, 0x2f, 0x66, 0x76,
+	0x09, 0x6f, 0x41, 0x33, 0x17, 0xef, 0x44, 0x64, 0x23, 0xdc, 0x06, 0xc8, 0xc1, 0x58, 0xda, 0xe5,
+	0xfe, 0x5b, 0x35, 0x45, 0x72, 0xb9, 0x18, 0x0d, 0xb1, 0x0d, 0x2d, 0x53, 0x9e, 0x5f, 0x4b, 0x5f,
+	0xad, 0xee, 0xc0, 0x56, 0x4e, 0x8e, 0xa5, 0x5c, 0xb8, 0x71, 0x62, 0x23, 0xfc, 0x37, 0xfc, 0xb5,
+	0x0e, 0x75, 0x6d, 0x97, 0xd5, 0xc6, 0x39, 0x3e, 0x7a, 0x69, 0x5b, 0xfd, 0x00, 0x1a, 0xc5, 0xc5,
+	0xd5, 0x9a, 0x22, 0x9c, 0x8f, 0x82, 0x6b, 0x3e, 0xd7, 0xfb, 0xef, 0x40, 0x67, 0x85, 0x5d, 0x05,
+	0x79, 0x2c, 0x66, 0x76, 0x19, 0x13, 0xd8, 0x5e, 0x89, 0xb1, 0x0c, 0xaf, 0xf8, 0xdc, 0xbf, 0x11,
+	0x33, 0xbb, 0xf2, 0x74, 0x49, 0x36, 0xa7, 0x4a, 0xd4, 0x5e, 0xbf, 0xba, 0xbd, 0xa7, 0xa5, 0xbb,
+	0x7b, 0x5a, 0x7a, 0xbc, 0xa7, 0xe8, 0x53, 0x4a, 0xd1, 0x97, 0x94, 0xa2, 0x6f, 0x29, 0x45, 0xb7,
+	0x29, 0x45, 0x3f, 0x53, 0x8a, 0x7e, 0xa5, 0xb4, 0xf4, 0x98, 0x52, 0xf4, 0xf9, 0x81, 0x96, 0x6e,
+	0x1f, 0x68, 0xe9, 0xee, 0x81, 0x96, 0x2e, 0x6a, 0xfa, 0x6f, 0xe7, 0xe0, 0x77, 0x00, 0x00, 0x00,
+	0xff, 0xff, 0xf4, 0xa5, 0xe7, 0x5c, 0x92, 0x04, 0x00, 0x00,
 }
 
 func (x IsPrime) String() string {
@@ -730,34 +731,39 @@ func (this *VtxEdge) Equal(that interface{}) bool {
 	} else if this == nil {
 		return false
 	}
-	if this.HomeVtxID != that1.HomeVtxID {
+	if this.DstVtxID != that1.DstVtxID {
 		return false
 	}
-	if this.FromVtxID != that1.FromVtxID {
+	if this.SrcVtxID != that1.SrcVtxID {
 		return false
 	}
-	if this.EdgeSign != that1.EdgeSign {
+	if this.CountPos != that1.CountPos {
 		return false
 	}
-	if this.EdgeSign_Raw != that1.EdgeSign_Raw {
+	if this.CountNeg != that1.CountNeg {
 		return false
 	}
-	if this.FromGroup != that1.FromGroup {
+	if this.TracesID != that1.TracesID {
 		return false
 	}
-	if this.FromGroup_Raw != that1.FromGroup_Raw {
+	if len(this.Cycles) != len(that1.Cycles) {
 		return false
+	}
+	for i := range this.Cycles {
+		if this.Cycles[i] != that1.Cycles[i] {
+			return false
+		}
 	}
 	return true
 }
-func (this *Vtx) Equal(that interface{}) bool {
+func (this *Tag) Equal(that interface{}) bool {
 	if that == nil {
 		return this == nil
 	}
 
-	that1, ok := that.(*Vtx)
+	that1, ok := that.(*Tag)
 	if !ok {
-		that2, ok := that.(Vtx)
+		that2, ok := that.(Tag)
 		if ok {
 			that1 = &that2
 		} else {
@@ -769,46 +775,14 @@ func (this *Vtx) Equal(that interface{}) bool {
 	} else if this == nil {
 		return false
 	}
-	if this.VtxID != that1.VtxID {
+	if this.Label != that1.Label {
 		return false
 	}
-	if len(this.Edges) != len(that1.Edges) {
+	if this.TagURI != that1.TagURI {
 		return false
 	}
-	for i := range this.Edges {
-		if !this.Edges[i].Equal(that1.Edges[i]) {
-			return false
-		}
-	}
-	if this.GroupID != that1.GroupID {
+	if this.Expr != that1.Expr {
 		return false
-	}
-	if this.GroupT0 != that1.GroupT0 {
-		return false
-	}
-	if len(this.Cycles) != len(that1.Cycles) {
-		return false
-	}
-	for i := range this.Cycles {
-		if this.Cycles[i] != that1.Cycles[i] {
-			return false
-		}
-	}
-	if len(this.Ci0) != len(that1.Ci0) {
-		return false
-	}
-	for i := range this.Ci0 {
-		if this.Ci0[i] != that1.Ci0[i] {
-			return false
-		}
-	}
-	if len(this.Ci1) != len(that1.Ci1) {
-		return false
-	}
-	for i := range this.Ci1 {
-		if this.Ci1[i] != that1.Ci1[i] {
-			return false
-		}
 	}
 	return true
 }
@@ -834,11 +808,19 @@ func (this *VtxGraph) Equal(that interface{}) bool {
 	if this.Status != that1.Status {
 		return false
 	}
-	if len(this.Vtx) != len(that1.Vtx) {
+	if len(this.Tags) != len(that1.Tags) {
 		return false
 	}
-	for i := range this.Vtx {
-		if !this.Vtx[i].Equal(that1.Vtx[i]) {
+	for i := range this.Tags {
+		if !this.Tags[i].Equal(that1.Tags[i]) {
+			return false
+		}
+	}
+	if len(this.Edges) != len(that1.Edges) {
+		return false
+	}
+	for i := range this.Edges {
+		if !this.Edges[i].Equal(that1.Edges[i]) {
 			return false
 		}
 	}
@@ -880,30 +862,24 @@ func (this *VtxEdge) GoString() string {
 	}
 	s := make([]string, 0, 10)
 	s = append(s, "&graph.VtxEdge{")
-	s = append(s, "HomeVtxID: "+fmt.Sprintf("%#v", this.HomeVtxID)+",\n")
-	s = append(s, "FromVtxID: "+fmt.Sprintf("%#v", this.FromVtxID)+",\n")
-	s = append(s, "EdgeSign: "+fmt.Sprintf("%#v", this.EdgeSign)+",\n")
-	s = append(s, "EdgeSign_Raw: "+fmt.Sprintf("%#v", this.EdgeSign_Raw)+",\n")
-	s = append(s, "FromGroup: "+fmt.Sprintf("%#v", this.FromGroup)+",\n")
-	s = append(s, "FromGroup_Raw: "+fmt.Sprintf("%#v", this.FromGroup_Raw)+",\n")
+	s = append(s, "DstVtxID: "+fmt.Sprintf("%#v", this.DstVtxID)+",\n")
+	s = append(s, "SrcVtxID: "+fmt.Sprintf("%#v", this.SrcVtxID)+",\n")
+	s = append(s, "CountPos: "+fmt.Sprintf("%#v", this.CountPos)+",\n")
+	s = append(s, "CountNeg: "+fmt.Sprintf("%#v", this.CountNeg)+",\n")
+	s = append(s, "TracesID: "+fmt.Sprintf("%#v", this.TracesID)+",\n")
+	s = append(s, "Cycles: "+fmt.Sprintf("%#v", this.Cycles)+",\n")
 	s = append(s, "}")
 	return strings.Join(s, "")
 }
-func (this *Vtx) GoString() string {
+func (this *Tag) GoString() string {
 	if this == nil {
 		return "nil"
 	}
-	s := make([]string, 0, 11)
-	s = append(s, "&graph.Vtx{")
-	s = append(s, "VtxID: "+fmt.Sprintf("%#v", this.VtxID)+",\n")
-	if this.Edges != nil {
-		s = append(s, "Edges: "+fmt.Sprintf("%#v", this.Edges)+",\n")
-	}
-	s = append(s, "GroupID: "+fmt.Sprintf("%#v", this.GroupID)+",\n")
-	s = append(s, "GroupT0: "+fmt.Sprintf("%#v", this.GroupT0)+",\n")
-	s = append(s, "Cycles: "+fmt.Sprintf("%#v", this.Cycles)+",\n")
-	s = append(s, "Ci0: "+fmt.Sprintf("%#v", this.Ci0)+",\n")
-	s = append(s, "Ci1: "+fmt.Sprintf("%#v", this.Ci1)+",\n")
+	s := make([]string, 0, 7)
+	s = append(s, "&graph.Tag{")
+	s = append(s, "Label: "+fmt.Sprintf("%#v", this.Label)+",\n")
+	s = append(s, "TagURI: "+fmt.Sprintf("%#v", this.TagURI)+",\n")
+	s = append(s, "Expr: "+fmt.Sprintf("%#v", this.Expr)+",\n")
 	s = append(s, "}")
 	return strings.Join(s, "")
 }
@@ -911,11 +887,14 @@ func (this *VtxGraph) GoString() string {
 	if this == nil {
 		return "nil"
 	}
-	s := make([]string, 0, 6)
+	s := make([]string, 0, 7)
 	s = append(s, "&graph.VtxGraph{")
 	s = append(s, "Status: "+fmt.Sprintf("%#v", this.Status)+",\n")
-	if this.Vtx != nil {
-		s = append(s, "Vtx: "+fmt.Sprintf("%#v", this.Vtx)+",\n")
+	if this.Tags != nil {
+		s = append(s, "Tags: "+fmt.Sprintf("%#v", this.Tags)+",\n")
+	}
+	if this.Edges != nil {
+		s = append(s, "Edges: "+fmt.Sprintf("%#v", this.Edges)+",\n")
 	}
 	s = append(s, "}")
 	return strings.Join(s, "")
@@ -1095,63 +1074,10 @@ func (m *VtxEdge) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	_ = i
 	var l int
 	_ = l
-	if m.EdgeSign_Raw != 0 {
-		i = encodeVarintGraph(dAtA, i, uint64(m.EdgeSign_Raw))
-		i--
-		dAtA[i] = 0x38
-	}
-	if m.FromGroup_Raw != 0 {
-		i = encodeVarintGraph(dAtA, i, uint64(m.FromGroup_Raw))
-		i--
-		dAtA[i] = 0x30
-	}
-	if m.EdgeSign != 0 {
-		i = encodeVarintGraph(dAtA, i, uint64(m.EdgeSign))
-		i--
-		dAtA[i] = 0x20
-	}
-	if m.FromGroup != 0 {
-		i = encodeVarintGraph(dAtA, i, uint64(m.FromGroup))
-		i--
-		dAtA[i] = 0x18
-	}
-	if m.FromVtxID != 0 {
-		i = encodeVarintGraph(dAtA, i, uint64(m.FromVtxID))
-		i--
-		dAtA[i] = 0x10
-	}
-	if m.HomeVtxID != 0 {
-		i = encodeVarintGraph(dAtA, i, uint64(m.HomeVtxID))
-		i--
-		dAtA[i] = 0x8
-	}
-	return len(dAtA) - i, nil
-}
-
-func (m *Vtx) Marshal() (dAtA []byte, err error) {
-	size := m.Size()
-	dAtA = make([]byte, size)
-	n, err := m.MarshalToSizedBuffer(dAtA[:size])
-	if err != nil {
-		return nil, err
-	}
-	return dAtA[:n], nil
-}
-
-func (m *Vtx) MarshalTo(dAtA []byte) (int, error) {
-	size := m.Size()
-	return m.MarshalToSizedBuffer(dAtA[:size])
-}
-
-func (m *Vtx) MarshalToSizedBuffer(dAtA []byte) (int, error) {
-	i := len(dAtA)
-	_ = i
-	var l int
-	_ = l
-	if len(m.Ci1) > 0 {
-		dAtA6 := make([]byte, len(m.Ci1)*10)
+	if len(m.Cycles) > 0 {
+		dAtA6 := make([]byte, len(m.Cycles)*10)
 		var j5 int
-		for _, num1 := range m.Ci1 {
+		for _, num1 := range m.Cycles {
 			num := uint64(num1)
 			for num >= 1<<7 {
 				dAtA6[j5] = uint8(uint64(num)&0x7f | 0x80)
@@ -1165,74 +1091,78 @@ func (m *Vtx) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 		copy(dAtA[i:], dAtA6[:j5])
 		i = encodeVarintGraph(dAtA, i, uint64(j5))
 		i--
-		dAtA[i] = 0x62
-	}
-	if len(m.Ci0) > 0 {
-		dAtA8 := make([]byte, len(m.Ci0)*10)
-		var j7 int
-		for _, num1 := range m.Ci0 {
-			num := uint64(num1)
-			for num >= 1<<7 {
-				dAtA8[j7] = uint8(uint64(num)&0x7f | 0x80)
-				num >>= 7
-				j7++
-			}
-			dAtA8[j7] = uint8(num)
-			j7++
-		}
-		i -= j7
-		copy(dAtA[i:], dAtA8[:j7])
-		i = encodeVarintGraph(dAtA, i, uint64(j7))
+		dAtA[i] = 0x1
 		i--
-		dAtA[i] = 0x5a
+		dAtA[i] = 0x9a
 	}
-	if len(m.Cycles) > 0 {
-		dAtA10 := make([]byte, len(m.Cycles)*10)
-		var j9 int
-		for _, num1 := range m.Cycles {
-			num := uint64(num1)
-			for num >= 1<<7 {
-				dAtA10[j9] = uint8(uint64(num)&0x7f | 0x80)
-				num >>= 7
-				j9++
-			}
-			dAtA10[j9] = uint8(num)
-			j9++
-		}
-		i -= j9
-		copy(dAtA[i:], dAtA10[:j9])
-		i = encodeVarintGraph(dAtA, i, uint64(j9))
+	if m.TracesID != 0 {
+		i = encodeVarintGraph(dAtA, i, uint64(m.TracesID))
 		i--
-		dAtA[i] = 0x52
+		dAtA[i] = 0x58
 	}
-	if m.GroupT0 != 0 {
-		i = encodeVarintGraph(dAtA, i, uint64(m.GroupT0))
+	if m.CountNeg != 0 {
+		i = encodeVarintGraph(dAtA, i, uint64(m.CountNeg))
 		i--
-		dAtA[i] = 0x38
+		dAtA[i] = 0x28
 	}
-	if m.GroupID != 0 {
-		i = encodeVarintGraph(dAtA, i, uint64(m.GroupID))
+	if m.CountPos != 0 {
+		i = encodeVarintGraph(dAtA, i, uint64(m.CountPos))
 		i--
-		dAtA[i] = 0x30
+		dAtA[i] = 0x20
 	}
-	if len(m.Edges) > 0 {
-		for iNdEx := len(m.Edges) - 1; iNdEx >= 0; iNdEx-- {
-			{
-				size, err := m.Edges[iNdEx].MarshalToSizedBuffer(dAtA[:i])
-				if err != nil {
-					return 0, err
-				}
-				i -= size
-				i = encodeVarintGraph(dAtA, i, uint64(size))
-			}
-			i--
-			dAtA[i] = 0x22
-		}
-	}
-	if m.VtxID != 0 {
-		i = encodeVarintGraph(dAtA, i, uint64(m.VtxID))
+	if m.SrcVtxID != 0 {
+		i = encodeVarintGraph(dAtA, i, uint64(m.SrcVtxID))
 		i--
-		dAtA[i] = 0x10
+		dAtA[i] = 0x18
+	}
+	if m.DstVtxID != 0 {
+		i = encodeVarintGraph(dAtA, i, uint64(m.DstVtxID))
+		i--
+		dAtA[i] = 0x8
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *Tag) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *Tag) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *Tag) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if len(m.Expr) > 0 {
+		i -= len(m.Expr)
+		copy(dAtA[i:], m.Expr)
+		i = encodeVarintGraph(dAtA, i, uint64(len(m.Expr)))
+		i--
+		dAtA[i] = 0x1a
+	}
+	if len(m.TagURI) > 0 {
+		i -= len(m.TagURI)
+		copy(dAtA[i:], m.TagURI)
+		i = encodeVarintGraph(dAtA, i, uint64(len(m.TagURI)))
+		i--
+		dAtA[i] = 0x12
+	}
+	if len(m.Label) > 0 {
+		i -= len(m.Label)
+		copy(dAtA[i:], m.Label)
+		i = encodeVarintGraph(dAtA, i, uint64(len(m.Label)))
+		i--
+		dAtA[i] = 0xa
 	}
 	return len(dAtA) - i, nil
 }
@@ -1257,10 +1187,24 @@ func (m *VtxGraph) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	_ = i
 	var l int
 	_ = l
-	if len(m.Vtx) > 0 {
-		for iNdEx := len(m.Vtx) - 1; iNdEx >= 0; iNdEx-- {
+	if len(m.Edges) > 0 {
+		for iNdEx := len(m.Edges) - 1; iNdEx >= 0; iNdEx-- {
 			{
-				size, err := m.Vtx[iNdEx].MarshalToSizedBuffer(dAtA[:i])
+				size, err := m.Edges[iNdEx].MarshalToSizedBuffer(dAtA[:i])
+				if err != nil {
+					return 0, err
+				}
+				i -= size
+				i = encodeVarintGraph(dAtA, i, uint64(size))
+			}
+			i--
+			dAtA[i] = 0x1a
+		}
+	}
+	if len(m.Tags) > 0 {
+		for iNdEx := len(m.Tags) - 1; iNdEx >= 0; iNdEx-- {
+			{
+				size, err := m.Tags[iNdEx].MarshalToSizedBuffer(dAtA[:i])
 				if err != nil {
 					return 0, err
 				}
@@ -1363,68 +1307,48 @@ func (m *VtxEdge) Size() (n int) {
 	}
 	var l int
 	_ = l
-	if m.HomeVtxID != 0 {
-		n += 1 + sovGraph(uint64(m.HomeVtxID))
+	if m.DstVtxID != 0 {
+		n += 1 + sovGraph(uint64(m.DstVtxID))
 	}
-	if m.FromVtxID != 0 {
-		n += 1 + sovGraph(uint64(m.FromVtxID))
+	if m.SrcVtxID != 0 {
+		n += 1 + sovGraph(uint64(m.SrcVtxID))
 	}
-	if m.FromGroup != 0 {
-		n += 1 + sovGraph(uint64(m.FromGroup))
+	if m.CountPos != 0 {
+		n += 1 + sovGraph(uint64(m.CountPos))
 	}
-	if m.EdgeSign != 0 {
-		n += 1 + sovGraph(uint64(m.EdgeSign))
+	if m.CountNeg != 0 {
+		n += 1 + sovGraph(uint64(m.CountNeg))
 	}
-	if m.FromGroup_Raw != 0 {
-		n += 1 + sovGraph(uint64(m.FromGroup_Raw))
-	}
-	if m.EdgeSign_Raw != 0 {
-		n += 1 + sovGraph(uint64(m.EdgeSign_Raw))
-	}
-	return n
-}
-
-func (m *Vtx) Size() (n int) {
-	if m == nil {
-		return 0
-	}
-	var l int
-	_ = l
-	if m.VtxID != 0 {
-		n += 1 + sovGraph(uint64(m.VtxID))
-	}
-	if len(m.Edges) > 0 {
-		for _, e := range m.Edges {
-			l = e.Size()
-			n += 1 + l + sovGraph(uint64(l))
-		}
-	}
-	if m.GroupID != 0 {
-		n += 1 + sovGraph(uint64(m.GroupID))
-	}
-	if m.GroupT0 != 0 {
-		n += 1 + sovGraph(uint64(m.GroupT0))
+	if m.TracesID != 0 {
+		n += 1 + sovGraph(uint64(m.TracesID))
 	}
 	if len(m.Cycles) > 0 {
 		l = 0
 		for _, e := range m.Cycles {
 			l += sovGraph(uint64(e))
 		}
-		n += 1 + sovGraph(uint64(l)) + l
+		n += 2 + sovGraph(uint64(l)) + l
 	}
-	if len(m.Ci0) > 0 {
-		l = 0
-		for _, e := range m.Ci0 {
-			l += sovGraph(uint64(e))
-		}
-		n += 1 + sovGraph(uint64(l)) + l
+	return n
+}
+
+func (m *Tag) Size() (n int) {
+	if m == nil {
+		return 0
 	}
-	if len(m.Ci1) > 0 {
-		l = 0
-		for _, e := range m.Ci1 {
-			l += sovGraph(uint64(e))
-		}
-		n += 1 + sovGraph(uint64(l)) + l
+	var l int
+	_ = l
+	l = len(m.Label)
+	if l > 0 {
+		n += 1 + l + sovGraph(uint64(l))
+	}
+	l = len(m.TagURI)
+	if l > 0 {
+		n += 1 + l + sovGraph(uint64(l))
+	}
+	l = len(m.Expr)
+	if l > 0 {
+		n += 1 + l + sovGraph(uint64(l))
 	}
 	return n
 }
@@ -1438,8 +1362,14 @@ func (m *VtxGraph) Size() (n int) {
 	if m.Status != 0 {
 		n += 1 + sovGraph(uint64(m.Status))
 	}
-	if len(m.Vtx) > 0 {
-		for _, e := range m.Vtx {
+	if len(m.Tags) > 0 {
+		for _, e := range m.Tags {
+			l = e.Size()
+			n += 1 + l + sovGraph(uint64(l))
+		}
+	}
+	if len(m.Edges) > 0 {
+		for _, e := range m.Edges {
 			l = e.Size()
 			n += 1 + l + sovGraph(uint64(l))
 		}
@@ -1488,33 +1418,24 @@ func (this *VtxEdge) String() string {
 		return "nil"
 	}
 	s := strings.Join([]string{`&VtxEdge{`,
-		`HomeVtxID:` + fmt.Sprintf("%v", this.HomeVtxID) + `,`,
-		`FromVtxID:` + fmt.Sprintf("%v", this.FromVtxID) + `,`,
-		`FromGroup:` + fmt.Sprintf("%v", this.FromGroup) + `,`,
-		`EdgeSign:` + fmt.Sprintf("%v", this.EdgeSign) + `,`,
-		`FromGroup_Raw:` + fmt.Sprintf("%v", this.FromGroup_Raw) + `,`,
-		`EdgeSign_Raw:` + fmt.Sprintf("%v", this.EdgeSign_Raw) + `,`,
+		`DstVtxID:` + fmt.Sprintf("%v", this.DstVtxID) + `,`,
+		`SrcVtxID:` + fmt.Sprintf("%v", this.SrcVtxID) + `,`,
+		`CountPos:` + fmt.Sprintf("%v", this.CountPos) + `,`,
+		`CountNeg:` + fmt.Sprintf("%v", this.CountNeg) + `,`,
+		`TracesID:` + fmt.Sprintf("%v", this.TracesID) + `,`,
+		`Cycles:` + fmt.Sprintf("%v", this.Cycles) + `,`,
 		`}`,
 	}, "")
 	return s
 }
-func (this *Vtx) String() string {
+func (this *Tag) String() string {
 	if this == nil {
 		return "nil"
 	}
-	repeatedStringForEdges := "[]*VtxEdge{"
-	for _, f := range this.Edges {
-		repeatedStringForEdges += strings.Replace(f.String(), "VtxEdge", "VtxEdge", 1) + ","
-	}
-	repeatedStringForEdges += "}"
-	s := strings.Join([]string{`&Vtx{`,
-		`VtxID:` + fmt.Sprintf("%v", this.VtxID) + `,`,
-		`Edges:` + repeatedStringForEdges + `,`,
-		`GroupID:` + fmt.Sprintf("%v", this.GroupID) + `,`,
-		`GroupT0:` + fmt.Sprintf("%v", this.GroupT0) + `,`,
-		`Cycles:` + fmt.Sprintf("%v", this.Cycles) + `,`,
-		`Ci0:` + fmt.Sprintf("%v", this.Ci0) + `,`,
-		`Ci1:` + fmt.Sprintf("%v", this.Ci1) + `,`,
+	s := strings.Join([]string{`&Tag{`,
+		`Label:` + fmt.Sprintf("%v", this.Label) + `,`,
+		`TagURI:` + fmt.Sprintf("%v", this.TagURI) + `,`,
+		`Expr:` + fmt.Sprintf("%v", this.Expr) + `,`,
 		`}`,
 	}, "")
 	return s
@@ -1523,14 +1444,20 @@ func (this *VtxGraph) String() string {
 	if this == nil {
 		return "nil"
 	}
-	repeatedStringForVtx := "[]*Vtx{"
-	for _, f := range this.Vtx {
-		repeatedStringForVtx += strings.Replace(f.String(), "Vtx", "Vtx", 1) + ","
+	repeatedStringForTags := "[]*Tag{"
+	for _, f := range this.Tags {
+		repeatedStringForTags += strings.Replace(f.String(), "Tag", "Tag", 1) + ","
 	}
-	repeatedStringForVtx += "}"
+	repeatedStringForTags += "}"
+	repeatedStringForEdges := "[]*VtxEdge{"
+	for _, f := range this.Edges {
+		repeatedStringForEdges += strings.Replace(f.String(), "VtxEdge", "VtxEdge", 1) + ","
+	}
+	repeatedStringForEdges += "}"
 	s := strings.Join([]string{`&VtxGraph{`,
 		`Status:` + fmt.Sprintf("%v", this.Status) + `,`,
-		`Vtx:` + repeatedStringForVtx + `,`,
+		`Tags:` + repeatedStringForTags + `,`,
+		`Edges:` + repeatedStringForEdges + `,`,
 		`}`,
 	}, "")
 	return s
@@ -2058,9 +1985,9 @@ func (m *VtxEdge) Unmarshal(dAtA []byte) error {
 		switch fieldNum {
 		case 1:
 			if wireType != 0 {
-				return fmt.Errorf("proto: wrong wireType = %d for field HomeVtxID", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field DstVtxID", wireType)
 			}
-			m.HomeVtxID = 0
+			m.DstVtxID = 0
 			for shift := uint(0); ; shift += 7 {
 				if shift >= 64 {
 					return ErrIntOverflowGraph
@@ -2070,35 +1997,16 @@ func (m *VtxEdge) Unmarshal(dAtA []byte) error {
 				}
 				b := dAtA[iNdEx]
 				iNdEx++
-				m.HomeVtxID |= uint32(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-		case 2:
-			if wireType != 0 {
-				return fmt.Errorf("proto: wrong wireType = %d for field FromVtxID", wireType)
-			}
-			m.FromVtxID = 0
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowGraph
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				m.FromVtxID |= uint32(b&0x7F) << shift
+				m.DstVtxID |= uint32(b&0x7F) << shift
 				if b < 0x80 {
 					break
 				}
 			}
 		case 3:
 			if wireType != 0 {
-				return fmt.Errorf("proto: wrong wireType = %d for field FromGroup", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field SrcVtxID", wireType)
 			}
-			m.FromGroup = 0
+			m.SrcVtxID = 0
 			for shift := uint(0); ; shift += 7 {
 				if shift >= 64 {
 					return ErrIntOverflowGraph
@@ -2108,16 +2016,16 @@ func (m *VtxEdge) Unmarshal(dAtA []byte) error {
 				}
 				b := dAtA[iNdEx]
 				iNdEx++
-				m.FromGroup |= GroupID(b&0x7F) << shift
+				m.SrcVtxID |= uint32(b&0x7F) << shift
 				if b < 0x80 {
 					break
 				}
 			}
 		case 4:
 			if wireType != 0 {
-				return fmt.Errorf("proto: wrong wireType = %d for field EdgeSign", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field CountPos", wireType)
 			}
-			m.EdgeSign = 0
+			m.CountPos = 0
 			for shift := uint(0); ; shift += 7 {
 				if shift >= 64 {
 					return ErrIntOverflowGraph
@@ -2127,16 +2035,16 @@ func (m *VtxEdge) Unmarshal(dAtA []byte) error {
 				}
 				b := dAtA[iNdEx]
 				iNdEx++
-				m.EdgeSign |= int32(b&0x7F) << shift
+				m.CountPos |= int32(b&0x7F) << shift
 				if b < 0x80 {
 					break
 				}
 			}
-		case 6:
+		case 5:
 			if wireType != 0 {
-				return fmt.Errorf("proto: wrong wireType = %d for field FromGroup_Raw", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field CountNeg", wireType)
 			}
-			m.FromGroup_Raw = 0
+			m.CountNeg = 0
 			for shift := uint(0); ; shift += 7 {
 				if shift >= 64 {
 					return ErrIntOverflowGraph
@@ -2146,16 +2054,16 @@ func (m *VtxEdge) Unmarshal(dAtA []byte) error {
 				}
 				b := dAtA[iNdEx]
 				iNdEx++
-				m.FromGroup_Raw |= GroupID(b&0x7F) << shift
+				m.CountNeg |= int32(b&0x7F) << shift
 				if b < 0x80 {
 					break
 				}
 			}
-		case 7:
+		case 11:
 			if wireType != 0 {
-				return fmt.Errorf("proto: wrong wireType = %d for field EdgeSign_Raw", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field TracesID", wireType)
 			}
-			m.EdgeSign_Raw = 0
+			m.TracesID = 0
 			for shift := uint(0); ; shift += 7 {
 				if shift >= 64 {
 					return ErrIntOverflowGraph
@@ -2165,153 +2073,12 @@ func (m *VtxEdge) Unmarshal(dAtA []byte) error {
 				}
 				b := dAtA[iNdEx]
 				iNdEx++
-				m.EdgeSign_Raw |= int32(b&0x7F) << shift
+				m.TracesID |= uint64(b&0x7F) << shift
 				if b < 0x80 {
 					break
 				}
 			}
-		default:
-			iNdEx = preIndex
-			skippy, err := skipGraph(dAtA[iNdEx:])
-			if err != nil {
-				return err
-			}
-			if (skippy < 0) || (iNdEx+skippy) < 0 {
-				return ErrInvalidLengthGraph
-			}
-			if (iNdEx + skippy) > l {
-				return io.ErrUnexpectedEOF
-			}
-			iNdEx += skippy
-		}
-	}
-
-	if iNdEx > l {
-		return io.ErrUnexpectedEOF
-	}
-	return nil
-}
-func (m *Vtx) Unmarshal(dAtA []byte) error {
-	l := len(dAtA)
-	iNdEx := 0
-	for iNdEx < l {
-		preIndex := iNdEx
-		var wire uint64
-		for shift := uint(0); ; shift += 7 {
-			if shift >= 64 {
-				return ErrIntOverflowGraph
-			}
-			if iNdEx >= l {
-				return io.ErrUnexpectedEOF
-			}
-			b := dAtA[iNdEx]
-			iNdEx++
-			wire |= uint64(b&0x7F) << shift
-			if b < 0x80 {
-				break
-			}
-		}
-		fieldNum := int32(wire >> 3)
-		wireType := int(wire & 0x7)
-		if wireType == 4 {
-			return fmt.Errorf("proto: Vtx: wiretype end group for non-group")
-		}
-		if fieldNum <= 0 {
-			return fmt.Errorf("proto: Vtx: illegal tag %d (wire type %d)", fieldNum, wire)
-		}
-		switch fieldNum {
-		case 2:
-			if wireType != 0 {
-				return fmt.Errorf("proto: wrong wireType = %d for field VtxID", wireType)
-			}
-			m.VtxID = 0
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowGraph
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				m.VtxID |= uint32(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-		case 4:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Edges", wireType)
-			}
-			var msglen int
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowGraph
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				msglen |= int(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			if msglen < 0 {
-				return ErrInvalidLengthGraph
-			}
-			postIndex := iNdEx + msglen
-			if postIndex < 0 {
-				return ErrInvalidLengthGraph
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.Edges = append(m.Edges, &VtxEdge{})
-			if err := m.Edges[len(m.Edges)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
-				return err
-			}
-			iNdEx = postIndex
-		case 6:
-			if wireType != 0 {
-				return fmt.Errorf("proto: wrong wireType = %d for field GroupID", wireType)
-			}
-			m.GroupID = 0
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowGraph
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				m.GroupID |= GroupID(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-		case 7:
-			if wireType != 0 {
-				return fmt.Errorf("proto: wrong wireType = %d for field GroupT0", wireType)
-			}
-			m.GroupT0 = 0
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowGraph
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				m.GroupT0 |= int32(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-		case 10:
+		case 19:
 			if wireType == 0 {
 				var v int64
 				for shift := uint(0); ; shift += 7 {
@@ -2387,158 +2154,152 @@ func (m *Vtx) Unmarshal(dAtA []byte) error {
 			} else {
 				return fmt.Errorf("proto: wrong wireType = %d for field Cycles", wireType)
 			}
-		case 11:
-			if wireType == 0 {
-				var v int64
-				for shift := uint(0); ; shift += 7 {
-					if shift >= 64 {
-						return ErrIntOverflowGraph
-					}
-					if iNdEx >= l {
-						return io.ErrUnexpectedEOF
-					}
-					b := dAtA[iNdEx]
-					iNdEx++
-					v |= int64(b&0x7F) << shift
-					if b < 0x80 {
-						break
-					}
+		default:
+			iNdEx = preIndex
+			skippy, err := skipGraph(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthGraph
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *Tag) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowGraph
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: Tag: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: Tag: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Label", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowGraph
 				}
-				m.Ci0 = append(m.Ci0, v)
-			} else if wireType == 2 {
-				var packedLen int
-				for shift := uint(0); ; shift += 7 {
-					if shift >= 64 {
-						return ErrIntOverflowGraph
-					}
-					if iNdEx >= l {
-						return io.ErrUnexpectedEOF
-					}
-					b := dAtA[iNdEx]
-					iNdEx++
-					packedLen |= int(b&0x7F) << shift
-					if b < 0x80 {
-						break
-					}
-				}
-				if packedLen < 0 {
-					return ErrInvalidLengthGraph
-				}
-				postIndex := iNdEx + packedLen
-				if postIndex < 0 {
-					return ErrInvalidLengthGraph
-				}
-				if postIndex > l {
+				if iNdEx >= l {
 					return io.ErrUnexpectedEOF
 				}
-				var elementCount int
-				var count int
-				for _, integer := range dAtA[iNdEx:postIndex] {
-					if integer < 128 {
-						count++
-					}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
 				}
-				elementCount = count
-				if elementCount != 0 && len(m.Ci0) == 0 {
-					m.Ci0 = make([]int64, 0, elementCount)
-				}
-				for iNdEx < postIndex {
-					var v int64
-					for shift := uint(0); ; shift += 7 {
-						if shift >= 64 {
-							return ErrIntOverflowGraph
-						}
-						if iNdEx >= l {
-							return io.ErrUnexpectedEOF
-						}
-						b := dAtA[iNdEx]
-						iNdEx++
-						v |= int64(b&0x7F) << shift
-						if b < 0x80 {
-							break
-						}
-					}
-					m.Ci0 = append(m.Ci0, v)
-				}
-			} else {
-				return fmt.Errorf("proto: wrong wireType = %d for field Ci0", wireType)
 			}
-		case 12:
-			if wireType == 0 {
-				var v int64
-				for shift := uint(0); ; shift += 7 {
-					if shift >= 64 {
-						return ErrIntOverflowGraph
-					}
-					if iNdEx >= l {
-						return io.ErrUnexpectedEOF
-					}
-					b := dAtA[iNdEx]
-					iNdEx++
-					v |= int64(b&0x7F) << shift
-					if b < 0x80 {
-						break
-					}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthGraph
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthGraph
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Label = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field TagURI", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowGraph
 				}
-				m.Ci1 = append(m.Ci1, v)
-			} else if wireType == 2 {
-				var packedLen int
-				for shift := uint(0); ; shift += 7 {
-					if shift >= 64 {
-						return ErrIntOverflowGraph
-					}
-					if iNdEx >= l {
-						return io.ErrUnexpectedEOF
-					}
-					b := dAtA[iNdEx]
-					iNdEx++
-					packedLen |= int(b&0x7F) << shift
-					if b < 0x80 {
-						break
-					}
-				}
-				if packedLen < 0 {
-					return ErrInvalidLengthGraph
-				}
-				postIndex := iNdEx + packedLen
-				if postIndex < 0 {
-					return ErrInvalidLengthGraph
-				}
-				if postIndex > l {
+				if iNdEx >= l {
 					return io.ErrUnexpectedEOF
 				}
-				var elementCount int
-				var count int
-				for _, integer := range dAtA[iNdEx:postIndex] {
-					if integer < 128 {
-						count++
-					}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
 				}
-				elementCount = count
-				if elementCount != 0 && len(m.Ci1) == 0 {
-					m.Ci1 = make([]int64, 0, elementCount)
-				}
-				for iNdEx < postIndex {
-					var v int64
-					for shift := uint(0); ; shift += 7 {
-						if shift >= 64 {
-							return ErrIntOverflowGraph
-						}
-						if iNdEx >= l {
-							return io.ErrUnexpectedEOF
-						}
-						b := dAtA[iNdEx]
-						iNdEx++
-						v |= int64(b&0x7F) << shift
-						if b < 0x80 {
-							break
-						}
-					}
-					m.Ci1 = append(m.Ci1, v)
-				}
-			} else {
-				return fmt.Errorf("proto: wrong wireType = %d for field Ci1", wireType)
 			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthGraph
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthGraph
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.TagURI = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 3:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Expr", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowGraph
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthGraph
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthGraph
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Expr = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
 		default:
 			iNdEx = preIndex
 			skippy, err := skipGraph(dAtA[iNdEx:])
@@ -2610,7 +2371,7 @@ func (m *VtxGraph) Unmarshal(dAtA []byte) error {
 			}
 		case 2:
 			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Vtx", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field Tags", wireType)
 			}
 			var msglen int
 			for shift := uint(0); ; shift += 7 {
@@ -2637,8 +2398,42 @@ func (m *VtxGraph) Unmarshal(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			m.Vtx = append(m.Vtx, &Vtx{})
-			if err := m.Vtx[len(m.Vtx)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+			m.Tags = append(m.Tags, &Tag{})
+			if err := m.Tags[len(m.Tags)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		case 3:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Edges", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowGraph
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthGraph
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthGraph
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Edges = append(m.Edges, &VtxEdge{})
+			if err := m.Edges[len(m.Edges)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
 			iNdEx = postIndex

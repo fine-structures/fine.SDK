@@ -8,10 +8,11 @@ import (
 	"sort"
 	"strconv"
 
+	"github.com/2x3systems/go2x3/go2x3"
 	"github.com/2x3systems/go2x3/lib2x3/graph"
 )
 
-func chopBuf(consume []int64, N int32) (alloc []int64, remain []int64) {
+func chopBuf(consume []int64, N int) (alloc []int64, remain []int64) {
 	return consume[0:N], consume[N:]
 }
 
@@ -24,14 +25,13 @@ var (
 )
 
 type graphState struct {
-	vtxCount  int32
-	vtxDimSz  int32
+	vtxCount  int
+	vtxDimSz  int
 	vtxByID   []*graphVtx // vtx by initial vertex ID
 	vtx       []*graphVtx // ordered list of vtx groups
 	numGroups int32       // count of unique vertex groups present
-
-	curCi  int32
-	traces Traces
+	curCi     int
+	traces    go2x3.Traces
 	graph.VtxStatus
 }
 
@@ -39,7 +39,7 @@ type graphState struct {
 // El Shaddai's Grace abounds.  Emmanuel, God with us!  Yashua has come and victory has been sealed!
 type triVtx struct {
 	graph.GroupID              // which group this is
-	VtxType                    // which type of vertex this is
+	//VtxType                    // which type of vertex this is
 	VtxIdx        byte         // Initial vertex ID (zero-based index)
 	GroupT0       int8         // Traces sum of path length 1 (net sum of loops for group)
 	edges         [3]groupEdge // Edges to other vertices
@@ -95,11 +95,11 @@ const (
 	kNumLines = int(EdgeTrait_HomeGroup + 1)
 )
 
-func (v *graphVtx) AddLoop(from int32, edgeSign int32) {
+func (v *graphVtx) AddLoop(from int, edgeSign int32) {
 	v.AddEdge(from, edgeSign)
 }
 
-func (v *graphVtx) AddEdge(from int32, edgeSign int32) {
+func (v *graphVtx) AddEdge(from int, edgeSign int32) {
 	var ei int
 	for ei = range v.edges {
 		if v.edges[ei].EdgeSign == 0 {
@@ -117,15 +117,14 @@ func (v *graphVtx) AddEdge(from int32, edgeSign int32) {
 	}
 }
 
-func (v *graphVtx) Init(vtxIdx byte) {
-	v.VtxIdx = vtxIdx
+func (v *graphVtx) Init(vtxIdx int) {
+	v.VtxIdx = byte(vtxIdx)
 	v.edges[0] = groupEdge{}
 	v.edges[1] = groupEdge{}
 	v.edges[2] = groupEdge{}
 }
 
-func (X *graphState) reset(numVerts byte) {
-	Nv := int32(numVerts)
+func (X *graphState) reset(Nv int) {
 
 	X.vtxCount = Nv
 	X.VtxStatus = graph.VtxStatus_Invalid
@@ -147,7 +146,7 @@ func (X *graphState) reset(numVerts byte) {
 	buf := make([]int64, MaxVtxID+3*Nv*Nv)
 	X.traces, buf = chopBuf(buf, MaxVtxID)
 
-	for i := int32(0); i < Nv; i++ {
+	for i := 0; i < Nv; i++ {
 		v := &graphVtx{}
 		X.vtxByID[i] = v
 		X.vtx[i] = v
@@ -164,12 +163,12 @@ func (X *graphState) AssignGraph(Xsrc *Graph) error {
 		return ErrNilGraph
 	}
 
-	Nv := Xsrc.NumVerts()
+	Nv := Xsrc.NumVertices()
 	X.reset(Nv)
 
 	// Init vtx lookup map so we can find the group for a given initial vertex idx
 	Xv := X.VtxByID()
-	for i := byte(0); i < Nv; i++ {
+	for i := 0; i < Nv; i++ {
 		Xv[i].Init(i)
 		X.vtx[i] = Xv[i]
 	}
@@ -178,10 +177,10 @@ func (X *graphState) AssignGraph(Xsrc *Graph) error {
 	for i, vi := range Xv {
 		vtype := Xsrc.vtx[i]
 		for j := vtype.PosLoops(); j > 0; j-- {
-			vi.AddLoop(int32(i), +1)
+			vi.AddLoop(i, +1)
 		}
 		for j := vtype.NegLoops(); j > 0; j-- {
-			vi.AddLoop(int32(i), -1)
+			vi.AddLoop(i, -1)
 		}
 	}
 
@@ -217,8 +216,8 @@ func (X *graphState) AssignGraph(Xsrc *Graph) error {
 				}
 			}
 		}
-		v.VtxType = GetVtxType(negLoops, numEdges)
-		if Ne != 3 || v.VtxType == V_nil {
+		vtxType := GetVtxType(negLoops, numEdges)
+		if Ne != 3 || vtxType == V_nil {
 			return ErrBadEdges
 		}
 	}
@@ -259,7 +258,7 @@ func (X *graphState) sortVtxGroups() {
 }
 
 // For the currently assigned Graph, this calculates its cycles and traces up to a given level.
-func (X *graphState) calcCyclesUpTo(numTraces int32) {
+func (X *graphState) calcCyclesUpTo(numTraces int) {
 	Nv := X.vtxCount
 
 	if numTraces < Nv {
@@ -271,7 +270,7 @@ func (X *graphState) calcCyclesUpTo(numTraces int32) {
 	// Init C0
 	if X.curCi == 0 {
 		for i, vi := range Xv {
-			for j := 0; int32(j) < Nv; j++ {
+			for j := 0; j < Nv; j++ {
 				c0 := int64(0)
 				if i == j {
 					c0 = 1
@@ -296,7 +295,7 @@ func (X *graphState) calcCyclesUpTo(numTraces int32) {
 				Ci0, Ci1 = Ci1, Ci0
 			}
 
-			for j := int32(0); j < Nv; j++ {
+			for j := 0; j < Nv; j++ {
 				dot := int64(0)
 				vj := Xv[j]
 				for _, e := range vj.edges {
@@ -343,7 +342,7 @@ func (X *graphState) forEveryNonGroupVtxPair(iter func(vi, vj *graphVtx)) {
 	Nv := X.vtxCount
 	Xv := X.Vtx()
 
-	for i := int32(0); i < Nv; i++ {
+	for i := 0; i < Nv; i++ {
 		vi := Xv[i]
 		for j := i + 1; j < Nv; j++ {
 			vj := Xv[j]
@@ -358,7 +357,7 @@ func (X *graphState) forEveryGroupEdgePair(iter func(vi, vj *graphVtx, ei, ej in
 	Nv := X.vtxCount
 	Xv := X.Vtx()
 
-	for i := int32(0); i < Nv; i++ {
+	for i := 0; i < Nv; i++ {
 		vi := Xv[i]
 		for ei := 0; ei < 3; ei++ {
 			for j := i; j < Nv; j++ {
@@ -379,12 +378,10 @@ func (X *graphState) forEveryGroupEdgePair(iter func(vi, vj *graphVtx, ei, ej in
 	}
 }
 
-func (X *graphState) Canonize(normalize bool) {
+func (X *graphState) Canonize() {
 
 	for {
-		if X.VtxStatus >= graph.VtxStatus_Canonized_Normalized {
-			return
-		} else if !normalize && X.VtxStatus >= graph.VtxStatus_Canonized {
+		if X.VtxStatus >= graph.VtxStatus_Canonized {
 			return
 		}
 
@@ -400,7 +397,7 @@ func (X *graphState) Canonize(normalize bool) {
 
 			// Sort by cycle count first and foremost
 			// The cycle count vector (an integer sequence of size Nv) is what characterizes a vertex.
-			for ci := int32(0); ci < Nv; ci++ {
+			for ci := 0; ci < Nv; ci++ {
 				d := vi.cycles[ci] - vj.cycles[ci]
 				if d != 0 {
 					return d < 0
@@ -414,7 +411,7 @@ func (X *graphState) Canonize(normalize bool) {
 		var v_prev *graphVtx
 		for _, v := range Xv {
 			if v_prev != nil {
-				for ci := int32(0); ci < Nv; ci++ {
+				for ci := 0; ci < Nv; ci++ {
 					if v.cycles[ci] != v_prev.cycles[ci] {
 						X.numGroups++
 						break
@@ -440,7 +437,8 @@ func (X *graphState) Canonize(normalize bool) {
 			}
 		}
 
-		// A=vi-vj=B => A-vi-B, A-vj-B
+
+    // A=vi-vj=B => A-vi-B, A-vj-B
 		//X.forEveryGroupVtxPair(func(vi, vj *graphVtx) {
 		X.forEveryNonGroupVtxPair(func(vi, vj *graphVtx) {
 			/*
@@ -505,11 +503,8 @@ func (X *graphState) Canonize(normalize bool) {
 
 		X.sortVtxGroups()
 
-		if normalize {
-			X.VtxStatus = graph.VtxStatus_Canonized_Normalized
-		} else {
-			X.VtxStatus = graph.VtxStatus_Canonized
-		}
+		X.VtxStatus = graph.VtxStatus_Canonized
+
 	}
 }
 
@@ -644,34 +639,23 @@ func (X *graphState) getTraitRun(Xv []*graphVtx, vi int, trait EdgeTrait) int {
 	return runLen
 }
 
-type GraphEncodingOpts int32
 
-const (
-	EncodeHumanReadable GraphEncodingOpts = 1 << iota
-	EncodeProperties
-	EncodeState
-)
 
-func (X *graphState) AppendGraphEncoding(io []byte, opts GraphEncodingOpts) []byte {
-	X.Canonize(false)
+
+func (X *graphState) ExportEncoding(io []byte, opts go2x3.ExportOpts) ([]byte, error) {
+	X.Canonize()
 
 	var buf [32]byte
-
+	
 	Xv := X.Vtx()
 	Nv := len(Xv)
-	ascii := (opts & EncodeHumanReadable) != 0
+	ascii := (opts & go2x3.ExportAsAscii) != 0
 
 	traits := make([]EdgeTrait, 0, 4)
 
-	if opts&EncodeProperties != 0 {
+	{
 		traits = append(traits,
 			EdgeTrait_FromGroup,
-			EdgeTrait_EdgeSign,
-		)
-	}
-
-	if opts&EncodeState != 0 {
-		traits = append(traits,
 			//EdgeTrait_EdgeType,
 			EdgeTrait_EdgeSign,
 		)
@@ -703,7 +687,7 @@ func (X *graphState) AppendGraphEncoding(io []byte, opts GraphEncodingOpts) []by
 		io = append(io, RLE...)
 	}
 
-	return io
+	return io, nil
 }
 
 func (v *triVtx) appendTrait(io []byte, vi int, trait EdgeTrait, ascii bool) []byte {
@@ -762,7 +746,7 @@ var lineLabels = []string{
 //	EDGE FROM   :   BBC   :   oOA       oOA   :   ooA   :
 //	  GROUP     :::AAAAA:::::BBBBBBBBBBBBBBB:::::CCCCC:::
 func (X *graphState) PrintVtxGrouping(out io.Writer) {
-	X.Canonize(false)
+	X.Canonize()
 
 	Nv := int(X.vtxCount)
 
@@ -870,12 +854,12 @@ func (X *graphState) PrintVtxGrouping(out io.Writer) {
 }
 
 func (X *graphState) PrintCycleSpectrum(out io.Writer) {
-	X.Canonize(false)
+	X.Canonize()
 
 	Nv := X.vtxCount
 	Xv := X.Vtx()
 
-	for ci := int32(0); ci < Nv; ci++ {
+	for ci := 0; ci < Nv; ci++ {
 		fmt.Fprintf(out, "%8d C%-2d", X.traces[ci], ci+1)
 		for _, vi := range Xv {
 			fmt.Fprintf(out, "%8d  ", vi.cycles[ci])
@@ -884,11 +868,15 @@ func (X *graphState) PrintCycleSpectrum(out io.Writer) {
 	}
 }
 
-func (X *graphState) Traces(numTraces int) Traces {
-	if numTraces <= 0 {
-		numTraces = int(X.vtxCount)
-	}
-
-	X.calcCyclesUpTo(int32(numTraces))
+func (X *graphState) Traces(numTraces int) go2x3.Traces {
+	numTraces = max(X.vtxCount, numTraces)
+	X.calcCyclesUpTo(numTraces)
 	return X.traces[:numTraces]
+}
+
+func max(a, b int) int {
+	if a > b {
+		return a
+	}
+	return b
 }
