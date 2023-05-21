@@ -111,24 +111,10 @@ func (TX *Traces) InitFromTracesLSM(Xkey TracesLSM, maxNumTraces int) error {
 //
 // The integer returned a the byte length in the returned TracesLSM after TX.VtxCount exported elements.
 func (TX Traces) AppendTracesLSM(out []byte) TracesLSM {
-	return TX.appendOddEvenEncoding(out)
-}
-
-func (TX Traces) appendOddEvenEncoding(out []byte) TracesLSM {
-	numTraces := len(TX)
 	var scrap [12]byte
-
-	// Odd traces first
+	
 	key := out
-	for i := 0; i < numTraces; i += 2 {
-		Ti := TX[i]
-		n := binary.PutVarint(scrap[:], Ti)
-		key = append(key, scrap[:n]...)
-	}
-
-	// Even traces second
-	for i := 1; i < numTraces; i += 2 {
-		Ti := TX[i]
+	for _, Ti := range TX {
 		n := binary.PutVarint(scrap[:], Ti)
 		key = append(key, scrap[:n]...)
 	}
