@@ -69,80 +69,36 @@ func (g GroupID) GroupRune() byte {
 }
 
 func (X *VtxGraph) IsNormalized() bool {
-	return X.Status >= VtxStatus_Normalized
+	return X.Status >= GraphStatus_Normalized
 }
 
 func (X *VtxGraph) IsCanonized() bool {
-	return X.Status >= VtxStatus_Canonized
+	return X.Status >= GraphStatus_Canonized
 }
 
-/*
-func (e *VtxEdge) Ord() int64 {
-	return int64(e.DstVtxID)<<32 | int64(e.SrcVtxID) // sort by dst / "home" vtx ID first
-}
-*/
-/*
-func appendPair(io []byte, pos, neg int32) []byte {
-	if printAbs := true; printAbs {
-		if total := int64(pos+neg); total != 0 {
-			io = fmt.Appendf(io, "%3d", total)
-		} else {
-			io = append(io, "   "...)
-		}
-	
-		if delta := pos - neg; delta != 0 {
-			io = fmt.Appendf(io, "%+-3d  ", delta)
-		} else {
-			io = append(io, "-    "...)
-		}
+func (e *EdgeTraces) AppendDesc(io []byte) []byte {
+
+	if e.GraphID != 0 {
+		io = fmt.Appendf(io, "P%-3d ", e.GraphID)
 	} else {
-		if (pos == 0 && neg == 0) {
-			io = append(io, "   -    "...)
-		} else {
-			io = fmt.Appendf(io, "%+3d-%-3d ", pos, neg)		
-		}
+		io = append(io, "   "...)
 	}
-	return io
-}
-*/
-
-
-func (e *VtxEdge) AppendDesc(io []byte) []byte {
 
 	dst := 'A' - 1 + byte(e.DstVtxID)
 	src := 'A' - 1 + byte(e.SrcVtxID)
-	if src == dst {
-		src = ' '
-	}
-	str := fmt.Sprintf("   %c%c%c  <=  %c%c%c    ",
-		dst, dst, dst,
-		src, src, src)
-	io = append(io, str...)
+	if e.SrcVtxID > 0 || e.DstVtxID > 0 {
 
-	if  e.CountPos > 0 {
-		io = fmt.Appendf(io, " +%02d", e.CountPos)
+		if src == dst {
+			src = ' '
+		}
+		io = fmt.Appendf(io, " %c%c%c  <=  %c%c%c ",
+			dst, dst, dst,
+			src, src, src)
 	} else {
-		io = append(io, "    "...)	
+		io = append(io, "            "...)
 	}
-	if e.CountNeg > 0 {
-		io = fmt.Appendf(io, " -%02d ", e.CountNeg)
-	} else {
-		io = append(io, "     "...)	
-	}
-	
-	// // List edge types in LSM order
-	// switch e.Domain {
-	// 	case EdgeDomain_EvenOdd:
-	// 		io = fmt.Appendf(io, "+%03d -%03d ", e.CountPos, e.CountNeg)
-	// 	case EdgeDomain_Odd:
-	// 		io = fmt.Appendf(io, "%+03d    ", e.NetCount)
-	// 	case EdgeDomain_Even:
-	// 		io = fmt.Appendf(io, "    %+03d", e.NetCount)
-	// }
-	
-	// io = appendPair(io, 0, 0)
-	// io = appendPair(io, c
-	// io = appendPair(io, 0, 0)
+
+	io = fmt.Appendf(io, " %4d %4d", e.OddCount, e.EvenCount)
 
 	return io
 }
@@ -222,8 +178,6 @@ func PrintInt(dst []byte, val int64) []byte {
 	}
 	return dst[i:]
 }
-
-
 
 func chopBuf(consume []int64, N int) (alloc []int64, remain []int64) {
 	return consume[0:N], consume[N:]
