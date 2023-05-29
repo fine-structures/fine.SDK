@@ -3,12 +3,6 @@ from py2x3 import *
 
 print("\n")
 
-printOpts = {
-    'graph':  True,
-    'matrix': True,
-    'codes':  True,
-}
-
 
 light_of_yeshua = [
     ["gamma", "1---2"],

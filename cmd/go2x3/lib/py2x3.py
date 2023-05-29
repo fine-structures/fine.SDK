@@ -191,13 +191,11 @@ class GraphSelector:
 gPrintOptsVerbose = {
     'graph':  True,
     'matrix': True,
-    'codes':  True,
     'cycles': True,
     'traces': 10,
 }
 
 gPrintOpts = {
-    'codes':  True,
     'cycles': True,
     'traces': 10,
 }

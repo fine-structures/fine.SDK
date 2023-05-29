@@ -7,7 +7,6 @@ catalog = GetPrimeCatalog(4)
 
 printOpts = {
     'graph':  True,
-    'codes':  True,
     'traces': 10,
     'cycles': True,
 }

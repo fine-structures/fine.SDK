@@ -3,7 +3,6 @@ package catalog
 import (
 	"bytes"
 	"runtime"
-	"sync"
 
 	"github.com/2x3systems/go2x3/go2x3"
 	"github.com/2x3systems/go2x3/lib2x3"
@@ -102,7 +101,6 @@ var (
 // Catalog is a db wrapper for a 2x3 particle catalog
 type catalog struct {
 	ctx          go2x3.CatalogContext
-	closeOnce    sync.Once
 	readOnly     bool
 	stateDirty   bool
 	state        graph.CatalogState
