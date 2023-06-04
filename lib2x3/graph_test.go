@@ -12,6 +12,11 @@ import (
 
 func TestBasics(t *testing.T) {
 
+	PrintCycles("1^^-2-3~4^^,3-5")
+	
+	PrintCycles("1-2-3=4-5=6-7=8-1")
+	PrintCycles("1^-2-3-4-2,1-4") // K4 v2
+
 	PrintCycles("1-2=3-4=5")
 	
 	PrintCycles("1---2")

@@ -76,7 +76,9 @@ func (ft *FactorTable) NumFactors() uint32 {
 	return ft.numFactors
 }
 
-// dst <= A - Factors[Fi]
+// Subtracts the Fi'th factor from A, storing the result in dst:
+//   dst <- A - Factors[Fi]
+//
 // Returns true if diff is all zeros.
 func (ft *FactorTable) SubtractFactor(dst go2x3.Traces, A go2x3.Traces, Fi uint32) bool {
 	numTraces := ft.TracesPerFactor
