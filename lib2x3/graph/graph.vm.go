@@ -8,17 +8,16 @@ import (
 	"github.com/2x3systems/go2x3/go2x3"
 )
 
-
 type ComputeVtx struct {
 	// Two vtx are connected in the same graph if they have the same GraphID.
 	GraphID int64
-	
+
 	// When assigned from a 2x3 graph, each Vtx has 3 edges.
 	Edges []*EdgeTraces
-	
+
 	// The product of this times VtxCount is the this groups total contribution to VtxGraph.Traces
-	Cycles []int64 
-	
+	Cycles []int64
+
 	VtxID int
 	Ci0   []int64
 	Ci1   []int64
@@ -175,7 +174,7 @@ func (X *VtxGraphVM) AddEdge(
 		ei := X.newEdge()
 		ei.DstVtxID = vi
 		ei.SrcVtxID = vj
-		
+
 		count := int64(numPos) - int64(numNeg)
 		ei.OddCount = count
 		ei.EvenCount = count
@@ -194,22 +193,22 @@ func (X *VtxGraphVM) AddEdge(
 func (X *VtxGraphVM) Validate() error {
 	var err error
 
-	vtx := X.Vtx()	
-	
+	vtx := X.Vtx()
+
 	// Keep doing passes until edges do not change GraphID assignments
 	for changed := true; changed; {
-		changed = false;
-		
+		changed = false
+
 		for _, ei := range X.edgePool {
 			vi_a := ei.DstVtxID
 			vi_b := ei.SrcVtxID
 			if vi_a == vi_b {
 				continue
 			}
-	
+
 			va := vtx[vi_a-1]
 			vb := vtx[vi_b-1]
-			
+
 			// Propagate the lowest GraphID to the other
 			if va.GraphID > vb.GraphID {
 				va.GraphID = vb.GraphID
@@ -220,7 +219,6 @@ func (X *VtxGraphVM) Validate() error {
 			}
 		}
 	}
-	
 
 	if err == nil {
 		if X.Status < GraphStatus_Validated {
@@ -233,7 +231,6 @@ func (X *VtxGraphVM) Validate() error {
 }
 
 func (X *VtxGraphVM) Canonize() {
-
 
 	X.Traces(12)
 
@@ -280,16 +277,14 @@ func compareCycles(a, b *EdgeTraces, isEven int) int64 {
 	return 0
 }
 
-
-
 func (X *VtxGraphVM) normalize_signs(isEven int) {
 
 	{
 		edges := X.Edges
-		
+
 		// Sign and count normalization
 		for _, e := range edges {
-		
+
 			// If a coeff is zero, zero out the elements for clarity
 			if isEven != 0 && e.EvenCount == 0 || isEven == 0 && e.OddCount == 0 {
 				for i := isEven; i < len(e.Cycles); i += 2 {
@@ -297,19 +292,18 @@ func (X *VtxGraphVM) normalize_signs(isEven int) {
 				}
 				continue
 			}
-				
-	
+
 			sign := 0 // 0 means not yet determined
 			for i := isEven; i < len(e.Cycles); i += 2 {
 				ci := e.Cycles[i]
-				
+
 				// find first non-zero cycle and if possible factor out sign to get canonic form
 				if sign == 0 && ci != 0 {
 					if ci < 0 {
 						sign = -1
 						if isEven == 1 {
 							e.EvenCount = -e.EvenCount
-						} else {						
+						} else {
 							e.OddCount = -e.OddCount
 						}
 					} else {
@@ -320,7 +314,7 @@ func (X *VtxGraphVM) normalize_signs(isEven int) {
 					e.Cycles[i] = -ci
 				}
 			}
-			
+
 			// Normalize coeff to 0 if all elements are zero
 			if sign == 0 {
 				if isEven == 1 {
@@ -330,110 +324,145 @@ func (X *VtxGraphVM) normalize_signs(isEven int) {
 				}
 			}
 		}
-	
-	/*
-		// Sort edges by graph they appear in
-		sort.Slice(edges, func(i, j int) bool {
-			ei := edges[i]
-			ej := edges[j]
-			
-			// Only terms belonging to the same graph can be consolidated
-			if d := ei.GraphID - ej.GraphID; d != 0 {
-				return d < 0
-			}
-	
-			// Then sort by cycle signature for even or odd cycles
-			return compareCycles(ei, ej, isEven) < 0
-		})
-		
-	
-	
-		// Consolidate edges (accumulate edges with compatible characteristics)
-		// Note that doing so invalidates edge.SrcVtxID values, so lets zero them out for safety.
-		// Work right to left as we overwrite the edge array in place
-		consolidateEdges := true
-		if consolidateEdges {
-			L := 0
-			Ne := len(edges)
-			numConsolidated := 0
-			for R := 1; R < Ne; R++ {
-				eL := edges[L]
-				eR := edges[R]
-	
-				match := true
-				for i, ci := range eL.Cycles {
-					if ci != eR.Cycles[i] {
-						match = false
-						break
-					}
-				}
-	
-				// If exact match, absorb R into L, otherwise advance L (old R becomes new L)
-				if match {
-					eL.OddCount += eR.OddCount
-					eL.EvenCount += eR.EvenCount
-					numConsolidated++
-				} else {
-					L++
-					edges[L], edges[R] = edges[R], edges[L] // finalize R into a new L *and* preserve L target (as an allocation)
-				}
-			}
-			Ne -= numConsolidated
-	
-			// Remove the all-zeros edge (can only be the first entry since they are sorted)
-			if Ne > 0 {
-				e0 := edges[0]
-				zeros := true
-				for _, ci := range e0.Cycles {
-					if ci != 0 {
-						zeros = false
-						break
-					}
-				}
-				if zeros {
-					copy(edges[0:], edges[1:Ne])
-					Ne--
-					edges[Ne] = e0
-				}
-			}
-	
-			X.Edges = edges[:Ne]
-		}
-		
-		// Sort edges by graph they appear in
-		sort.Slice(edges, func(i, j int) bool {
-			ei := edges[i]
-			ej := edges[j]
-			
-			// Only terms belonging to the same graph can be consolidated
-			if d := ei.GraphID - ej.GraphID; d != 0 {
-				return d < 0
-			}
-	
-			// Then sort by cycle signature for even or odd cycles
-			return cyclesCompare(ei, ej, isEven) < 0
-		})
-		*/
 	}
-	
+}
+
+
+// For each graph. try to consolidate every possible combo of EdgeTraces
+func (X *VtxGraphVM) consolidateEdges() {
+	edges := X.Edges
+	numEdges := len(edges)
+
+	tryingEdges := make([]*EdgeTraces, numEdges)
+	for numToSelect := numEdges; numToSelect >= 2; numToSelect-- {
+		n := consolidateEdges(edges, tryingEdges[:0], numToSelect)
+		if n > 0 {
+			if n%(numToSelect-1) != 0 {
+				panic("consolidateEdges: unexpected number of edges removed")
+			}
+			numEdges -= n
+			edges = edges[:numEdges]
+		}
+	}
+
+	X.Edges = edges
+
+	{
+		for _, ei := range edges {
+
+			factorLimit := int64(2701) // בראשית ברא אלהים את השמים ואת הארץ
+			for _, ci := range ei.Cycles {
+				if ci > 0 && ci < factorLimit {
+					factorLimit = ci
+				}
+			}
+
+			for factor := factorLimit; factor >= 2; factor-- {
+				for _, ci := range ei.Cycles {
+					if ci%factor != 0 {
+						goto nextFactor
+					}
+				}
+
+				// At this point, we have the highest factor of all cycles
+				{
+					var count [2]int64
+					ei.OddCount *= factor
+					ei.EvenCount *= factor
+					count[0] = ei.OddCount
+					count[1] = ei.EvenCount
+					for k, ck := range ei.Cycles {
+						ei.Cycles[k] = ck / factor
+					}
+				}
+
+			nextFactor:
+			}
+		}
+	}
+}
+
+// Returns number of edges removed from consolidation (or 0 if none were consolidated)
+func consolidateEdges(
+	remainEdges []*EdgeTraces, // the edges that are available to be consolidated
+	tryingEdges []*EdgeTraces, // edges (by index) that have been chosen so far to try to consolidate
+	numToSelect int, // number of edges to select from remainEdges
+) int {
+
+	remain := len(remainEdges)
+	switch {
+	case numToSelect == 0:
+		return tryConsolidate(tryingEdges) // try to consolidate the edges we've selected
+	case numToSelect > remain:
+		return 0 // not enough edges remaining to select from
+	case numToSelect == remain:
+		{
+			tryingEdges = append(tryingEdges, remainEdges...)
+			return tryConsolidate(tryingEdges)
+		}
+	}
+
+	edgesRemoved := 0
+
+	for i := 0; i < remain; i++ {
+
+		// Recurse WITH edge i
+		// If tryingEdges[:] was consolidated into tryingEdges[0], back out and restart from tryingEdges[0])
+		tryEdges := append(tryingEdges, remainEdges[i])
+		n := consolidateEdges(remainEdges[i+1:], tryEdges, numToSelect-1)
+		if n > 0 {
+			edgesRemoved += n
+
+			if len(tryingEdges) > 0 {
+
+				// Move the now zero-edge ei to an indexes that will be dropped (but retained for pooling)
+				for j := remain - 1; j > i; j-- {
+					ej := remainEdges[j]
+					if ej.OddCount != 0 || ej.EvenCount != 0 {
+						remainEdges[j], remainEdges[i] = remainEdges[i], remainEdges[j]
+						break
+					}
+				}
+				return edgesRemoved
+			}
+
+			// check zero edges are now at the end
+			for j := remain - n; j < remain; j++ {
+				ej := remainEdges[j]
+				if ej.OddCount != 0 || ej.EvenCount != 0 {
+					panic("tryingEdges[i] should have been consolidated")
+				}
+			}
+
+			remain -= n
+			remainEdges = remainEdges[:remain]
+
+			// restart from edge i since remainEdges[i] changed
+			i--
+		}
+	}
+
+	return edgesRemoved
 }
 
 // pre: for each edge OddCount and EvenCount are non-zero
-func tryConsolidate(edges []*EdgeTraces) bool {
+// Returns how many edges were consolidated (now zeroed out) into edge[0]
+// Result will always be 0 or len(edges)-1
+func tryConsolidate(edges []*EdgeTraces) int {
 	var C [16]int64
 	Nc := len(edges[0].Cycles)
-	
+
 	var combined [2]int64
 	for _, ei := range edges {
 		combined[0] += abs(ei.OddCount)
 		combined[1] += abs(ei.EvenCount)
 	}
-	
+
 	for k := 0; k < Nc; k++ {
 		Ck := int64(0)
-		for i, ei := range edges {
+		for _, ei := range edges {
 			var n int64
-			if i&1 == 0 {
+			if k&1 == 0 {
 				n = ei.OddCount
 			} else {
 				n = ei.EvenCount
@@ -441,174 +470,145 @@ func tryConsolidate(edges []*EdgeTraces) bool {
 			Ck += n * ei.Cycles[k]
 		}
 		combinedCount := combined[k&1]
-		if Ck % combinedCount != 0 {
-			return false
+		if Ck%combinedCount != 0 {
+			return 0
 		}
 		C[k] = Ck
 	}
-	
-	// If we made it here, the traces sum is perfectly divisible by the combined count for each even and ofd 
+
+	// If we made it here, the traces sum is perfectly divisible by the combined count for each even and ofd
 	edges[0].OddCount = combined[0]
 	edges[0].EvenCount = combined[1]
 	for k := 0; k < Nc; k++ {
 		edges[0].Cycles[k] = C[k] / combined[k&1]
 	}
-	
+
 	// Zero out edges we consolidated into edge[0]
 	for i := 1; i < len(edges); i++ {
 		edges[i].OddCount = 0
 		edges[i].EvenCount = 0
 	}
-	return true
-	
-}
+	return len(edges) - 1
 
-// func (X *VtxGraphVM) consolidateEdges(tryEdges []*EdgeTraces) {
-	
-// 	tryEdges
-// }
+}
 
 func (X *VtxGraphVM) normalize() {
 
-	edges := X.Edges
-	
-	// Sort edges by graph they appear in
-	sort.Slice(edges, func(i, j int) bool {
-		ei := edges[i]
-		ej := edges[j]
-		
-		// Only terms belonging to the same graph can be consolidated
-		if d := ei.GraphID - ej.GraphID; d != 0 {
-			return d < 0
-		}
-
-		return false
-	})
-	
-	// For each graph. try to normalize every possible combo of EdgeTraces 
 	{
-		var edgesBuf [16]*EdgeTraces
-		Ne := len(edges)
-	
-		// TODO: try every combo, not only just doubles
-		for i := 0; i < Ne; i++ {
+		edges := X.Edges
+
+		// Sort edges by graph they appear in
+		sort.Slice(edges, func(i, j int) bool {
 			ei := edges[i]
-			begin_ei:
-			edgeSet := append(edgesBuf[:0], ei)
-			
-			for j := i + 1; j < Ne; j++ {
-				ej := edges[j]
-				if ei.GraphID != ej.GraphID {
-					break
-				}
-				
-				if ej.EvenCount != 0 && ei.OddCount != 0 {
-					edgeSet = append(edgeSet[:1], ej)
-					if tryConsolidate(edgeSet) {
-					
-						// Retain the now-zero term for memory pooling
-						Ne -= 1
-						edges[j], edges[Ne] = edges[Ne], edges[j]
-						
-						goto begin_ei
-					}
-				}
-			}	
-		}
-		
-		edges = edges[:Ne]
-		X.Edges = edges
+			ej := edges[j]
+
+			// Only terms belonging to the same graph can be consolidated
+			if d := ei.GraphID - ej.GraphID; d != 0 {
+				return d < 0
+			}
+
+			return false
+		})
 	}
-	
+
+	// TODO: only try to consolidate edge runs that are in the same graph (have the same graph ID)
+	X.consolidateEdges()
+
 	X.normalize_signs(0)
 	X.normalize_signs(1)
 
-	
-	// Sort edges by normalized + consolidated edge cycles 
-	sort.Slice(edges, func(i, j int) bool {
-		ei := edges[i]
-		ej := edges[j]
-		
-		// Only terms belonging to the same graph can be consolidated
-		if d := ei.GraphID - ej.GraphID; d != 0 {
-			return d < 0
-		}
+	// Sort edges by normalized + consolidated edge cycles
+	{
+		edges := X.Edges
+		sort.Slice(edges, func(i, j int) bool {
+			ei := edges[i]
+			ej := edges[j]
 
-		return compareCycles(ei, ej, 0) < 0
-	})
-	
-	
-	
-/*
-	// Consolidate edges (accumulate edges with compatible characteristics)
-	// Note that doing so invalidates edge.SrcVtxID values, so lets zero them out for safety.
-	// Work right to left as we overwrite the edge array in place
-	consolidateEdges := true
-	if consolidateEdges {
-		L := 0
-		Ne := len(edges)
-		numConsolidated := 0
-		for R := 1; R < Ne; R++ {
-			eL := edges[L]
-			eR := edges[R]
-
-			match := true
-			for i, ci := range eL.Cycles {
-				if ci != eR.Cycles[i] {
-					match = false
-					break
-				}
+			// Only terms belonging to the same graph can be consolidated
+			if d := ei.GraphID - ej.GraphID; d != 0 {
+				return d < 0
 			}
 
-			// If exact match, absorb R into L, otherwise advance L (old R becomes new L)
-			if match {
-				eL.OddCount += eR.OddCount
-				eL.EvenCount += eR.EvenCount
-				numConsolidated++
-			} else {
-				L++
-				edges[L], edges[R] = edges[R], edges[L] // finalize R into a new L *and* preserve L target (as an allocation)
+			if d := compareCycles(ei, ej, 0); d != 0 {
+				return d < 0
 			}
-		}
-		Ne -= numConsolidated
-
-		// Remove the all-zeros edge (can only be the first entry since they are sorted)
-		if Ne > 0 {
-			e0 := edges[0]
-			zeros := true
-			for _, ci := range e0.Cycles {
-				if ci != 0 {
-					zeros = false
-					break
-				}
+			if d := compareCycles(ei, ej, 1); d != 0 {
+				return d < 0
 			}
-			if zeros {
-				copy(edges[0:], edges[1:Ne])
-				Ne--
-				edges[Ne] = e0
-			}
-		}
-
-		X.Edges = edges[:Ne]
+			return false
+		})
 	}
-	
-	// Sort edges by graph they appear in
-	sort.Slice(edges, func(i, j int) bool {
-		ei := edges[i]
-		ej := edges[j]
-		
-		// Only terms belonging to the same graph can be consolidated
-		if d := ei.GraphID - ej.GraphID; d != 0 {
-			return d < 0
-		}
 
-		// Then sort by cycle signature for even or odd cycles
-		return cyclesCompare(ei, ej, isEven) < 0
-	})
+	/*
+	   // Consolidate edges (accumulate edges with compatible characteristics)
+	   // Note that doing so invalidates edge.SrcVtxID values, so lets zero them out for safety.
+	   // Work right to left as we overwrite the edge array in place
+	   consolidateEdges := true
+
+	   	if consolidateEdges {
+	   		L := 0
+	   		Ne := len(edges)
+	   		numConsolidated := 0
+	   		for R := 1; R < Ne; R++ {
+	   			eL := edges[L]
+	   			eR := edges[R]
+
+	   			match := true
+	   			for i, ci := range eL.Cycles {
+	   				if ci != eR.Cycles[i] {
+	   					match = false
+	   					break
+	   				}
+	   			}
+
+	   			// If exact match, absorb R into L, otherwise advance L (old R becomes new L)
+	   			if match {
+	   				eL.OddCount += eR.OddCount
+	   				eL.EvenCount += eR.EvenCount
+	   				numConsolidated++
+	   			} else {
+	   				L++
+	   				edges[L], edges[R] = edges[R], edges[L] // finalize R into a new L *and* preserve L target (as an allocation)
+	   			}
+	   		}
+	   		Ne -= numConsolidated
+
+	   		// Remove the all-zeros edge (can only be the first entry since they are sorted)
+	   		if Ne > 0 {
+	   			e0 := edges[0]
+	   			zeros := true
+	   			for _, ci := range e0.Cycles {
+	   				if ci != 0 {
+	   					zeros = false
+	   					break
+	   				}
+	   			}
+	   			if zeros {
+	   				copy(edges[0:], edges[1:Ne])
+	   				Ne--
+	   				edges[Ne] = e0
+	   			}
+	   		}
+
+	   		X.Edges = edges[:Ne]
+	   	}
+
+	   // Sort edges by graph they appear in
+
+	   	sort.Slice(edges, func(i, j int) bool {
+	   		ei := edges[i]
+	   		ej := edges[j]
+
+	   		// Only terms belonging to the same graph can be consolidated
+	   		if d := ei.GraphID - ej.GraphID; d != 0 {
+	   			return d < 0
+	   		}
+
+	   		// Then sort by cycle signature for even or odd cycles
+	   		return cyclesCompare(ei, ej, isEven) < 0
+	   	})
 	*/
 }
-
-
 
 /*
 
@@ -755,20 +755,20 @@ func (X *VtxGraphVM) PrintCycleSpectrum(numTraces int, out io.Writer) {
 		out.Write(line)
 	}
 
-/* 
-	for _, vi := range X.Vtx() {
-		for _, ej := range vi.Edges {
-			line := append(ej.AppendDesc(buf[:0]), "    "...)
-			for _, c := range ej.Cycles[:Nc] {
-				line = AppendInt(line, c, prOpts)
+	/*
+		for _, vi := range X.Vtx() {
+			for _, ej := range vi.Edges {
+				line := append(ej.AppendDesc(buf[:0]), "    "...)
+				for _, c := range ej.Cycles[:Nc] {
+					line = AppendInt(line, c, prOpts)
+				}
+				line = append(line, '\n')
+				out.Write(line)
 			}
-			line = append(line, '\n')
-			out.Write(line)
 		}
-	}
 
-	out.Write([]byte(" -------------------------   \n")) 
-*/ 
+		out.Write([]byte(" -------------------------   \n"))
+	*/
 
 	{
 		for _, ei := range X.Edges {
