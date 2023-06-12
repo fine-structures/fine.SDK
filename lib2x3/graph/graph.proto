@@ -89,6 +89,12 @@ enum GraphStatus {
 }
 
 
+enum OddSign {
+    OddSign_Natural = 0; // Odd cycles are not inverted 
+    OddSign_Zero    = 1; // Odd cycles are zero
+    OddSign_Invert  = 2; // Odd cycles are inverted
+}
+
 // EdgeTraces
 //
 // Identities that can transform combinations of give EdgeTraces into another EdgeTraces can be used in a process 
@@ -109,13 +115,12 @@ message EdgeTraces {
     // In order for two TracesTerm to interact / consolidate they must reside in the same GraphID (particle).
     int64               GraphID = 4; 
     
-    // Odd is the identity characteristic of this edge term
-    int64               OddCount = 6; // coefficient (instances) of odd Traces 
     
-    // Even is the expansive energy of the this edge term.
-    // And there was light.  energy: number of "fine structure" steps 
-    int64               EvenCount = 7; // coefficient (instances) of even Traces; aka "bound energy"  
-
+    // Count is the instance count (coefficient) of Cycles.
+    int64               Count = 6;
+    
+    // If set, the sign of each odd cycle traces is inverted.
+    OddSign             OddSign = 8;
 
     //int64               MetricNumerator   = 8; // numerator of the metric
     //int64               MetricDenominator = 9; // numerator of the metric
