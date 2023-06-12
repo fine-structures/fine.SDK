@@ -364,12 +364,12 @@ func (X *Graph) WriteAsString(out io.Writer, opts go2x3.PrintOpts) {
 		X.WriteTracesAsCSV(out, opts.NumTraces)
 	}
 
-	out.Write(newline)
+	//out.Write(newline)
 
 	if opts.CycleSpec {
+		out.Write(newline)
 		X.vm.Canonize()
 		X.vm.PrintCycleSpectrum(10, out)
-		out.Write(newline)
 	}
 
 }
