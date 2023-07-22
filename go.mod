@@ -10,10 +10,10 @@ go 1.19
 
 require (
 	github.com/alecthomas/participle/v2 v2.0.0
-	github.com/arcspace/go-arc-sdk v0.0.0-20230515171510-a7903dbeb29e
+	github.com/arcspace/go-arc-sdk v0.0.0-20230722054000-6f77380e5fd1
 	github.com/dgraph-io/badger/v3 v3.2103.5
 	github.com/emirpasic/gods v1.18.1
-	github.com/go-python/gpython v0.1.1-0.20220817145246-18159950c925
+	github.com/go-python/gpython v0.2.0
 	github.com/gogo/protobuf v1.3.2
 	github.com/pkg/errors v0.9.1
 	github.com/plan-systems/klog v1.0.3
@@ -29,13 +29,13 @@ require (
 	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da // indirect
 	github.com/golang/protobuf v1.5.3 // indirect
 	github.com/golang/snappy v0.0.4 // indirect
-	github.com/google/flatbuffers v23.5.9+incompatible // indirect
-	github.com/klauspost/compress v1.16.5 // indirect
+	github.com/google/flatbuffers v23.5.26+incompatible // indirect
+	github.com/klauspost/compress v1.16.7 // indirect
 	github.com/mattn/go-runewidth v0.0.14 // indirect
 	github.com/peterh/liner v1.2.2 // indirect
 	github.com/rivo/uniseg v0.4.4 // indirect
 	go.opencensus.io v0.24.0 // indirect
-	golang.org/x/net v0.10.0 // indirect
-	golang.org/x/sys v0.8.0 // indirect
-	google.golang.org/protobuf v1.30.0 // indirect
+	golang.org/x/net v0.12.0 // indirect
+	golang.org/x/sys v0.10.0 // indirect
+	google.golang.org/protobuf v1.31.0 // indirect
 )
