@@ -41,5 +41,6 @@ This project is a library & demonstration toolkit for [2x3 Particle Theory](http
 | v1.2022.2 | - refactor graph canonicalization  <br/> - refactor tricode console output |
 | v1.2022.3 | - graph ascii art <br/> - refactor tricode encoding |
 | v1.2023.1 | - refactor and cleanup |
-| v1.2023.2 | - constituent edge traces factorization (WIP) |
+| v1.2023.2 | - edge traces factorization (WIP) |
+| v1.2023.3 | - edge traces factorization: all traces normalized |
 

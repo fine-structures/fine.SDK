@@ -9,47 +9,16 @@ import (
 	"github.com/2x3systems/go2x3/lib2x3"
 )
 
-func TestMisc(t *testing.T) {
-	tmp := &strings.Builder{}
-
-	N5 :=
-		"0 1 2 2 1 \n" +
-			"1 0 1 2 2 \n" +
-			"2 1 0 1 2 \n" +
-			"2 2 1 0 1 \n" +
-			"1 2 2 1 0 \n"
-
-	N6 :=
-		"0 1 2 3 2 1 \n" +
-			"1 0 1 2 3 2 \n" +
-			"2 1 0 1 2 3 \n" +
-			"3 2 1 0 1 2 \n" +
-			"2 3 2 1 0 1 \n" +
-			"1 2 3 2 1 0 \n"
-
-	for Nv := int32(2); Nv <= 6; Nv++ {
-		tmp.Reset()
-		for j := int32(0); j < Nv; j++ {
-			for i := int32(0); i < Nv; i++ {
-				dist := lib2x3.ShortestEdgeDist(Nv, i, j)
-				fmt.Fprintf(tmp, "%d ", dist)
-			}
-			fmt.Fprint(tmp, "\n")
-		}
-		out := tmp.String()
-		t.Logf("Nv = %v:\n%s\n", Nv, out)
-		if Nv == 5 && out != N5 {
-			t.Fatalf("Nv = 5 test failed, should be:\n%s\n", N5)
-		}
-		if Nv == 6 && out != N6 {
-			t.Fatalf("Nv = 6 test failed, should be:\n%s\n", N6)
-		}
-	}
-
-}
 
 func TestBasics(t *testing.T) {
 
+	PrintCycles("1^^-2-3~4^^,3-5")
+	
+	PrintCycles("1-2-3=4-5=6-7=8-1")
+	PrintCycles("1^-2-3-4-2,1-4") // K4 v2
+
+	PrintCycles("1-2=3-4=5")
+	
 	PrintCycles("1---2")
 	PrintCycles("1--~2")
 	PrintCycles("1-~~2")
@@ -97,7 +66,6 @@ func PrintCycles(Xstr string) {
 		Graph:     true,
 		Matrix:    true,
 		NumTraces: 10,
-		Tricodes:  true,
 		CycleSpec: true,
 	})
 	str := b.String()

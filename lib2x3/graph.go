@@ -364,29 +364,12 @@ func (X *Graph) WriteAsString(out io.Writer, opts go2x3.PrintOpts) {
 		X.WriteTracesAsCSV(out, opts.NumTraces)
 	}
 
-	if opts.Tricodes || opts.CycleSpec {
-		out.Write(newline)
-	}
+	//out.Write(newline)
 
-	if opts.Tricodes {
-		X.xstate.PrintVtxGrouping(out)
-	}
 	if opts.CycleSpec {
-		X.xstate.PrintCycleSpectrum(out)
-	}
-	
-	if opts.Tricodes {
 		out.Write(newline)
-		
-		TX := X.Traces(0)
-		if !TX.IsEqual(X.vm.Traces(0)) {
-			panic("traces failed to cross-check")
-		}
-
 		X.vm.Canonize()
 		X.vm.PrintCycleSpectrum(10, out)
-
-		out.Write(newline)
 	}
 
 }
@@ -677,7 +660,7 @@ func ExportGraph(Xsrc *Graph, X *graph.VtxGraphVM) error {
 		vi := uint32(i+1)
 		numPos := int32(vtyp.PosLoops())
 		numNeg := int32(vtyp.NegLoops())
-		if err := X.AddVtxEdge(numNeg, numPos, vi, vi); err != nil {
+		if err := X.AddEdge(numNeg, numPos, vi, vi); err != nil {
 			panic(err)
 		}
 	}
@@ -687,7 +670,7 @@ func ExportGraph(Xsrc *Graph, X *graph.VtxGraphVM) error {
 		ai, bi := edge.VtxAB()
 		edgeType := edge.EdgeType()
 		numPos, numNeg := edgeType.NumPosNeg()
-		if err := X.AddVtxEdge(int32(numNeg), int32(numPos), uint32(ai), uint32(bi)); err != nil {
+		if err := X.AddEdge(int32(numNeg), int32(numPos), uint32(ai), uint32(bi)); err != nil {
 			panic(err)
 		}
 	}

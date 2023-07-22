@@ -18,7 +18,6 @@ def diffTraces(Nv, a, b):
     return Tsum
     
 
-
 n0     = Graph("1-2-3-1-4")
 proton = Graph("1-2-3")
 qdq    = Graph("1^-2-3^")
@@ -27,18 +26,25 @@ e      = Graph("1")
 gamma  = Graph("1---2")
 anti_v = Graph("1^^-2^^")
 
+actors = {
+    'n0':    n0, 
+    'p+':    proton,
+    'qdq':   qdq,
+    'W-':    W,
+    'e-':    e,
+    'gamma': gamma,
+    '~v':    anti_v,
+}
+    
+
 print('''
 ---------------------------------------------------------
 Beta Decay:
 
 Actors:
 ''')
-n0.Print("neutron",     codes=True, traces=5).Go()
-proton.Print("proton",  codes=True, traces=5).Go()
-W.Print("W-",           codes=True, traces=5).Go()
-gamma.Print("gamma",    codes=True, traces=5).Go()
-e.Print("e",            codes=True, traces=5).Go()
-anti_v.Print("~ve",     codes=True, traces=5).Go()
+for a in actors:
+    actors[a].Print(a, cycles=True, traces=6).Go()
 
 print('''
 Commonly known n0 beta decay products (note equal n0 Traces):''')

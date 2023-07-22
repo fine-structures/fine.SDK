@@ -15,7 +15,6 @@ tau      = NewGraph("1-2=3-4=5")
 printOpts = {
     'graph':  True,
     'matrix': True,
-    'codes':  True,
     'cycles': True,
     'traces': 10,
 }

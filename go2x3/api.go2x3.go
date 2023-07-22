@@ -15,38 +15,35 @@ const (
 	VtxIDBits byte = 5
 
 	// MaxEdgeEnds is the max number of possible edge connections for the largest graph possible.
-	MaxEdges       = 3 * MaxVtxID / 2
-	MaxEdgeEnds    = 3 * MaxVtxID
-	
+	MaxEdges    = 3 * MaxVtxID / 2
+	MaxEdgeEnds = 3 * MaxVtxID
 )
 
-
 type ExportOpts int32
+
 const (
 	ExportAsAscii ExportOpts = 1 << iota
 	ExportGraphState
 	ExportGraphDef
 )
 
-type GraphState interface {	
+type GraphState interface {
 	TracesProvider
 
 	PermuteVtxSigns(dst *GraphStream)
 	PermuteEdgeSigns(dst *GraphStream)
-	
+
 	Canonize(normalize bool) error
-	
+
 	WriteAsString(out io.Writer, opts PrintOpts)
 	ExportStateEncoding(out []byte, opts ExportOpts) ([]byte, error)
-	
 
-	
 	// Returns a new copy of this instance.
 	MakeCopy() GraphState
-	
+
 	// Returns info about this graph
-	GetInfo() GraphInfo 
-	
+	GetInfo() GraphInfo
+
 	// Recycles this GraphState instance into a pool for reuse.
 	// Caller asserts that no more references to this instance will persist.
 	Reclaim()
@@ -66,7 +63,6 @@ type TracesLSM []byte
 // TracesID uniquely identifies a cycle trace series
 type TracesID uint64
 
-
 // OnGraphHit is a callback proc used to return Graph's meeting a set of selection criteria.
 // Ownership of a Graph also travels through the channel.
 type OnGraphHit chan<- GraphState
@@ -76,7 +72,7 @@ type CatalogContext interface {
 
 	// Attaches the given Catalog to this context.
 	AttachCatalog(cat Catalog)
-	
+
 	// Detaches the given Catalog from this context.
 	DetachCatalog(cat Catalog)
 
@@ -105,7 +101,7 @@ type GraphAdder interface {
 // Catalog wraps a database of lib2x3 Graph encodings.
 type Catalog interface {
 	GraphAdder
-	
+
 	// Returns true if this catalog was opened for read-only access.
 	IsReadOnly() bool
 
@@ -121,9 +117,7 @@ type Catalog interface {
 	Select(sel GraphSelector, onHit OnGraphHit)
 
 	Close() error
-
 }
-
 
 type GraphInfo struct {
 	NumParticles byte
@@ -137,13 +131,12 @@ type GraphInfo struct {
 // GraphSelector is an operator that either selects a given Graph or not.
 type GraphSelector struct {
 	Traces       TracesProvider // Implies a Traces to match with or factor
-	Factor       bool                 // Perform factorization of sel.Traces
-	UniqueTraces bool                 // Only select the first Graph for each unique traces
-	PrimesOnly   bool                 // Only select prime traces
-	Min          GraphInfo            // lower select bounds
-	Max          GraphInfo            // upper select bounds
+	Factor       bool           // Perform factorization of sel.Traces
+	UniqueTraces bool           // Only select the first Graph for each unique traces
+	PrimesOnly   bool           // Only select prime traces
+	Min          GraphInfo      // lower select bounds
+	Max          GraphInfo      // upper select bounds
 }
-
 
 // PrintOpts specifies what is printing when printing a graph
 type PrintOpts struct {
@@ -151,7 +144,6 @@ type PrintOpts struct {
 	Graph     bool   // If set, prints graph construction expr
 	Matrix    bool   // if set, prints matrix representation of graph
 	NumTraces int    // Num of Traces to print (-1 denotes natural length, 0 denotes no traces)
-	Tricodes  bool   // If set, the canonic tricode sequence is printed
 	CycleSpec bool   // If set, the cycles spectrum is printed -- i.e. a canonic column of "cycles" vectors
 }
 
@@ -161,20 +153,18 @@ var DefaultPrintOpts = PrintOpts{
 	NumTraces: -1,
 }
 
-
-
-
-type PrimeCatalog interface {
+type FactorCatalog interface {
 	generics.RefCloser
 
 	// Tries to add the given graph encoding to this catalog.
 	// Assumes TX is being added in ascending order of NumVertices() since prime detection requires all primes of lesser vertex count to have already been added.
 	TryAddTraces(TX TracesProvider) (TracesID, bool)
 
-	// NumPrimes returns the number of particle primes for a given vertex count.
-	// NumPrimes()[0] is always 0 and an out of bounds vertex count returns 0.
-	NumPrimes(forVtxCount byte) int64
+	// NumTraces returns the number of Traces in this catalog for a given vertex count.
+	// An out of bounds vertex count returns 0.
+	NumTraces(forVtxCount byte) int64
 
+	// Emits all factorizations of the given Traces using a dynamic programming algorithm to traverse all possible TX partitions.
 	FindFactorizations(TX TracesProvider) <-chan FactorSet
 }
 

@@ -32,7 +32,7 @@ type graphState struct {
 	numGroups int32       // count of unique vertex groups present
 	curCi     int
 	traces    go2x3.Traces
-	graph.VtxStatus
+	graph.GraphStatus
 }
 
 // triVtx starts as a vertex in a conventional "2x3" vertex+edge and used to derive a canonical LSM-friendly encoding (i.e. TriID)
@@ -127,7 +127,7 @@ func (v *graphVtx) Init(vtxIdx int) {
 func (X *graphState) reset(Nv int) {
 
 	X.vtxCount = Nv
-	X.VtxStatus = graph.VtxStatus_Invalid
+	X.GraphStatus = graph.GraphStatus_Invalid
 	X.Touch()
 	if X.vtxDimSz >= Nv {
 		return
@@ -222,7 +222,7 @@ func (X *graphState) AssignGraph(Xsrc *Graph) error {
 		}
 	}
 
-	X.VtxStatus = graph.VtxStatus_Validated
+	X.GraphStatus = graph.GraphStatus_Validated
 	return nil
 }
 
@@ -316,8 +316,8 @@ func (X *graphState) calcCyclesUpTo(numTraces int) {
 }
 
 func (X *graphState) Touch() {
-	if X.VtxStatus > graph.VtxStatus_Validated {
-		X.VtxStatus = graph.VtxStatus_Validated
+	if X.GraphStatus > graph.GraphStatus_Validated {
+		X.GraphStatus = graph.GraphStatus_Validated
 	}
 	X.curCi = 0
 	X.numGroups = 0
@@ -381,7 +381,7 @@ func (X *graphState) forEveryGroupEdgePair(iter func(vi, vj *graphVtx, ei, ej in
 func (X *graphState) Canonize() {
 
 	for {
-		if X.VtxStatus >= graph.VtxStatus_Canonized {
+		if X.GraphStatus >= graph.GraphStatus_Canonized {
 			return
 		}
 
@@ -503,7 +503,7 @@ func (X *graphState) Canonize() {
 
 		X.sortVtxGroups()
 
-		X.VtxStatus = graph.VtxStatus_Canonized
+		X.GraphStatus = graph.GraphStatus_Canonized
 
 	}
 }
