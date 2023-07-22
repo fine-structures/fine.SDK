@@ -20,7 +20,7 @@ import (
 )
 
 var (
-	LIB_VERSION = "v1.2023.2"
+	LIB_VERSION = "v1.2023.3"
 )
 
 var (
