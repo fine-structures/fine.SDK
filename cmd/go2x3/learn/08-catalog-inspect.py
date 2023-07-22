@@ -13,8 +13,8 @@ printOpts = {
 
 
 sel = NewSelector()
-sel.max.verts = 4
-sel.unique_traces = False
+sel.max.verts = 6
+sel.unique_traces = True
 sel.primes = False
 catalog.Select(sel).Print("ALL", **printOpts).Go()
 
