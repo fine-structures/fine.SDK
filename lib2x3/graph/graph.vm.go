@@ -10,7 +10,7 @@ import (
 
 type ComputeVtx struct {
 	// Two vtx are connected in the same graph if they have the same GraphID.
-	GraphID int64
+	GraphID int32
 
 	// When assigned from a 2x3 graph, each Vtx has 3 edges.
 	Edges []*EdgeTraces
@@ -75,9 +75,9 @@ func (X *VtxGraphVM) addEdgeToVtx(dst uint32, e *EdgeTraces) {
 		} else {
 			v.Edges = v.Edges[:0]
 		}
-		v.GraphID = int64(i + 1)
-		v.VtxID = i + 1
 		Nv++
+		v.GraphID = int32(Nv)
+		v.VtxID = Nv
 	}
 
 	// With a dst vtx in hand, add the edge
@@ -216,6 +216,21 @@ func (X *VtxGraphVM) Validate() error {
 				vb.GraphID = va.GraphID
 				changed = true
 			}
+		}
+	}
+	
+	// re-index GraphID to be sequential
+	{
+		remap := make([]byte, len(vtx)+1)
+		N := byte(0)
+		for _, v := range vtx {
+			if remap[v.GraphID] == 0 {
+				N++
+				remap[v.GraphID] = N
+			}
+		}
+		for _, v := range vtx {
+			v.GraphID = int32(remap[v.GraphID])
 		}
 	}
 
@@ -380,16 +395,18 @@ func consolidateEdges(
 	case numToSelect > remain:
 		return 0 // not enough edges remaining to select from
 	case numToSelect == remain:
-		{
-			tryingEdges = append(tryingEdges, remainEdges...)
-			return tryConsolidate(tryingEdges)
-		}
+		tryingEdges = append(tryingEdges, remainEdges...)
+		return tryConsolidate(tryingEdges)
 	}
 
 	edgesRemoved := 0
 
 	for i := 0; i < remain; i++ {
 
+		// Cull work: consolidation is only possible for edges in the same graph
+		if len(tryingEdges) > 0 && tryingEdges[0].GraphID != remainEdges[i].GraphID {
+			continue
+		}
 		// Recurse WITH edge i
 		// If tryingEdges[:] was consolidated into tryingEdges[0], back out and restart from tryingEdges[0])
 		tryEdges := append(tryingEdges, remainEdges[i])
@@ -437,8 +454,12 @@ func tryConsolidate(edges []*EdgeTraces) int {
 	Nc := len(edges[0].Cycles)
 
 	combined := int64(0)
+	graphID := edges[0].GraphID
 	for _, ei := range edges {
 		combined += ei.Count
+		if graphID != ei.GraphID {
+			return 0
+		}
 	}
 
 	for k := 0; k < Nc; k++ {
@@ -490,7 +511,6 @@ func (X *VtxGraphVM) normalize() {
 		})
 	}
 
-	// TODO: only try to consolidate edge runs that are in the same graph (have the same graph ID)
 	X.consolidateEdges()
 
 	X.normalize_signs()

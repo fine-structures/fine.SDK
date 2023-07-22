@@ -113,7 +113,7 @@ message EdgeTraces {
     
     // GraphID is one-based index ID of the graph this TracesTerm belongs to.
     // In order for two TracesTerm to interact / consolidate they must reside in the same GraphID (particle).
-    int64               GraphID = 4; 
+    int32               GraphID = 4; 
     
     
     // Count is the instance count (coefficient) of Cycles.
