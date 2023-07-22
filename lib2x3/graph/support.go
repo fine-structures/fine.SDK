@@ -76,12 +76,12 @@ func (X *VtxGraph) IsCanonized() bool {
 	return X.Status >= GraphStatus_Canonized
 }
 
-var signChar = [3]byte{' ', '*', '~'}
+var signChar = [3]byte{' ', ' ', '~'}
 
 func (e *EdgeTraces) AppendDesc(io []byte) []byte {
 
 	if e.GraphID != 0 {
-		io = fmt.Appendf(io, "P%-3d ", e.GraphID)
+		io = fmt.Appendf(io, "#%-3d ", e.GraphID)
 	} else {
 		io = append(io, "   "...)
 	}
@@ -100,7 +100,7 @@ func (e *EdgeTraces) AppendDesc(io []byte) []byte {
 		io = append(io, "        "...)
 	}
 
-	io = fmt.Appendf(io, "  %c %02d", signChar[e.OddSign], e.Count)
+	io = fmt.Appendf(io, "   %c%02d", signChar[e.OddSign], e.Count)
 
 	return io
 }

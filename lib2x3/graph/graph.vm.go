@@ -218,7 +218,7 @@ func (X *VtxGraphVM) Validate() error {
 			}
 		}
 	}
-	
+
 	// re-index GraphID to be sequential
 	{
 		remap := make([]byte, len(vtx)+1)
@@ -710,6 +710,10 @@ func (X *VtxGraphVM) calcTracesTo(Nc int) {
 	}
 }
 
+var (
+	gLineSep = "........."
+)
+
 func (X *VtxGraphVM) PrintCycleSpectrum(numTraces int, out io.Writer) {
 	TX := X.Traces(numTraces)
 
@@ -718,9 +722,8 @@ func (X *VtxGraphVM) PrintCycleSpectrum(numTraces int, out io.Writer) {
 
 	var buf [128]byte
 
-	blank := "         "
 	prOpts := PrintIntOpts{
-		MinWidth: len(blank),
+		MinWidth: len(gLineSep),
 	}
 
 	// Write header
@@ -736,14 +739,18 @@ func (X *VtxGraphVM) PrintCycleSpectrum(numTraces int, out io.Writer) {
 			line = fmt.Appendf(line, "C%d      ", ti+1)
 		}
 
-		line = append(line, "\n.................... "...)
-
 		// append traces
+		line = append(line, "\n                     "...)
 		for _, Ti := range TX {
 			line = AppendInt(line, Ti, prOpts)
 		}
 
+		line = append(line, "\n                     "...)
+		for i := 0; i < Nc; i++ {
+			line = append(line, gLineSep...)
+		}
 		line = append(line, '\n')
+
 		out.Write(line)
 	}
 
