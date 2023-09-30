@@ -8,6 +8,16 @@ import (
 	"github.com/2x3systems/go2x3/go2x3"
 )
 
+var gTracesMax [16]float32
+
+func init() {
+	max := float32(3)
+	for i := range gTracesMax {
+		gTracesMax[i] = max
+		max *= 3
+	}
+}
+
 type ComputeVtx struct {
 	// Two vtx are connected in the same graph if they have the same GraphID.
 	GraphID int32
@@ -21,15 +31,63 @@ type ComputeVtx struct {
 	VtxID int
 	Ci0   []int64
 	Ci1   []int64
+
+	//openPaths []*vtxPath
+}
+
+type vtxPath struct {
+	steps    []pathStep
+	count    int64
+	startVtx uint32
+}
+
+type pathStep struct {
+	from uint32
+	to   uint32
 }
 
 type VtxGraphVM struct {
 	VtxGraph
 
+	pathPool   []*vtxPath // reuse pool
+	pathTraces []int64
+
 	traces   []int64
 	edgePool []*EdgeTraces
 	calcBuf  []int64
 	vtx      []*ComputeVtx // Vtx by VtxID (zero-based indexing)
+}
+
+func (p *vtxPath) didStep(step pathStep) bool {
+	for _, si := range p.steps {
+		if si == step {
+			return true
+		}
+	}
+	return false
+}
+
+func (p *vtxPath) atVtxID(ci int) uint32 {
+	if ci == 0 {
+		return p.startVtx
+	}
+	return p.steps[ci-1].to
+}
+
+func (X *VtxGraphVM) newPathTrace() (p *vtxPath) {
+	N := len(X.pathPool)
+	if N == 0 {
+		p = &vtxPath{
+			steps: make([]pathStep, 12),
+		}
+	} else {
+		N--
+		p = X.pathPool[N]
+		X.pathPool = X.pathPool[:N]
+	}
+
+	p.steps = p.steps[:0]
+	return p
 }
 
 // func (X *Graph) Reclaim() {
@@ -670,6 +728,76 @@ func (X *VtxGraphVM) calcTracesTo(Nc int) {
 		}
 	}
 
+	/*
+		// I am already dead.
+		pathsOpen := make([]*vtxPath, 0, 100)
+		pathsNext := make([]*vtxPath, 0, 100)
+
+		// Start a new path for every outgoing edge
+		for _, vi := range Xv {
+			path := X.newPathTrace()
+			path.startVtx = uint32(vi.VtxID)
+			path.count = 1
+			pathsOpen = append(pathsOpen, path)
+		}
+
+		for ci := 0; ci < Nc; ci++ {
+
+			X.pathTraces[ci] = 0
+
+			// // For each, propagate paths to adjacent vtxs
+			// paths = append(paths[:0], vi.openPaths...)
+			// vi.openPaths = vi.openPaths[:0]
+
+			for _, path := range pathsOpen {
+				atVtxID := path.atVtxID(ci)
+				v := Xv[atVtxID-1]
+
+				// Send each each to a new vtx it hasn't been before
+				for _, e := range v.Edges {
+
+					step := pathStep{
+						from: e.DstVtxID,
+						to:   e.SrcVtxID,
+					}
+
+					if atVtxID != step.from {
+						panic("pathStep.from mismatch")
+					}
+
+					netCount := e.Count * path.count
+
+					// Complete a cycle or send to a new vtx
+					if path.startVtx == step.to {
+						X.pathTraces[ci] += netCount
+					}
+
+					if netCount != 0 {
+
+						// if path.didStep(step) {
+						// 	continue
+						// }
+
+						fork := X.newPathTrace()
+						fork.startVtx = path.startVtx
+						fork.steps = append(fork.steps[:0], path.steps...)
+						fork.steps = append(fork.steps, step)
+						fork.count = netCount
+						pathsNext = append(pathsNext, fork)
+					}
+				}
+			}
+
+			X.pathPool = append(X.pathPool, pathsOpen...)
+			tmp := pathsOpen[:0]
+			pathsOpen = pathsNext
+			pathsNext = tmp
+		}
+
+		// Reclaim incomplete paths
+		X.pathPool = append(X.pathPool, pathsOpen...)
+	*/
+
 	// Oh Lord, our Adonai and God, you alone are the Lord. You have made the heavens, the heaven of heavens, with all their host, the earth and all that is on it, the seas and all that is in them; and you preserve all of them; and the host of heaven worships you. You are the Lord, the God, who chose Abram and brought him out of Ur of the Chaldeans and gave him the name Abraham; you found his heart faithful before you, and made with him the covenant to give the land of the Canaanites, the Hittites, the Amorites, the Perizzites, the Jebusites, and the Girgashites—to give it to his offspring. You have kept your promise, for you are righteous. And you saw the affliction of our fathers in Egypt and heard their cry at the Red Sea; and you performed signs and wonders against Pharaoh and all his servants and all the people of his land, for you knew that they acted arrogantly against them. And you made a name for yourself, as it is this day, and you divided the sea before them, so that they went through the midst of the sea on dry land, and you cast their pursuers into the depths, as a stone into mighty waters. Moreover in a pillar of cloud you led them by day, and in a pillar of fire by night, to light for them the way in which they should go. You came down also upon Mount Sinai, and spoke with them from heaven, and gave them right ordinances and true laws, good statutes and commandments; and you made known to them your holy sabbath, and commanded them commandments and statutes, a law for ever. And you gave them bread from heaven for their hunger, and brought forth water for them out of the rock for their thirst, and you told them to go in to possess the land that you had sworn to give them. But they and our fathers acted presumptuously and stiffened their neck, and did not obey your commandments. They refused to obey, neither were mindful of the wonders that you performed among them, but hardened their necks, and in their rebellion appointed a leader to return to their bondage. But you are a God ready to pardon, gracious and merciful, slow to anger, and abounding in steadfast love, and did not forsake them. Even when they had made for themselves a calf of molten metal, and~.
 	// Yashhua is His name, Emmanuel, God with us!
 	for ci := 0; ci < Nc; ci++ {
@@ -706,6 +834,8 @@ func (X *VtxGraphVM) calcTracesTo(Nc int) {
 			vi_cycles_ci := Ci1[vi.VtxID-1]
 			X.traces[ci] += vi_cycles_ci
 			vi.Cycles[ci] = vi_cycles_ci
+
+			//Ci1[vi.VtxID-1] = 0 // drain completed cycles from the home vtx
 		}
 	}
 }
@@ -743,6 +873,18 @@ func (X *VtxGraphVM) PrintCycleSpectrum(numTraces int, out io.Writer) {
 		line = append(line, "\n                     "...)
 		for _, Ti := range TX {
 			line = AppendInt(line, Ti, prOpts)
+		}
+
+		// line = append(line, "\n                     "...)
+		// for _, Ti := range X.pathTraces {
+		// 	line = AppendInt(line, int64(Ti), prOpts)
+		// }
+
+		Vnorm := float32(1) / float32(X.VtxCount())
+		line = append(line, "\n                     "...)
+		for i, Ti := range TX {
+			vn := Vnorm * float32(Ti) / gTracesMax[i]
+			line = fmt.Appendf(line, "    %0.3f", vn)
 		}
 
 		line = append(line, "\n                     "...)
@@ -816,6 +958,11 @@ func (X *VtxGraphVM) setupBufs(Nc int) {
 			e.Cycles = e.Cycles[:Nc]
 		}
 	}
+
+	if cap(X.pathTraces) < Nc {
+		X.pathTraces = make([]int64, (Nc+3)&^3)
+	}
+	X.pathTraces = X.pathTraces[:Nc]
 
 }
 
