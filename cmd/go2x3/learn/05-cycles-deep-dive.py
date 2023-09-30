@@ -67,6 +67,7 @@ ShowGraph(" ντ (τ neutrino)",    "1-2-3-4-5-6")
 ShowGraph(" ν8 (super neutrino)","1-2-3-4-5-6-7-8")
 ShowGraph("y8  (quad-gamma)",    "1=2-3=4-5=6-7=8-1")
 ShowGraph("y8d ",                "1-2-3=4-5=6-7=8-1")
+ShowGraph("y8d_flip",            "1-2-3-~4-5=6-7=8-1")
 
 
 print("\n===============================================  \n")
