@@ -10,9 +10,7 @@ import (
 /*
 // SystemTraces ->
 //    []ParticleTraces
-//        []EdgeTraces
-//             []EdgeFactorRuns
-//                 []EdgePrimeTraces
+//        []VtxGroup
 type TracesPrimeFactorID uint32
 
 type Catalog struct {

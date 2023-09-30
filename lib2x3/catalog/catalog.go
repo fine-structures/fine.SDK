@@ -45,14 +45,6 @@ Catalog database format:
 	...
 
 
-EdgePrimeTraces
-
-// SystemTraces ->
-//    []ParticleTraces
-//        []EdgeTraces
-//             []EdgeFactorRuns
-//                 []EdgePrimeTraces
-
 
 The above structure allows to:
 	1) load all primes for a given Nv
@@ -755,7 +747,7 @@ func (cat *catalog) TryAddGraph(X go2x3.GraphState) bool {
 			txn.SetEntry(badger.NewEntry(tracesKey, nil).WithMeta(tracesFlags))
 		}
 		if isNewGraph {
-			var encBuf [128]byte 
+			var encBuf [128]byte
 			val, err := X.ExportStateEncoding(encBuf[:0], go2x3.ExportGraphDef)
 			if err == nil {
 				txn.Set(completeKey, val)
