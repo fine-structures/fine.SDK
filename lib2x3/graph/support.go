@@ -79,16 +79,17 @@ func (X *VtxGraph) IsCanonized() bool {
 var signChar = [3]byte{' ', ' ', '~'}
 
 func (v *VtxGroup) AppendDesc(io []byte) []byte {
-
-	if v.GraphID != 0 {
-		io = fmt.Appendf(io, "#%-3d ", v.GraphID)
+	if v.GroupID == 1 {
+		io = fmt.Appendf(io, " %2d", v.GraphID)
 	} else {
-		io = append(io, "   "...)
+		io = fmt.Append(io, "   ")
 	}
 
-	io = fmt.Appendf(io, "   #%-3d ", v.GroupID)
-	
-	io = fmt.Appendf(io, "   %c%02d", signChar[v.OddSign], v.Count)
+	c := byte('?')
+	if v.GroupID > 0 {
+		c = 'A' + byte(v.GroupID) - 1
+	}
+	io = fmt.Appendf(io, ".%c           %c%02d", c, signChar[v.OddSign], v.Count)
 
 	return io
 }

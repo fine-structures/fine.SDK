@@ -12,10 +12,7 @@ type ComputeVtx struct {
 	VtxGroup
 
 	// Initially assigned label: 1, 2, 3, ..  (one-based index)
-	VtxID int
-
-	// When assigned from a 2x3 graph, each Vtx has 3 edges.
-	Edges []*VtxEdge
+	VtxID uint32
 
 	Ci0 []int64 // trace in place
 	Ci1 []int64 // trace in place
@@ -24,11 +21,15 @@ type ComputeVtx struct {
 type VtxGraphVM struct {
 	VtxGraph
 
-	traces   []int64
-	edgePool []*VtxEdge
-	calcBuf  []int64
-	vtx      []*ComputeVtx // Vtx by VtxID (zero-based indexing)
+	edgeCount int        // allocated edges: edgePool[:edgeCount]
+	edgePool  []*VtxEdge // used and non-used edges
+	traces    []int64
+	calcBuf   []int64
+	vtx       []*ComputeVtx // Vtx by VtxID (zero-based indexing)
+	vtxMap    []uint32      // original VtxID to consolidated VtxID (zero-based indexing)
 }
+
+const maxNv = 18
 
 // func (X *Graph) Reclaim() {
 // 	if X != nil {
@@ -78,7 +79,7 @@ func (X *VtxGraphVM) addEdgeToVtx(dst uint32, e *VtxEdge) {
 		v.GroupID = 0
 		v.OddSign = OddSign_Natural
 		v.GraphID = uint32(Nv)
-		v.VtxID = Nv
+		v.VtxID = uint32(Nv)
 	}
 
 	// With a dst vtx in hand, add the edge
@@ -96,55 +97,30 @@ func (X *VtxGraphVM) VtxCount() int {
 
 func (X *VtxGraphVM) ResetGraph() {
 	X.Status = GraphStatus_Invalid
-	//X.VtxToGroupID = X.VtxToGroupID[:0]
-	// for _, v := range X.vtx {
-	// 	for _, e := range v.Edges {
-	// 		X.edgePool = append(X.edgePool, e)
-	// 	}
-	// }
+
 	X.vtx = X.vtx[:0]
-	X.edgePool = X.edgePool[:0]
+	X.edgeCount = 0
 	X.traces = nil
 	X.Status = GraphStatus_Invalid
-
-	// if cap(X.vtx) < Nv {
-	// 	X.vtx = make([]*ComputeVtx, Nv, 8 + edgePool2*cap(X.vtx))
-	// } else if len(X.vtx) < dstID {
-	// 	X.vtx = X.vtx[:dstID]
-	// }
-
-	// for i, v := range X.vtx {
-	//     if vi == nil {
-	//     	v = &ComputeVtx{
-	//     	   Edges: make([]*VtxEdge, 0, 8),
-	// 		}
-	//     	X.vtx[i] = v
-	//     } else {
-	// 		v.Edges = v.Edges[:0]
-	// 	}
-	//     v.VtxID = uint32(i+1)
-	// }
-
 }
 
 func (X *VtxGraphVM) newEdge() *VtxEdge {
-	Ne := len(X.edgePool) + 1
+	Ne := X.edgeCount
 
-	if cap(X.edgePool) < Ne {
+	if cap(X.edgePool) <= Ne {
 		old := X.edgePool
-		X.edgePool = make([]*VtxEdge, Ne, 16+2*cap(X.edgePool))
+		X.edgePool = make([]*VtxEdge, 16+2*cap(X.edgePool))
 		copy(X.edgePool, old)
-	} else {
-		X.edgePool = X.edgePool[:Ne]
 	}
 
-	e := X.edgePool[Ne-1]
+	e := X.edgePool[Ne]
 	if e == nil {
 		e = &VtxEdge{}
-		X.edgePool[Ne-1] = e
+		X.edgePool[Ne] = e
 	} else {
 		*e = VtxEdge{}
 	}
+	X.edgeCount = Ne + 1
 	return e
 }
 
@@ -193,27 +169,26 @@ func (X *VtxGraphVM) Validate() error {
 
 	vtx := X.Vtx()
 
-	// Keep doing passes until connectivity do not change GraphID assignments
+	// Keep doing passes until edge propagation doesn't change GraphID assignments
 	for changed := true; changed; {
 		changed = false
 
-		for _, ei := range X.edgePool {
-			vi_a := ei.DstVtxID
-			vi_b := ei.SrcVtxID
-			if vi_a == vi_b {
-				continue
-			}
+		for _, vi := range vtx {
+			for _, ej := range vi.Edges {
+				vj_ID := ej.SrcVtxID
+				if vj_ID == vi.VtxID {
+					continue
+				}
 
-			va := vtx[vi_a-1]
-			vb := vtx[vi_b-1]
-
-			// Propagate the lowest GraphID to the other
-			if va.GraphID > vb.GraphID {
-				va.GraphID = vb.GraphID
-				changed = true
-			} else if vb.GraphID > va.GraphID {
-				vb.GraphID = va.GraphID
-				changed = true
+				// Propagate the lowest GraphID to the other
+				vj := vtx[vj_ID-1]
+				if vi.GraphID > vj.GraphID {
+					vi.GraphID = vj.GraphID
+					changed = true
+				} else if vj.GraphID > vi.GraphID {
+					vj.GraphID = vi.GraphID
+					changed = true
+				}
 			}
 		}
 	}
@@ -245,6 +220,7 @@ func (X *VtxGraphVM) Validate() error {
 
 func (X *VtxGraphVM) Canonize() {
 	X.Traces(12)
+	X.consolidateVtx()
 	X.normalize()
 }
 
@@ -258,39 +234,67 @@ func compareCycles(a, b *ComputeVtx) int64 {
 	return 0
 }
 
-func (X *VtxGraphVM) normalize_signs() {
+func (X *VtxGraphVM) normalize() {
+	vtx := X.Vtx()
 
+	// Sign and count normalization
+	for _, v := range vtx {
+
+		// If a coeff is zero, zero out the elements for clarity
+		if v.Count == 0 {
+			for i := range v.Cycles {
+				v.Cycles[i] = 0
+			}
+			continue
+		}
+
+		// Normalize odd sign
+		sign := OddSign_Zero
+		for i := 0; i < len(v.Cycles); i += 2 {
+			ci := v.Cycles[i]
+
+			// find first non-zero cycle and if possible factor out sign to get canonic form
+			if sign == OddSign_Zero && ci != 0 {
+				if ci < 0 {
+					sign = OddSign_Invert
+				} else {
+					sign = OddSign_Natural
+					break
+				}
+			}
+			if sign == OddSign_Invert {
+				v.Cycles[i] = -ci
+			}
+		}
+		v.OddSign = sign
+	}
+
+	// Sort vtx by normalized + consolidated cycles
+	sort.Slice(vtx, func(i, j int) bool {
+		vi := vtx[i]
+		vj := vtx[j]
+
+		// Only terms belonging to the same graph can be consolidated
+		if d := int(vi.GraphID) - int(vj.GraphID); d != 0 {
+			return d < 0
+		}
+		if d := compareCycles(vi, vj); d != 0 {
+			return d < 0
+		}
+		return false
+	})
+
+	// Finally -- conically assign GroupID
 	{
-		// Sign and count normalization
-		for _, v := range X.Vtx() {
-
-			// If a coeff is zero, zero out the elements for clarity
-			if v.Count == 0 {
-				for i := range v.Cycles {
-					v.Cycles[i] = 0
-				}
-				continue
+		groupCount := uint32(0)
+		curGraphID := uint32(0)
+		for _, vi := range vtx {
+			if vi.GraphID != curGraphID {
+				groupCount = 0
+				curGraphID = vi.GraphID
 			}
-
-			// Normalize odd sign
-			sign := OddSign_Zero
-			for i := 0; i < len(v.Cycles); i += 2 {
-				ci := v.Cycles[i]
-
-				// find first non-zero cycle and if possible factor out sign to get canonic form
-				if sign == OddSign_Zero && ci != 0 {
-					if ci < 0 {
-						sign = OddSign_Invert
-					} else {
-						sign = OddSign_Natural
-						break
-					}
-				}
-				if sign == OddSign_Invert {
-					v.Cycles[i] = -ci
-				}
-			}
-			v.OddSign = sign
+			groupCount++
+			vi.GroupID = groupCount
 		}
 	}
 }
@@ -302,7 +306,7 @@ func (X *VtxGraphVM) consolidateVtx() {
 
 	tryingVtx := make([]*ComputeVtx, Nv)
 	for numToSelect := Nv; numToSelect >= 2; numToSelect-- {
-		n := consolidateVtx(vtx, tryingVtx[:0], numToSelect)
+		n := X.consolidateVtxRecurse(vtx, tryingVtx[:0], numToSelect)
 		if n > 0 {
 			if n%(numToSelect-1) != 0 {
 				panic("consolidateVtx: unexpected number of vtx removed")
@@ -348,24 +352,47 @@ func (X *VtxGraphVM) consolidateVtx() {
 }
 
 // Returns number of vtx removed from consolidation (or 0 if none were consolidated)
-func consolidateVtx(
+func (X *VtxGraphVM) consolidateVtxRecurse(
 	remainVtx []*ComputeVtx, // the vtx that are available to be consolidated
 	tryingVtx []*ComputeVtx, // vtx (by index) that have been chosen so far to try to consolidate
 	numToSelect int, // number of vtx to select from remainVtx
 ) int {
 
 	remain := len(remainVtx)
+	vtxRemoved := 0
+	baseCase := true
+
 	switch {
 	case numToSelect == 0:
-		return tryConsolidate(tryingVtx) // try to consolidate the vtx we've selected
+		vtxRemoved = tryConsolidate(tryingVtx) // try to consolidate the vtx we've selected
 	case numToSelect > remain:
-		return 0 // not enough vtx remaining to select from
+		vtxRemoved = 0 // not enough vtx remaining to select from
 	case numToSelect == remain:
 		tryingVtx = append(tryingVtx, remainVtx...)
-		return tryConsolidate(tryingVtx)
+		vtxRemoved = tryConsolidate(tryingVtx)
+	default:
+		baseCase = false
 	}
 
-	vtxRemoved := 0
+	if baseCase {
+		if vtxRemoved > 0 { // Zero out the consolidated vtx
+			v0 := tryingVtx[0]
+			newID := v0.VtxID
+			for _, vi := range tryingVtx[1:] {
+				oldID := vi.VtxID
+				X.vtxMap[oldID-1] = newID
+				vi.Count = 0
+				v0.Edges = append(v0.Edges, vi.Edges...)
+				for j, vj := range X.vtxMap {
+					if vj == oldID {
+						X.vtxMap[j] = newID
+					}
+				}
+			}
+		}
+
+		return vtxRemoved
+	}
 
 	for i := 0; i < remain; i++ {
 
@@ -376,7 +403,7 @@ func consolidateVtx(
 		// Recurse WITH vtx i
 		// If tryingVtx[:] was consolidated into tryingVtx[0], back out and restart from tryingVtx[0])
 		tryVtx := append(tryingVtx, remainVtx[i])
-		n := consolidateVtx(remainVtx[i+1:], tryVtx, numToSelect-1)
+		n := X.consolidateVtxRecurse(remainVtx[i+1:], tryVtx, numToSelect-1)
 		if n > 0 {
 			vtxRemoved += n
 
@@ -413,10 +440,9 @@ func consolidateVtx(
 }
 
 // pre: for each vtx OddCount and EvenCount are non-zero
-// Returns how many vtx were consolidated (now zeroed out) into vtx[0]
-// Result will always be 0 or len(vtx)-1
+// Returns how many vtx were consolidated into vtx[0] -- always either 0 or len(vtx)-1
 func tryConsolidate(vtx []*ComputeVtx) int {
-	var C [16]int64
+	var C [maxNv]int64
 	Nc := len(vtx[0].Cycles)
 
 	combined := int64(0)
@@ -450,125 +476,7 @@ func tryConsolidate(vtx []*ComputeVtx) int {
 		vtx[0].Cycles[k] = C[k] / combined
 	}
 
-	// Zero out the vtx we consolidated into vtx[0]
-	for i := 1; i < len(vtx); i++ {
-		vtx[i].Count = 0
-	}
 	return len(vtx) - 1
-
-}
-
-func (X *VtxGraphVM) normalize() {
-
-	{
-		vtx := X.Vtx()
-
-		// Sort vtx by graph they appear in
-		sort.Slice(vtx, func(i, j int) bool {
-			vi := vtx[i]
-			vj := vtx[j]
-
-			// Only terms belonging to the same graph can be consolidated
-			if d := int(vi.GraphID) - int(vj.GraphID); d != 0 {
-				return d < 0
-			}
-
-			return false
-		})
-	}
-
-	X.consolidateVtx()
-
-	X.normalize_signs()
-
-	// Sort vtx by normalized + consolidated cycles
-	{
-		vtx := X.Vtx()
-		sort.Slice(vtx, func(i, j int) bool {
-			vi := vtx[i]
-			vj := vtx[j]
-
-			// Only terms belonging to the same graph can be consolidated
-			if d := int(vi.GraphID) - int(vj.GraphID); d != 0 {
-				return d < 0
-			}
-
-			if d := compareCycles(vi, vj); d != 0 {
-				return d < 0
-			}
-			return false
-		})
-	}
-
-	/*
-	   // Consolidate vtx (accumulate vtx with compatible characteristics)
-	   // Note that doing so invalidates edge.SrcVtxID values, so lets zero them out for safety.
-	   // Work right to left as we overwrite the edge array in place
-	   consolidateVtx := true
-
-	   	if consolidateVtx {
-	   		L := 0
-	   		Ne := len(vtx)
-	   		numConsolidated := 0
-	   		for R := 1; R < Ne; R++ {
-	   			eL := vtx[L]
-	   			eR := vtx[R]
-
-	   			match := true
-	   			for i, ci := range eL.Cycles {
-	   				if ci != eR.Cycles[i] {
-	   					match = false
-	   					break
-	   				}
-	   			}
-
-	   			// If exact match, absorb R into L, otherwise advance L (old R becomes new L)
-	   			if match {
-	   				eL.OddCount += eR.OddCount
-	   				eL.EvenCount += eR.EvenCount
-	   				numConsolidated++
-	   			} else {
-	   				L++
-	   				vtx[L], vtx[R] = vtx[R], vtx[L] // finalize R into a new L *and* preserve L target (as an allocation)
-	   			}
-	   		}
-	   		Ne -= numConsolidated
-
-	   		// Remove the all-zeros edge (can only be the first entry since they are sorted)
-	   		if Ne > 0 {
-	   			e0 := vtx[0]
-	   			zeros := true
-	   			for _, ci := range e0.Cycles {
-	   				if ci != 0 {
-	   					zeros = false
-	   					break
-	   				}
-	   			}
-	   			if zeros {
-	   				copy(vtx[0:], vtx[1:Ne])
-	   				Ne--
-	   				vtx[Ne] = e0
-	   			}
-	   		}
-
-	   		X.Vtx = vtx[:Ne]
-	   	}
-
-	   // Sort vtx by graph they appear in
-
-	   	sort.Slice(vtx, func(i, j int) bool {
-	   		ei := vtx[i]
-	   		ej := vtx[j]
-
-	   		// Only terms belonging to the same graph can be consolidated
-	   		if d := ei.GraphID - ej.GraphID; d != 0 {
-	   			return d < 0
-	   		}
-
-	   		// Then sort by cycle signature for even or odd cycles
-	   		return cyclesCompare(ei, ej, isEven) < 0
-	   	})
-	*/
 }
 
 func assert(cond bool, desc string) {
@@ -741,6 +649,12 @@ func (X *VtxGraphVM) setupBufs(Nc int) {
 		v.Ci0, buf = chopBuf(buf, Nc)
 		v.Ci1, buf = chopBuf(buf, Nc)
 		v.Cycles, buf = chopBuf(buf, Nc)
+	}
+
+	if cap(X.vtxMap) < Nv {
+		X.vtxMap = make([]uint32, Nv, maxNv)
+	} else {
+		X.vtxMap = X.vtxMap[:Nv]
 	}
 
 }
