@@ -55,7 +55,7 @@ tools:
 #	go get -d  github.com/gogo/protobuf/gogoproto
 
 ## generate code from .proto files
-protos: 
+generate: 
 	protoc \
 		-I='${GOPATH}/src' \
 		--gogoslick_opt=paths=source_relative   \
