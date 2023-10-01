@@ -43,4 +43,5 @@ This project is a library & demonstration toolkit for [2x3 Particle Theory](http
 | v1.2023.1 | - refactor and cleanup |
 | v1.2023.2 | - edge traces factorization (WIP) |
 | v1.2023.3 | - edge traces factorization: all traces normalized |
+| v1.2023.4 | - switched to vertex group factorization  |
 
