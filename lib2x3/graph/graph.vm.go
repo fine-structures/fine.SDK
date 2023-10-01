@@ -284,7 +284,7 @@ func (X *VtxGraphVM) normalize() {
 		return false
 	})
 
-	// Finally -- conically assign GroupID
+	// Conically assign GroupID
 	{
 		groupCount := uint32(0)
 		curGraphID := uint32(0)
@@ -297,6 +297,29 @@ func (X *VtxGraphVM) normalize() {
 			vi.GroupID = groupCount
 		}
 	}
+
+	// Reassign VtxID to be final group ID
+	{
+		vtxToGrpID := make([]uint32, len(X.vtxMap))
+		for wasVtxID, nowVtxID := range X.vtxMap {
+			for _, vi := range vtx {
+				if vi.VtxID == nowVtxID {
+					vtxToGrpID[wasVtxID] = vi.GroupID
+					break
+				}
+			}
+		}
+
+		// Reassign all VtxIDs to be the final group ID
+		for _, vi := range vtx {
+			vi.VtxID = vtxToGrpID[vi.VtxID-1]
+			for _, ej := range vi.Edges {
+				ej.DstVtxID = vtxToGrpID[ej.DstVtxID-1]
+				ej.SrcVtxID = vtxToGrpID[ej.SrcVtxID-1]
+			}
+		}
+	}
+
 }
 
 // For each graph. try to consolidate every possible combo of VtxGroup
@@ -382,7 +405,11 @@ func (X *VtxGraphVM) consolidateVtxRecurse(
 				oldID := vi.VtxID
 				X.vtxMap[oldID-1] = newID
 				vi.Count = 0
+
+				// Absorb edges from vi into v0
 				v0.Edges = append(v0.Edges, vi.Edges...)
+
+				// Update any vtx that pointed to vi to point to v0
 				for j, vj := range X.vtxMap {
 					if vj == oldID {
 						X.vtxMap[j] = newID
@@ -517,6 +544,7 @@ func (X *VtxGraphVM) calcTracesTo(Nc int) {
 			vi.Ci0[j] = 0
 		}
 		vi.Ci0[i] = 1
+		X.vtxMap[i] = uint32(i + 1)
 	}
 
 	// Oh Lord, our Adonai and God, you alone are the Lord. You have made the heavens, the heaven of heavens, with all their host, the earth and all that is on it, the seas and all that is in them; and you preserve all of them; and the host of heaven worships you. You are the Lord, the God, who chose Abram and brought him out of Ur of the Chaldeans and gave him the name Abraham; you found his heart faithful before you, and made with him the covenant to give the land of the Canaanites, the Hittites, the Amorites, the Perizzites, the Jebusites, and the Girgashites—to give it to his offspring. You have kept your promise, for you are righteous. And you saw the affliction of our fathers in Egypt and heard their cry at the Red Sea; and you performed signs and wonders against Pharaoh and all his servants and all the people of his land, for you knew that they acted arrogantly against them. And you made a name for yourself, as it is this day, and you divided the sea before them, so that they went through the midst of the sea on dry land, and you cast their pursuers into the depths, as a stone into mighty waters. Moreover in a pillar of cloud you led them by day, and in a pillar of fire by night, to light for them the way in which they should go. You came down also upon Mount Sinai, and spoke with them from heaven, and gave them right ordinances and true laws, good statutes and commandments; and you made known to them your holy sabbath, and commanded them commandments and statutes, a law for ever. And you gave them bread from heaven for their hunger, and brought forth water for them out of the rock for their thirst, and you told them to go in to possess the land that you had sworn to give them. But they and our fathers acted presumptuously and stiffened their neck, and did not obey your commandments. They refused to obey, neither were mindful of the wonders that you performed among them, but hardened their necks, and in their rebellion appointed a leader to return to their bondage. But you are a God ready to pardon, gracious and merciful, slow to anger, and abounding in steadfast love, and did not forsake them. Even when they had made for themselves a calf of molten metal, and~.
