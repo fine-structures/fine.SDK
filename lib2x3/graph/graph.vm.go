@@ -340,38 +340,40 @@ func (X *VtxGraphVM) consolidateVtx() {
 	}
 
 	X.vtx = vtx
+	/*
+	   // Factor out greatest common factor from each vtx traces
 
-	// Factor out greatest common factor from each vtx traces
-	{
-		for _, vi := range vtx {
+	   	{
+	   		for _, vi := range vtx {
 
-			// The smallest non-zero cycle value is the max GCF, so start there
-			factorLimit := int64(2701 * 1072) // בראשית ברא אלהים את השמים ואת הארץ
-			for _, ci := range vi.Cycles {
-				if ci > 0 && ci < factorLimit {
-					factorLimit = ci
-				}
-			}
+	   			// The smallest non-zero cycle value is the max GCF, so start there
+	   			factorLimit := int64(2701 * 1072) // בראשית ברא אלהים את השמים ואת הארץ
+	   			for _, ci := range vi.Cycles {
+	   				if ci > 0 && ci < factorLimit {
+	   					factorLimit = ci
+	   				}
+	   			}
 
-			for factor := factorLimit; factor >= 2; factor-- {
-				for _, ci := range vi.Cycles {
-					if ci%factor != 0 {
-						goto nextFactor
-					}
-				}
+	   			for factor := factorLimit; factor >= 2; factor-- {
+	   				for _, ci := range vi.Cycles {
+	   					if ci%factor != 0 {
+	   						goto nextFactor
+	   					}
+	   				}
 
-				// At this point, we have the highest factor of all cycles
-				{
-					vi.Count *= factor
-					for k, ck := range vi.Cycles {
-						vi.Cycles[k] = ck / factor
-					}
-				}
+	   				// At this point, we have the highest factor of all cycles
+	   				{
+	   					vi.Count *= factor
+	   					for k, ck := range vi.Cycles {
+	   						vi.Cycles[k] = ck / factor
+	   					}
+	   				}
 
-			nextFactor:
-			}
-		}
-	}
+	   			nextFactor:
+	   			}
+	   		}
+	   	}
+	*/
 }
 
 // Returns number of vtx removed from consolidation (or 0 if none were consolidated)
