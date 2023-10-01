@@ -49,6 +49,43 @@ const maxNv = 18
 // 	X.triVtx = nil
 // }
 
+/*
+// Combines edges with the same src vtx and normalizes order
+func (v *VtxGroup) normalizeEdges() {
+	edges := v.Edges
+	Ne := len(edges)
+
+	// Combine same-src edges
+	for i := 0; i < Ne; i++ {
+		src_i := edges[i].SrcVtxID
+		for j := i + 1; j < Ne; j++ {
+			if edges[j].SrcVtxID == src_i {
+				edges[i].Count += edges[j].Count
+				edges[j] = edges[Ne-1]
+				Ne--
+				j--
+			}
+		}
+	}
+
+	// Drop zero count edges
+	for i := 0; i < Ne; i++ {
+		if edges[i].Count == 0 {
+			edges[i] = edges[Ne-1]
+			Ne--
+			i--
+		}
+	}
+	edges = edges[:Ne]
+
+	sort.Slice(edges, func(i, j int) bool {
+		d := int(edges[i].SrcVtxID) - int(edges[j].SrcVtxID)
+		return d < 0
+	})
+	v.Edges = edges
+}
+*/
+
 // Adds an edge to the vtx / group ID.
 // If the named vtx does not exist, it is implicitly created.
 func (X *VtxGraphVM) addEdgeToVtx(dst uint32, e *VtxEdge) {
@@ -320,6 +357,9 @@ func (X *VtxGraphVM) normalize() {
 		}
 	}
 
+	// for _, vi := range vtx {
+	// 	vi.normalizeEdges()
+	// }
 }
 
 // For each graph. try to consolidate every possible combo of VtxGroup
@@ -650,6 +690,11 @@ func (X *VtxGraphVM) PrintCycleSpectrum(numTraces int, out io.Writer) {
 					line = AppendInt(line, vi.Cycles[i], prOpts)
 				}
 				line = append(line, '\n')
+				// for _, ej := range vi.Edges {
+				// 	dst := byte('A') - 1 + byte(ej.DstVtxID)
+				// 	src := byte('A') - 1 + byte(ej.SrcVtxID)
+				// 	line = fmt.Appendf(line, "  %c  <=  %3d x %c \n", dst, ej.Count, src)
+				// }
 				out.Write(line)
 			}
 		}
