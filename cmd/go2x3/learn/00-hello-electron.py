@@ -9,8 +9,11 @@ print(Genesis)
 print("\nLet us look at the electron, muon, and tau particles:\n")
     
 electron = NewGraph("1")
+positron = NewGraph("1^^^")
 muon     = NewGraph("1-2=3")
 tau      = NewGraph("1-2=3-4=5") 
+
+gamma    = NewGraph("1---2")
 
 printOpts = {
     'graph':  True,
@@ -23,3 +26,6 @@ electron.Print("e-", **printOpts).Go()
 muon    .Print("μ-", **printOpts).Go()
 tau     .Print("τ-", **printOpts).Go()
 
+electron.Print("e-", **printOpts).Go()
+positron.Print("e+", **printOpts).Go()
+gamma   .Print("gamma", **printOpts).Go()
