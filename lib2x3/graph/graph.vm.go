@@ -664,22 +664,6 @@ func (X *VtxGraphVM) PrintCycleSpectrum(numTraces int, out io.Writer) {
 
 		out.Write(line)
 	}
-
-	/*
-		for _, vi := range X.Vtx() {
-			for _, ej := range vi.Edges {
-				line := append(ej.AppendDesc(buf[:0]), "  "...)
-				for _, c := range ej.Cycles[:Nc] {
-					line = AppendInt(line, c, prOpts)
-				}
-				line = append(line, '\n')
-				out.Write(line)
-			}
-		}
-
-		out.Write([]byte(" -------------------------   \n"))
-	*/
-
 	{
 		for _, vi := range X.Vtx() {
 			//for ni := int64(0); ni < ei.Count; ni++ {
