@@ -102,7 +102,7 @@ func TestBasics(t *testing.T) {
 		for X := range onHit {
 			PrintGraph(">>>", X)
 			total++
-			if !X.Traces(10).IsEqual(Xsrc.Traces(10)) {
+			if !X.Traces(12).IsEqual(Xsrc.Traces(12)) {
 				t.Fatal("traces don't match")
 			}
 		}

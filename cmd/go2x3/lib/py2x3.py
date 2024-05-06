@@ -192,12 +192,12 @@ gPrintOptsVerbose = {
     'graph':  True,
     'matrix': True,
     'cycles': True,
-    'traces': 10,
+    'traces': 12,
 }
 
 gPrintOpts = {
     'cycles': True,
-    'traces': 10,
+    'traces': 12,
 }
 
 def ShowGraph(desc, Xstr, verbose = True):

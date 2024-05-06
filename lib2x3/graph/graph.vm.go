@@ -511,7 +511,7 @@ func (X *VtxGraphVM) consolidateVtxRecurse(
 // pre: for each vtx OddCount and EvenCount are non-zero
 // Returns how many vtx were consolidated into vtx[0] -- always either 0 or len(vtx)-1
 func tryConsolidate(vtx []*ComputeVtx) int {
-	var C [maxNv]int64
+	var C [32]int64
 	Nc := len(vtx[0].Cycles)
 
 	combined := int64(0)

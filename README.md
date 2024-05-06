@@ -1,5 +1,5 @@
-# _fine-strucutres_
-### Official SDK for _[Fine Structures](https://github.com/2x3systems/prime-materials)_, _a [Standard Model](https://en.wikipedia.org/wiki/Standard_Model) unifying theory_
+# Fine Structures SDK for Go
+### Official SDK for _[Fine Structures](https://github.com/fine-strucutures/prime-materials)_, _a [Standard Model](https://en.wikipedia.org/wiki/Standard_Model) unifying theory_
 
 ------------------------------
 
@@ -30,7 +30,7 @@ Or skip the above and go directly to the [learn](https://github.com/fine-structu
 
 ## Getting Started
 
-This project is a library & demonstration toolkit for [2x3 Particle Theory](https://github.com/2x3systems/prime-materials).  Although [lib2x3](http://https://github.com/fine-structures/sdk-go/tree/main/lib2x3) is a pure Go library, [`gpython`](http://github.com/go-python/gpython) is used to embed and expose it.  This means scripting is easy  — see for yourself in the [first tutorial](https://github.com/fine-structures/sdk-go/blob/main/cmd/go2x3/learn/01-foundations.py) as you follow along in its [output](https://github.com/fine-structures/sdk-go/blob/main/cmd/go2x3/learn/gold/01-foundations.txt).
+This project is a library & demonstration toolkit for [Fine Structures](https://github.com/fine-strucutures/prime-materials).  Although [lib2x3](http://https://github.com/fine-structures/sdk-go/tree/main/lib2x3) is a pure Go library, [`gpython`](http://github.com/go-python/gpython) is used to embed and expose it.  This means scripting is easy  — see for yourself in the [first tutorial](https://github.com/fine-structures/sdk-go/blob/main/cmd/go2x3/learn/01-foundations.py) as you follow along in its [output](https://github.com/fine-structures/sdk-go/blob/main/cmd/go2x3/learn/gold/01-foundations.txt).
 
 
 ## Releases

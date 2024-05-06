@@ -2,7 +2,7 @@
 Welcome to the go2x3 tutorial series!
 
 =================================================================
-|                       go2x3 (v1.2023.3)                       |
+|                       go2x3 (v1.2024.1)                       |
 |                      https://2x3.systems                      |
 |                                                               |
 |       "OH LET ME BEHOLD YOUR PRESENCE”  EXODUS 33:2x3x3       |
@@ -12,7 +12,7 @@ Our friend the proton:  p=1,v=3," oBB 2ooA 3    ","","1-2-3",5,13,35,
 
 If we want to get the traces of a 2x3 graph, we can!
 proton.Traces():  (5, 13, 35)
-proton.Traces(10):  (5, 13, 35, 97, 275, 793, 2315, 6817, 20195, 60073)
+proton.Traces(12):  (5, 13, 35, 97, 275, 793, 2315, 6817, 20195, 60073, 179195, 535537)
 
 Or we can access each Traces element easily thanks to python:
     T[0]: 5
@@ -25,6 +25,8 @@ Or we can access each Traces element easily thanks to python:
     T[7]: 6817
     T[8]: 20195
     T[9]: 60073
+    T[10]: 179195
+    T[11]: 535537
 
 Now let's meet GraphStream, allowing us to do more useful things with particle Graph objects.
 GraphStream is a chain (pipeline) of Graph operators where Graphs are "pushed" into a stream's inlet and "pulled" from its outlet. 

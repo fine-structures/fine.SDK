@@ -19,7 +19,7 @@ printOpts = {
     'graph':  True,
     'matrix': True,
     'cycles': True,
-    'traces': 10,
+    'traces': 12,
 }
 
 electron.Print("e-", **printOpts).Go()

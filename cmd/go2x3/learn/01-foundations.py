@@ -40,8 +40,8 @@ T1 = proton.Traces()
 print("proton.Traces(): ", T1)
 
 # Or, we can ask for more Trace elements to be computed.
-T2 = proton.Traces(10)
-print("proton.Traces(10): ", T2)
+T2 = proton.Traces(12)
+print("proton.Traces(12): ", T2)
 
 
 print('''
