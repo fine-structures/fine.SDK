@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"io"
 	"log"
-	"math"
 	"sort"
 	"sync"
 
@@ -370,7 +369,7 @@ func (X *Graph) WriteAsString(out io.Writer, opts go2x3.PrintOpts) {
 	if opts.CycleSpec {
 		out.Write(newline)
 		X.vm.Canonize()
-		X.vm.PrintCycleSpectrum(10, out)
+		X.vm.PrintCycleSpectrum(12, out)
 	}
 
 }
