@@ -5,13 +5,21 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/2x3systems/go2x3/go2x3"
-	"github.com/2x3systems/go2x3/lib2x3"
+	"github.com/fine-structures/sdk-go/go2x3"
+	"github.com/fine-structures/sdk-go/lib2x3"
 )
 
 func TestBasics(t *testing.T) {
-
 	PrintCycles("1")
+	PrintCycles("1-2=3")
+	PrintCycles("1-2=3-4=5")
+
+	PrintCycles("1---2")
+
+	PrintCycles("1-2;1^^~2^^")
+	PrintCycles("1-2;1^^~2^^")
+	PrintCycles("1-2;1^^~2^^")
+
 	PrintCycles("1^")
 	PrintCycles("1^^")
 	PrintCycles("1^^^")

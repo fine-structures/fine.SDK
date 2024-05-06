@@ -3,7 +3,7 @@ package lib2x3
 import (
 	"fmt"
 
-	"github.com/2x3systems/go2x3/go2x3"
+	"github.com/fine-structures/sdk-go/go2x3"
 	"github.com/alecthomas/participle/v2"
 )
 

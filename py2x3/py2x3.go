@@ -13,9 +13,9 @@ import (
 	"strings"
 	"sync/atomic"
 
-	"github.com/2x3systems/go2x3/go2x3"
-	"github.com/2x3systems/go2x3/lib2x3"
-	"github.com/2x3systems/go2x3/lib2x3/catalog"
+	"github.com/fine-structures/sdk-go/go2x3"
+	"github.com/fine-structures/sdk-go/lib2x3"
+	"github.com/fine-structures/sdk-go/lib2x3/catalog"
 	"github.com/go-python/gpython/py"
 )
 

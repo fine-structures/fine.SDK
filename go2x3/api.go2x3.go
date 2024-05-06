@@ -3,7 +3,7 @@ package go2x3
 import (
 	"io"
 
-	"github.com/arcspace/go-arc-sdk/stdlib/generics"
+	"github.com/git-amp/amp-sdk-go/stdlib/generics"
 )
 
 const (

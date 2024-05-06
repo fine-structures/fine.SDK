@@ -1,7 +1,7 @@
 syntax = "proto3";
 package graph;
 
-//option go_package = "github.com/2x3systems/go2x3/lib2x3/graph";
+//option go_package = "github.com/fine-structures/sdk-go/lib2x3/graph";
 
 
 message CatalogState {

@@ -5,7 +5,7 @@ import (
 	"io"
 	"sort"
 
-	"github.com/2x3systems/go2x3/go2x3"
+	"github.com/fine-structures/sdk-go/go2x3"
 )
 
 type ComputeVtx struct {
@@ -256,7 +256,7 @@ func (X *VtxGraphVM) Validate() error {
 }
 
 func (X *VtxGraphVM) Canonize() {
-	X.Traces(12)
+	X.Traces(24)
 	X.consolidateVtx()
 	X.normalize()
 }

@@ -10,7 +10,7 @@ import (
 	"github.com/go-python/gpython/repl"
 	"github.com/go-python/gpython/repl/cli"
 
-	_ "github.com/2x3systems/go2x3/py2x3"
+	_ "github.com/fine-structures/sdk-go/py2x3"
 	_ "github.com/go-python/gpython/stdlib"
 )
 

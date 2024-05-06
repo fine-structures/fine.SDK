@@ -5,6 +5,7 @@ package graph
 
 import (
 	bytes "bytes"
+	encoding_binary "encoding/binary"
 	fmt "fmt"
 	proto "github.com/gogo/protobuf/proto"
 	io "io"
@@ -139,6 +140,57 @@ var OddSign_value = map[string]int32{
 
 func (OddSign) EnumDescriptor() ([]byte, []int) {
 	return fileDescriptor_23d0cecb80079ca5, []int{3}
+}
+
+type TracesSign int32
+
+const (
+	TracesSign_Unknown  TracesSign = 0
+	TracesSign_Zero     TracesSign = 1
+	TracesSign_Positive TracesSign = 2
+	TracesSign_Negative TracesSign = 3
+)
+
+var TracesSign_name = map[int32]string{
+	0: "TracesSign_Unknown",
+	1: "TracesSign_Zero",
+	2: "TracesSign_Positive",
+	3: "TracesSign_Negative",
+}
+
+var TracesSign_value = map[string]int32{
+	"TracesSign_Unknown":  0,
+	"TracesSign_Zero":     1,
+	"TracesSign_Positive": 2,
+	"TracesSign_Negative": 3,
+}
+
+func (TracesSign) EnumDescriptor() ([]byte, []int) {
+	return fileDescriptor_23d0cecb80079ca5, []int{4}
+}
+
+type TracesCycle int32
+
+const (
+	TracesCycle_Nil  TracesCycle = 0
+	TracesCycle_Odd  TracesCycle = 1
+	TracesCycle_Even TracesCycle = 2
+)
+
+var TracesCycle_name = map[int32]string{
+	0: "TracesCycle_Nil",
+	1: "TracesCycle_Odd",
+	2: "TracesCycle_Even",
+}
+
+var TracesCycle_value = map[string]int32{
+	"TracesCycle_Nil":  0,
+	"TracesCycle_Odd":  1,
+	"TracesCycle_Even": 2,
+}
+
+func (TracesCycle) EnumDescriptor() ([]byte, []int) {
+	return fileDescriptor_23d0cecb80079ca5, []int{5}
 }
 
 type CatalogState struct {
@@ -323,6 +375,163 @@ func (m *GraphDef) GetGraphExprs() []string {
 	return nil
 }
 
+type TracesTerm struct {
+	VtxCount int64       `protobuf:"varint,1,opt,name=VtxCount,proto3" json:"VtxCount,omitempty"`
+	Cycle    TracesCycle `protobuf:"varint,3,opt,name=Cycle,proto3,enum=graph.TracesCycle" json:"Cycle,omitempty"`
+	Sign     TracesSign  `protobuf:"varint,4,opt,name=Sign,proto3,enum=graph.TracesSign" json:"Sign,omitempty"`
+	// Reserved for future use
+	TX_Tag_0       uint64    `protobuf:"fixed64,6,opt,name=TX_Tag_0,json=TXTag0,proto3" json:"TX_Tag_0,omitempty"`
+	TX_Tag_1       uint64    `protobuf:"fixed64,7,opt,name=TX_Tag_1,json=TXTag1,proto3" json:"TX_Tag_1,omitempty"`
+	TX_Tag_2       uint64    `protobuf:"fixed64,8,opt,name=TX_Tag_2,json=TXTag2,proto3" json:"TX_Tag_2,omitempty"`
+	TX_Normalized  []float32 `protobuf:"fixed32,11,rep,packed,name=TX_Normalized,json=TXNormalized,proto3" json:"TX_Normalized,omitempty"`
+	TX_CycleCounts []int64   `protobuf:"varint,12,rep,packed,name=TX_CycleCounts,json=TXCycleCounts,proto3" json:"TX_CycleCounts,omitempty"`
+	// product(TX_CycleCounts[i]) == product(TX_PrimeBases[i]^TX_FactorCounts[i])
+	TX_PrimeBases   []uint64 `protobuf:"varint,13,rep,packed,name=TX_PrimeBases,json=TXPrimeBases,proto3" json:"TX_PrimeBases,omitempty"`
+	TX_FactorCounts []int64  `protobuf:"varint,14,rep,packed,name=TX_FactorCounts,json=TXFactorCounts,proto3" json:"TX_FactorCounts,omitempty"`
+	Graph           string   `protobuf:"bytes,19,opt,name=Graph,proto3" json:"Graph,omitempty"`
+	GraphMediaType  string   `protobuf:"bytes,20,opt,name=GraphMediaType,proto3" json:"GraphMediaType,omitempty"`
+	Link_UIDx0      uint64   `protobuf:"fixed64,24,opt,name=Link_UIDx0,json=LinkUIDx0,proto3" json:"Link_UIDx0,omitempty"`
+	Link_UIDx1      uint64   `protobuf:"fixed64,25,opt,name=Link_UIDx1,json=LinkUIDx1,proto3" json:"Link_UIDx1,omitempty"`
+	Link_UIDx2      uint64   `protobuf:"fixed64,26,opt,name=Link_UIDx2,json=LinkUIDx2,proto3" json:"Link_UIDx2,omitempty"`
+}
+
+func (m *TracesTerm) Reset()      { *m = TracesTerm{} }
+func (*TracesTerm) ProtoMessage() {}
+func (*TracesTerm) Descriptor() ([]byte, []int) {
+	return fileDescriptor_23d0cecb80079ca5, []int{2}
+}
+func (m *TracesTerm) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *TracesTerm) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_TracesTerm.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *TracesTerm) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_TracesTerm.Merge(m, src)
+}
+func (m *TracesTerm) XXX_Size() int {
+	return m.Size()
+}
+func (m *TracesTerm) XXX_DiscardUnknown() {
+	xxx_messageInfo_TracesTerm.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_TracesTerm proto.InternalMessageInfo
+
+func (m *TracesTerm) GetVtxCount() int64 {
+	if m != nil {
+		return m.VtxCount
+	}
+	return 0
+}
+
+func (m *TracesTerm) GetCycle() TracesCycle {
+	if m != nil {
+		return m.Cycle
+	}
+	return TracesCycle_Nil
+}
+
+func (m *TracesTerm) GetSign() TracesSign {
+	if m != nil {
+		return m.Sign
+	}
+	return TracesSign_Unknown
+}
+
+func (m *TracesTerm) GetTX_Tag_0() uint64 {
+	if m != nil {
+		return m.TX_Tag_0
+	}
+	return 0
+}
+
+func (m *TracesTerm) GetTX_Tag_1() uint64 {
+	if m != nil {
+		return m.TX_Tag_1
+	}
+	return 0
+}
+
+func (m *TracesTerm) GetTX_Tag_2() uint64 {
+	if m != nil {
+		return m.TX_Tag_2
+	}
+	return 0
+}
+
+func (m *TracesTerm) GetTX_Normalized() []float32 {
+	if m != nil {
+		return m.TX_Normalized
+	}
+	return nil
+}
+
+func (m *TracesTerm) GetTX_CycleCounts() []int64 {
+	if m != nil {
+		return m.TX_CycleCounts
+	}
+	return nil
+}
+
+func (m *TracesTerm) GetTX_PrimeBases() []uint64 {
+	if m != nil {
+		return m.TX_PrimeBases
+	}
+	return nil
+}
+
+func (m *TracesTerm) GetTX_FactorCounts() []int64 {
+	if m != nil {
+		return m.TX_FactorCounts
+	}
+	return nil
+}
+
+func (m *TracesTerm) GetGraph() string {
+	if m != nil {
+		return m.Graph
+	}
+	return ""
+}
+
+func (m *TracesTerm) GetGraphMediaType() string {
+	if m != nil {
+		return m.GraphMediaType
+	}
+	return ""
+}
+
+func (m *TracesTerm) GetLink_UIDx0() uint64 {
+	if m != nil {
+		return m.Link_UIDx0
+	}
+	return 0
+}
+
+func (m *TracesTerm) GetLink_UIDx1() uint64 {
+	if m != nil {
+		return m.Link_UIDx1
+	}
+	return 0
+}
+
+func (m *TracesTerm) GetLink_UIDx2() uint64 {
+	if m != nil {
+		return m.Link_UIDx2
+	}
+	return 0
+}
+
 // VtxEdge
 type VtxEdge struct {
 	// Initially assigned label: 1, 2, 3,..  (a one-based index ID)
@@ -336,7 +545,7 @@ type VtxEdge struct {
 func (m *VtxEdge) Reset()      { *m = VtxEdge{} }
 func (*VtxEdge) ProtoMessage() {}
 func (*VtxEdge) Descriptor() ([]byte, []int) {
-	return fileDescriptor_23d0cecb80079ca5, []int{2}
+	return fileDescriptor_23d0cecb80079ca5, []int{3}
 }
 func (m *VtxEdge) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -386,7 +595,7 @@ func (m *VtxEdge) GetCount() int64 {
 	return 0
 }
 
-// VtxGroup represents one or more 2x3 verticies that have the same cycle traces.
+// VtxGroup represents one or more 2x3 vertices that have the same cycle traces.
 type VtxGroup struct {
 	// Group ID assignment of home Vtx based on canonic cycle vector comparison ordering.
 	// 0 denotes unassigned; first valid GroupID is 1.
@@ -408,7 +617,7 @@ type VtxGroup struct {
 func (m *VtxGroup) Reset()      { *m = VtxGroup{} }
 func (*VtxGroup) ProtoMessage() {}
 func (*VtxGroup) Descriptor() ([]byte, []int) {
-	return fileDescriptor_23d0cecb80079ca5, []int{3}
+	return fileDescriptor_23d0cecb80079ca5, []int{4}
 }
 func (m *VtxGroup) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -488,7 +697,7 @@ type Tag struct {
 func (m *Tag) Reset()      { *m = Tag{} }
 func (*Tag) ProtoMessage() {}
 func (*Tag) Descriptor() ([]byte, []int) {
-	return fileDescriptor_23d0cecb80079ca5, []int{4}
+	return fileDescriptor_23d0cecb80079ca5, []int{5}
 }
 func (m *Tag) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -547,7 +756,7 @@ type VtxGraph struct {
 func (m *VtxGraph) Reset()      { *m = VtxGraph{} }
 func (*VtxGraph) ProtoMessage() {}
 func (*VtxGraph) Descriptor() ([]byte, []int) {
-	return fileDescriptor_23d0cecb80079ca5, []int{5}
+	return fileDescriptor_23d0cecb80079ca5, []int{6}
 }
 func (m *VtxGraph) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -602,8 +811,11 @@ func init() {
 	proto.RegisterEnum("graph.GroupID", GroupID_name, GroupID_value)
 	proto.RegisterEnum("graph.GraphStatus", GraphStatus_name, GraphStatus_value)
 	proto.RegisterEnum("graph.OddSign", OddSign_name, OddSign_value)
+	proto.RegisterEnum("graph.TracesSign", TracesSign_name, TracesSign_value)
+	proto.RegisterEnum("graph.TracesCycle", TracesCycle_name, TracesCycle_value)
 	proto.RegisterType((*CatalogState)(nil), "graph.CatalogState")
 	proto.RegisterType((*GraphDef)(nil), "graph.GraphDef")
+	proto.RegisterType((*TracesTerm)(nil), "graph.TracesTerm")
 	proto.RegisterType((*VtxEdge)(nil), "graph.VtxEdge")
 	proto.RegisterType((*VtxGroup)(nil), "graph.VtxGroup")
 	proto.RegisterType((*Tag)(nil), "graph.Tag")
@@ -613,53 +825,70 @@ func init() {
 func init() { proto.RegisterFile("lib2x3/graph/graph.proto", fileDescriptor_23d0cecb80079ca5) }
 
 var fileDescriptor_23d0cecb80079ca5 = []byte{
-	// 723 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x64, 0x94, 0xcf, 0x6e, 0xda, 0x48,
-	0x1c, 0xc7, 0x3d, 0x18, 0x08, 0xfc, 0x20, 0xe0, 0x9d, 0xfc, 0x59, 0x6f, 0xb4, 0xb2, 0xbc, 0x28,
-	0x5a, 0x59, 0x1c, 0xb2, 0xda, 0x64, 0x9f, 0x60, 0x21, 0x42, 0x48, 0x29, 0xad, 0x26, 0x84, 0xa8,
-	0xbd, 0xa0, 0x09, 0x38, 0x8e, 0x2b, 0xe2, 0xb1, 0x6c, 0x13, 0x39, 0x3d, 0xf5, 0x11, 0xfa, 0x18,
-	0x7d, 0x88, 0x3e, 0x40, 0x4f, 0x55, 0x8e, 0x39, 0xf4, 0xd0, 0x90, 0x4b, 0x8f, 0x79, 0x84, 0x6a,
-	0xfe, 0xd8, 0xb8, 0xe9, 0x05, 0xfd, 0xbe, 0xdf, 0xcf, 0xcc, 0xf0, 0xfb, 0x33, 0x63, 0x30, 0x17,
-	0xfe, 0xc5, 0x61, 0x7a, 0xf4, 0x8f, 0x17, 0xd1, 0xf0, 0x4a, 0xfe, 0x1e, 0x84, 0x11, 0x4b, 0x18,
-	0xae, 0x08, 0xd1, 0xf9, 0x82, 0xa0, 0xd9, 0xa3, 0x09, 0x5d, 0x30, 0xef, 0x34, 0xa1, 0x89, 0x8b,
-	0xff, 0x84, 0xfa, 0x0b, 0xfa, 0x96, 0x45, 0x13, 0x37, 0x8a, 0x4d, 0x64, 0x23, 0xa7, 0x42, 0xd6,
-	0x86, 0xa0, 0x7e, 0xa0, 0x68, 0x49, 0xd1, 0xcc, 0xc0, 0x16, 0xc0, 0x38, 0xa2, 0x33, 0xb7, 0xc7,
-	0x96, 0x41, 0x62, 0x82, 0xc0, 0x05, 0x87, 0xef, 0x1e, 0x2d, 0xaf, 0x85, 0x11, 0x9b, 0x0d, 0x5b,
-	0x77, 0xca, 0x64, 0x6d, 0x28, 0xfa, 0x2a, 0xf2, 0xaf, 0xdd, 0xd8, 0x6c, 0xe6, 0x54, 0x1a, 0xf8,
-	0x6f, 0x68, 0x0d, 0x63, 0x11, 0xab, 0x74, 0xcd, 0x6d, 0x1b, 0x39, 0x35, 0xf2, 0xcc, 0xed, 0x7c,
-	0x45, 0x50, 0x1b, 0xf0, 0xd2, 0xfa, 0xee, 0x25, 0x76, 0x60, 0x43, 0x61, 0x51, 0x4a, 0xeb, 0xb0,
-	0x75, 0x20, 0x7b, 0xa0, 0x5c, 0x92, 0x61, 0xbc, 0x07, 0x35, 0x99, 0xc6, 0xb0, 0x2f, 0xea, 0x2a,
-	0x93, 0x5c, 0x63, 0x13, 0x36, 0xc4, 0x89, 0xc3, 0xbe, 0xa9, 0x0b, 0x94, 0x49, 0xbc, 0x0f, 0x9b,
-	0x22, 0x3c, 0x0e, 0x66, 0x6c, 0xee, 0x07, 0x9e, 0x59, 0xb3, 0x91, 0xd3, 0x24, 0x3f, 0x9b, 0xb8,
-	0x0b, 0x46, 0x8f, 0x06, 0x2c, 0xf0, 0x67, 0xd2, 0x4f, 0xc3, 0xc8, 0xac, 0xdb, 0xc8, 0xa9, 0x93,
-	0x5f, 0x7c, 0xde, 0xc2, 0x5c, 0xc8, 0x2e, 0xd4, 0x49, 0xc1, 0xe9, 0x9c, 0xc3, 0xc6, 0x24, 0x49,
-	0x8f, 0xe7, 0x9e, 0x48, 0xb9, 0x1f, 0x27, 0x93, 0x24, 0x55, 0x29, 0x6f, 0x92, 0x5c, 0x73, 0x76,
-	0x1a, 0xcd, 0x24, 0xd3, 0x25, 0xcb, 0x34, 0xde, 0x86, 0x8a, 0x1c, 0x50, 0xd5, 0x46, 0x8e, 0x4e,
-	0xa4, 0xe8, 0x7c, 0x42, 0x50, 0x9b, 0x24, 0xe9, 0x20, 0x62, 0xcb, 0x50, 0x56, 0xcc, 0x96, 0x61,
-	0x7e, 0x72, 0x26, 0x9f, 0xf7, 0x62, 0x73, 0xdd, 0x8b, 0xfc, 0xd8, 0x4a, 0xe1, 0x58, 0x3e, 0x81,
-	0x97, 0xf3, 0xf9, 0xa9, 0xef, 0x05, 0xa2, 0x37, 0xeb, 0x09, 0x28, 0x97, 0x64, 0x18, 0xef, 0x43,
-	0x85, 0x97, 0x15, 0x9b, 0x6d, 0x5b, 0x77, 0x1a, 0xf9, 0x3a, 0x55, 0x2d, 0x91, 0x10, 0xef, 0x42,
-	0xb5, 0x77, 0x3b, 0x5b, 0xb8, 0xb1, 0x69, 0xd8, 0xba, 0xa3, 0x13, 0xa5, 0x3a, 0x03, 0xd0, 0xc7,
-	0xd4, 0xe3, 0x49, 0x9c, 0xd0, 0x0b, 0x77, 0x21, 0xc6, 0x5d, 0x27, 0x52, 0xf0, 0x4d, 0x63, 0xea,
-	0x9d, 0x91, 0xa1, 0xa8, 0xa6, 0x4e, 0x94, 0xc2, 0x18, 0xca, 0x62, 0x18, 0xba, 0x70, 0x45, 0xdc,
-	0xb9, 0x55, 0x6d, 0xa0, 0xe1, 0x15, 0xee, 0x42, 0x95, 0x3f, 0x8a, 0x65, 0xac, 0x6e, 0x0f, 0x56,
-	0x39, 0x09, 0x2a, 0x09, 0x51, 0x2b, 0xb0, 0x05, 0xe5, 0x31, 0xf5, 0xf8, 0xa3, 0xe0, 0xd9, 0x83,
-	0x5a, 0x39, 0xa6, 0x1e, 0x11, 0x3e, 0xfe, 0x0b, 0xf4, 0x49, 0x92, 0x9a, 0xba, 0xc0, 0xed, 0x75,
-	0x71, 0xa2, 0xb1, 0x84, 0xb3, 0x6e, 0x2f, 0xbf, 0xad, 0xf8, 0x77, 0xd8, 0x52, 0xe1, 0xf4, 0x2c,
-	0x88, 0x43, 0x77, 0xe6, 0x5f, 0xfa, 0xee, 0xdc, 0xd0, 0x70, 0x1b, 0x1a, 0x19, 0x78, 0xed, 0xc6,
-	0x06, 0xc2, 0x2d, 0x80, 0xcc, 0x18, 0x31, 0xa3, 0xd4, 0x3d, 0xcf, 0x47, 0x87, 0x0d, 0x68, 0xaa,
-	0x70, 0x7a, 0xc3, 0x7c, 0xbe, 0x7b, 0x0b, 0xda, 0x99, 0x73, 0xc2, 0x58, 0x38, 0x49, 0x52, 0x03,
-	0xe1, 0x1d, 0xf8, 0xad, 0x68, 0x8a, 0xd8, 0x28, 0xf1, 0x83, 0x33, 0x7b, 0xf0, 0xaf, 0xa1, 0x77,
-	0x53, 0x68, 0x14, 0xea, 0xe6, 0x19, 0x16, 0xe4, 0x74, 0x18, 0xdc, 0xd0, 0x85, 0xf8, 0x8f, 0x3f,
-	0x60, 0xa7, 0x08, 0x26, 0xdc, 0xa6, 0x89, 0x3b, 0x37, 0x4a, 0x78, 0x0f, 0x76, 0x8b, 0x68, 0xc4,
-	0xa2, 0x6b, 0xba, 0xf0, 0xdf, 0xb9, 0x73, 0xa3, 0xfc, 0x7c, 0x9b, 0x7c, 0x18, 0x1c, 0x55, 0xbb,
-	0xfd, 0xfc, 0x0e, 0xf1, 0x02, 0x54, 0x38, 0x1d, 0xd1, 0x64, 0x19, 0xd1, 0x85, 0xa1, 0xf1, 0x3a,
-	0x33, 0xf3, 0x8d, 0x1b, 0x31, 0x03, 0x61, 0x0c, 0xad, 0xcc, 0x19, 0x06, 0x37, 0x6e, 0x94, 0x18,
-	0xa5, 0xff, 0xff, 0xbb, 0x7b, 0xb0, 0xb4, 0xfb, 0x07, 0x4b, 0x7b, 0x7a, 0xb0, 0xd0, 0xfb, 0x95,
-	0x85, 0x3e, 0xae, 0x2c, 0xf4, 0x79, 0x65, 0xa1, 0xbb, 0x95, 0x85, 0xbe, 0xad, 0x2c, 0xf4, 0x7d,
-	0x65, 0x69, 0x4f, 0x2b, 0x0b, 0x7d, 0x78, 0xb4, 0xb4, 0xbb, 0x47, 0x4b, 0xbb, 0x7f, 0xb4, 0xb4,
-	0x8b, 0xaa, 0xf8, 0x5a, 0x1e, 0xfd, 0x08, 0x00, 0x00, 0xff, 0xff, 0xc1, 0x6f, 0x4e, 0x23, 0x49,
-	0x05, 0x00, 0x00,
+	// 1008 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x64, 0x95, 0xcf, 0x72, 0xe2, 0xc6,
+	0x13, 0xc7, 0x11, 0x02, 0x0c, 0x6d, 0xc0, 0xda, 0xf1, 0xfe, 0x99, 0x75, 0xfd, 0x7e, 0x2a, 0x42,
+	0x76, 0x13, 0x8a, 0xc3, 0xc6, 0x66, 0xf3, 0x04, 0x6b, 0x1c, 0x17, 0x55, 0x36, 0xbb, 0x35, 0x96,
+	0x59, 0x92, 0x8b, 0x6a, 0x0c, 0xb3, 0x8a, 0x62, 0x2c, 0x51, 0x92, 0x70, 0x70, 0x4e, 0x79, 0x84,
+	0x3c, 0x46, 0x1e, 0x22, 0x0f, 0x90, 0x53, 0xca, 0xc7, 0x3d, 0xe4, 0x10, 0xe3, 0x4b, 0x8e, 0xfb,
+	0x00, 0x39, 0xa4, 0xa6, 0x67, 0x24, 0x84, 0x73, 0xa1, 0xa6, 0xbf, 0x9f, 0x99, 0x56, 0x77, 0x4f,
+	0xf7, 0x00, 0x74, 0xe6, 0x5f, 0xf4, 0x96, 0xaf, 0xbf, 0xf2, 0x22, 0x3e, 0xff, 0x5e, 0xfd, 0xbe,
+	0x9a, 0x47, 0x61, 0x12, 0x92, 0x32, 0x1a, 0xed, 0x3f, 0x0c, 0xa8, 0x1f, 0xf2, 0x84, 0xcf, 0x42,
+	0xef, 0x2c, 0xe1, 0x89, 0x20, 0xff, 0x83, 0xda, 0x29, 0xff, 0x21, 0x8c, 0x46, 0x22, 0x8a, 0xa9,
+	0xd1, 0x32, 0x3a, 0x65, 0xb6, 0x16, 0x90, 0xfa, 0x81, 0xa6, 0x45, 0x4d, 0x53, 0x81, 0xd8, 0x00,
+	0x4e, 0xc4, 0x27, 0xe2, 0x30, 0x5c, 0x04, 0x09, 0x05, 0xc4, 0x39, 0x45, 0x9e, 0x1e, 0x2e, 0xae,
+	0x50, 0x88, 0xe9, 0x76, 0xcb, 0xec, 0x94, 0xd8, 0x5a, 0xd0, 0xf4, 0x5d, 0xe4, 0x5f, 0x89, 0x98,
+	0xd6, 0x33, 0xaa, 0x04, 0xf2, 0x05, 0x34, 0x07, 0x31, 0xae, 0x75, 0xb8, 0xf4, 0x71, 0xcb, 0xe8,
+	0x54, 0xd9, 0x03, 0xb5, 0xfd, 0xa7, 0x01, 0xd5, 0x63, 0x99, 0x5a, 0x5f, 0x7c, 0x20, 0x1d, 0xd8,
+	0xd2, 0x18, 0x53, 0x69, 0xf6, 0x9a, 0xaf, 0x54, 0x0d, 0xb4, 0xca, 0x52, 0x4c, 0xf6, 0xa0, 0xaa,
+	0xc2, 0x18, 0xf4, 0x31, 0xaf, 0x12, 0xcb, 0x6c, 0x42, 0x61, 0x0b, 0x3d, 0x0e, 0xfa, 0xd4, 0x44,
+	0x94, 0x9a, 0xe4, 0x05, 0x34, 0x70, 0x79, 0x14, 0x4c, 0xc2, 0xa9, 0x1f, 0x78, 0xb4, 0xda, 0x32,
+	0x3a, 0x75, 0xb6, 0x29, 0x92, 0x2e, 0x58, 0x87, 0x3c, 0x08, 0x03, 0x7f, 0xa2, 0xf4, 0xe5, 0x3c,
+	0xa2, 0xb5, 0x96, 0xd1, 0xa9, 0xb1, 0xff, 0xe8, 0xb2, 0x84, 0x99, 0xa1, 0xaa, 0x50, 0x63, 0x39,
+	0xa5, 0xfd, 0x8f, 0xa9, 0x6b, 0x1c, 0x3b, 0x22, 0xba, 0x92, 0x61, 0x8f, 0x92, 0xa5, 0xaa, 0xb7,
+	0xcc, 0xd0, 0x64, 0x99, 0x4d, 0x3a, 0x50, 0x3e, 0xbc, 0x99, 0xcc, 0x04, 0x06, 0xdd, 0xec, 0x11,
+	0x9d, 0xba, 0x3a, 0x8d, 0x84, 0xa9, 0x0d, 0xe4, 0x25, 0x94, 0xce, 0x7c, 0x2f, 0xa0, 0x25, 0xdc,
+	0xf8, 0x68, 0x63, 0xa3, 0x04, 0x0c, 0x31, 0xa1, 0x50, 0x75, 0xc6, 0xae, 0xc3, 0x3d, 0x77, 0x9f,
+	0x56, 0x5a, 0x46, 0xa7, 0xc2, 0x2a, 0xce, 0xd8, 0xe1, 0xde, 0x7e, 0x8e, 0x1c, 0xd0, 0xad, 0x1c,
+	0x39, 0xc8, 0x91, 0x1e, 0x16, 0x27, 0x25, 0x3d, 0xf2, 0x39, 0x34, 0x9c, 0xb1, 0x3b, 0x0c, 0xa3,
+	0x2b, 0x3e, 0xf3, 0x7f, 0x12, 0x53, 0x6c, 0x88, 0x22, 0xab, 0x3b, 0xe3, 0xb5, 0x46, 0x5e, 0x42,
+	0xd3, 0x19, 0xbb, 0x18, 0x25, 0x26, 0xa5, 0x4a, 0x62, 0xb2, 0x86, 0x33, 0xce, 0x89, 0xda, 0x17,
+	0xde, 0xe4, 0x1b, 0x1e, 0x8b, 0x98, 0x36, 0xb0, 0x7d, 0xea, 0xce, 0x78, 0xad, 0x91, 0x2f, 0x61,
+	0xc7, 0x19, 0xbb, 0xdf, 0xf0, 0x49, 0x12, 0x46, 0xda, 0x59, 0x13, 0x9d, 0x35, 0x9d, 0x71, 0x5e,
+	0x25, 0x8f, 0xa1, 0x8c, 0x15, 0xa7, 0xbb, 0x78, 0x49, 0xca, 0x90, 0x0d, 0x88, 0x8b, 0x53, 0x31,
+	0xf5, 0xb9, 0x73, 0x33, 0x17, 0xd8, 0x80, 0x35, 0xf6, 0x40, 0x25, 0xff, 0x07, 0x38, 0xf1, 0x83,
+	0x4b, 0xf7, 0x7c, 0xd0, 0x5f, 0xee, 0x53, 0x8a, 0x39, 0xd7, 0xa4, 0x82, 0xc2, 0x06, 0x3e, 0xa0,
+	0xcf, 0x37, 0xf1, 0xc1, 0x06, 0xee, 0xd1, 0xbd, 0x4d, 0xdc, 0x6b, 0xbf, 0x87, 0xad, 0x51, 0xb2,
+	0x3c, 0x9a, 0x7a, 0xd8, 0xb1, 0xfd, 0x38, 0x19, 0x25, 0x4b, 0xdd, 0xb1, 0x0d, 0x96, 0xd9, 0x92,
+	0x9d, 0x45, 0x13, 0xc5, 0x4c, 0xc5, 0x52, 0x5b, 0x66, 0xa7, 0xfa, 0xa5, 0x82, 0xfd, 0xa2, 0x8c,
+	0xf6, 0x6f, 0x06, 0x76, 0xd2, 0x71, 0x14, 0x2e, 0xe6, 0xaa, 0xe1, 0xc3, 0xc5, 0x3c, 0xf3, 0x9c,
+	0x9a, 0x0f, 0x47, 0xa1, 0xb1, 0x1e, 0x85, 0xcc, 0x6d, 0x39, 0xe7, 0x56, 0x0e, 0xe0, 0xdb, 0xe9,
+	0x14, 0x9b, 0xab, 0xba, 0x31, 0x80, 0x5a, 0x65, 0x29, 0x26, 0x2f, 0xa0, 0x2c, 0xd3, 0x8a, 0xe9,
+	0x4e, 0xcb, 0xec, 0x6c, 0x67, 0xfb, 0x74, 0xb6, 0x4c, 0x41, 0xf2, 0x14, 0x2a, 0x78, 0xef, 0x31,
+	0xb5, 0xf0, 0xea, 0xb4, 0xd5, 0x3e, 0x06, 0xd3, 0xe1, 0x9e, 0x0c, 0xe2, 0x84, 0x5f, 0x88, 0x19,
+	0xce, 0x42, 0x8d, 0x29, 0x43, 0x1e, 0x72, 0xb8, 0x77, 0xce, 0x06, 0x98, 0x4d, 0x8d, 0x69, 0x8b,
+	0x10, 0x28, 0xe1, 0x2c, 0x9a, 0xa8, 0xe2, 0xba, 0x7d, 0xa3, 0xcb, 0x20, 0x6f, 0xbc, 0x0b, 0x15,
+	0xf9, 0x26, 0x2e, 0x62, 0xfd, 0x78, 0xa4, 0x13, 0x84, 0x54, 0x11, 0xa6, 0x77, 0x10, 0x1b, 0x4a,
+	0x0e, 0xf7, 0xe4, 0x9b, 0x28, 0xa3, 0x87, 0x74, 0x84, 0xb8, 0xc7, 0x50, 0x27, 0x9f, 0x81, 0x39,
+	0x4a, 0x96, 0xd4, 0x44, 0xbc, 0xb3, 0x4e, 0x0e, 0x0b, 0xcb, 0x24, 0xeb, 0x1e, 0x66, 0x8f, 0x15,
+	0x79, 0x06, 0xbb, 0x7a, 0xe9, 0x9e, 0x07, 0xf1, 0x5c, 0x4c, 0xfc, 0x0f, 0xbe, 0x98, 0x5a, 0x05,
+	0xb2, 0x03, 0xdb, 0x29, 0xf8, 0x56, 0xc4, 0x96, 0x41, 0x9a, 0x00, 0xa9, 0x30, 0x0c, 0xad, 0x62,
+	0xf7, 0x7d, 0x76, 0x75, 0xc4, 0x82, 0xba, 0x5e, 0xba, 0xd7, 0xa1, 0x2f, 0x4f, 0xef, 0xc2, 0x4e,
+	0xaa, 0x9c, 0x84, 0xe1, 0x7c, 0x94, 0x2c, 0x2d, 0x83, 0x3c, 0x81, 0x47, 0x79, 0x11, 0xd7, 0x56,
+	0x51, 0x3a, 0x4e, 0xe5, 0xe3, 0x03, 0xcb, 0xec, 0x2e, 0x61, 0x3b, 0x97, 0xb7, 0x8c, 0x30, 0x67,
+	0xba, 0x83, 0xe0, 0x9a, 0xcf, 0xf0, 0x1b, 0xcf, 0xe1, 0x49, 0x1e, 0x8c, 0xa4, 0xcc, 0x13, 0x31,
+	0xb5, 0x8a, 0x64, 0x0f, 0x9e, 0xe6, 0xd1, 0x7a, 0xcc, 0xad, 0xd2, 0xc3, 0x63, 0xea, 0x5d, 0x94,
+	0xa8, 0xd2, 0xed, 0x67, 0x3d, 0x24, 0x13, 0xd0, 0x4b, 0x77, 0xc8, 0x93, 0x45, 0xc4, 0x67, 0x56,
+	0x41, 0xe6, 0x99, 0x8a, 0xdf, 0x89, 0x28, 0xb4, 0x0c, 0x42, 0xa0, 0x99, 0x2a, 0x83, 0xe0, 0x5a,
+	0x44, 0x89, 0x55, 0xec, 0x5e, 0xa6, 0xef, 0x26, 0x3a, 0x7a, 0x0a, 0x64, 0x6d, 0xb9, 0xe7, 0xc1,
+	0x65, 0x10, 0xfe, 0x18, 0xa8, 0x0a, 0xe5, 0x74, 0xed, 0xee, 0x19, 0xec, 0xe6, 0xc4, 0x77, 0x61,
+	0xec, 0x27, 0xfe, 0xb5, 0xb0, 0x8a, 0x0f, 0xc0, 0x50, 0x78, 0x1c, 0x81, 0xd9, 0x3d, 0x85, 0xed,
+	0xdc, 0x33, 0xbb, 0xf6, 0x8a, 0xa6, 0x3b, 0xf4, 0x67, 0xf9, 0x4f, 0x29, 0xf1, 0xed, 0x74, 0x6a,
+	0x19, 0xe4, 0x31, 0x58, 0x79, 0xf1, 0xe8, 0x5a, 0x04, 0x56, 0xf1, 0xcd, 0xd7, 0xb7, 0x77, 0x76,
+	0xe1, 0xe3, 0x9d, 0x5d, 0xf8, 0x74, 0x67, 0x1b, 0x3f, 0xaf, 0x6c, 0xe3, 0xd7, 0x95, 0x6d, 0xfc,
+	0xbe, 0xb2, 0x8d, 0xdb, 0x95, 0x6d, 0xfc, 0xb5, 0xb2, 0x8d, 0xbf, 0x57, 0x76, 0xe1, 0xd3, 0xca,
+	0x36, 0x7e, 0xb9, 0xb7, 0x0b, 0xb7, 0xf7, 0x76, 0xe1, 0xe3, 0xbd, 0x5d, 0xb8, 0xa8, 0xe0, 0x1f,
+	0xfd, 0xeb, 0x7f, 0x03, 0x00, 0x00, 0xff, 0xff, 0x11, 0xa6, 0x7b, 0x4d, 0x04, 0x08, 0x00, 0x00,
 }
 
 func (x IsPrime) String() string {
@@ -685,6 +914,20 @@ func (x GraphStatus) String() string {
 }
 func (x OddSign) String() string {
 	s, ok := OddSign_name[int32(x)]
+	if ok {
+		return s
+	}
+	return strconv.Itoa(int(x))
+}
+func (x TracesSign) String() string {
+	s, ok := TracesSign_name[int32(x)]
+	if ok {
+		return s
+	}
+	return strconv.Itoa(int(x))
+}
+func (x TracesCycle) String() string {
+	s, ok := TracesCycle_name[int32(x)]
 	if ok {
 		return s
 	}
@@ -780,6 +1023,92 @@ func (this *GraphDef) Equal(that interface{}) bool {
 		if this.GraphExprs[i] != that1.GraphExprs[i] {
 			return false
 		}
+	}
+	return true
+}
+func (this *TracesTerm) Equal(that interface{}) bool {
+	if that == nil {
+		return this == nil
+	}
+
+	that1, ok := that.(*TracesTerm)
+	if !ok {
+		that2, ok := that.(TracesTerm)
+		if ok {
+			that1 = &that2
+		} else {
+			return false
+		}
+	}
+	if that1 == nil {
+		return this == nil
+	} else if this == nil {
+		return false
+	}
+	if this.VtxCount != that1.VtxCount {
+		return false
+	}
+	if this.Cycle != that1.Cycle {
+		return false
+	}
+	if this.Sign != that1.Sign {
+		return false
+	}
+	if this.TX_Tag_0 != that1.TX_Tag_0 {
+		return false
+	}
+	if this.TX_Tag_1 != that1.TX_Tag_1 {
+		return false
+	}
+	if this.TX_Tag_2 != that1.TX_Tag_2 {
+		return false
+	}
+	if len(this.TX_Normalized) != len(that1.TX_Normalized) {
+		return false
+	}
+	for i := range this.TX_Normalized {
+		if this.TX_Normalized[i] != that1.TX_Normalized[i] {
+			return false
+		}
+	}
+	if len(this.TX_CycleCounts) != len(that1.TX_CycleCounts) {
+		return false
+	}
+	for i := range this.TX_CycleCounts {
+		if this.TX_CycleCounts[i] != that1.TX_CycleCounts[i] {
+			return false
+		}
+	}
+	if len(this.TX_PrimeBases) != len(that1.TX_PrimeBases) {
+		return false
+	}
+	for i := range this.TX_PrimeBases {
+		if this.TX_PrimeBases[i] != that1.TX_PrimeBases[i] {
+			return false
+		}
+	}
+	if len(this.TX_FactorCounts) != len(that1.TX_FactorCounts) {
+		return false
+	}
+	for i := range this.TX_FactorCounts {
+		if this.TX_FactorCounts[i] != that1.TX_FactorCounts[i] {
+			return false
+		}
+	}
+	if this.Graph != that1.Graph {
+		return false
+	}
+	if this.GraphMediaType != that1.GraphMediaType {
+		return false
+	}
+	if this.Link_UIDx0 != that1.Link_UIDx0 {
+		return false
+	}
+	if this.Link_UIDx1 != that1.Link_UIDx1 {
+		return false
+	}
+	if this.Link_UIDx2 != that1.Link_UIDx2 {
+		return false
 	}
 	return true
 }
@@ -959,6 +1288,30 @@ func (this *GraphDef) GoString() string {
 	s = append(s, "GraphEncoding: "+fmt.Sprintf("%#v", this.GraphEncoding)+",\n")
 	s = append(s, "CanonicGraphExpr: "+fmt.Sprintf("%#v", this.CanonicGraphExpr)+",\n")
 	s = append(s, "GraphExprs: "+fmt.Sprintf("%#v", this.GraphExprs)+",\n")
+	s = append(s, "}")
+	return strings.Join(s, "")
+}
+func (this *TracesTerm) GoString() string {
+	if this == nil {
+		return "nil"
+	}
+	s := make([]string, 0, 19)
+	s = append(s, "&graph.TracesTerm{")
+	s = append(s, "VtxCount: "+fmt.Sprintf("%#v", this.VtxCount)+",\n")
+	s = append(s, "Cycle: "+fmt.Sprintf("%#v", this.Cycle)+",\n")
+	s = append(s, "Sign: "+fmt.Sprintf("%#v", this.Sign)+",\n")
+	s = append(s, "TX_Tag_0: "+fmt.Sprintf("%#v", this.TX_Tag_0)+",\n")
+	s = append(s, "TX_Tag_1: "+fmt.Sprintf("%#v", this.TX_Tag_1)+",\n")
+	s = append(s, "TX_Tag_2: "+fmt.Sprintf("%#v", this.TX_Tag_2)+",\n")
+	s = append(s, "TX_Normalized: "+fmt.Sprintf("%#v", this.TX_Normalized)+",\n")
+	s = append(s, "TX_CycleCounts: "+fmt.Sprintf("%#v", this.TX_CycleCounts)+",\n")
+	s = append(s, "TX_PrimeBases: "+fmt.Sprintf("%#v", this.TX_PrimeBases)+",\n")
+	s = append(s, "TX_FactorCounts: "+fmt.Sprintf("%#v", this.TX_FactorCounts)+",\n")
+	s = append(s, "Graph: "+fmt.Sprintf("%#v", this.Graph)+",\n")
+	s = append(s, "GraphMediaType: "+fmt.Sprintf("%#v", this.GraphMediaType)+",\n")
+	s = append(s, "Link_UIDx0: "+fmt.Sprintf("%#v", this.Link_UIDx0)+",\n")
+	s = append(s, "Link_UIDx1: "+fmt.Sprintf("%#v", this.Link_UIDx1)+",\n")
+	s = append(s, "Link_UIDx2: "+fmt.Sprintf("%#v", this.Link_UIDx2)+",\n")
 	s = append(s, "}")
 	return strings.Join(s, "")
 }
@@ -1174,6 +1527,170 @@ func (m *GraphDef) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	return len(dAtA) - i, nil
 }
 
+func (m *TracesTerm) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *TracesTerm) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *TracesTerm) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if m.Link_UIDx2 != 0 {
+		i -= 8
+		encoding_binary.LittleEndian.PutUint64(dAtA[i:], uint64(m.Link_UIDx2))
+		i--
+		dAtA[i] = 0x1
+		i--
+		dAtA[i] = 0xd1
+	}
+	if m.Link_UIDx1 != 0 {
+		i -= 8
+		encoding_binary.LittleEndian.PutUint64(dAtA[i:], uint64(m.Link_UIDx1))
+		i--
+		dAtA[i] = 0x1
+		i--
+		dAtA[i] = 0xc9
+	}
+	if m.Link_UIDx0 != 0 {
+		i -= 8
+		encoding_binary.LittleEndian.PutUint64(dAtA[i:], uint64(m.Link_UIDx0))
+		i--
+		dAtA[i] = 0x1
+		i--
+		dAtA[i] = 0xc1
+	}
+	if len(m.GraphMediaType) > 0 {
+		i -= len(m.GraphMediaType)
+		copy(dAtA[i:], m.GraphMediaType)
+		i = encodeVarintGraph(dAtA, i, uint64(len(m.GraphMediaType)))
+		i--
+		dAtA[i] = 0x1
+		i--
+		dAtA[i] = 0xa2
+	}
+	if len(m.Graph) > 0 {
+		i -= len(m.Graph)
+		copy(dAtA[i:], m.Graph)
+		i = encodeVarintGraph(dAtA, i, uint64(len(m.Graph)))
+		i--
+		dAtA[i] = 0x1
+		i--
+		dAtA[i] = 0x9a
+	}
+	if len(m.TX_FactorCounts) > 0 {
+		dAtA6 := make([]byte, len(m.TX_FactorCounts)*10)
+		var j5 int
+		for _, num1 := range m.TX_FactorCounts {
+			num := uint64(num1)
+			for num >= 1<<7 {
+				dAtA6[j5] = uint8(uint64(num)&0x7f | 0x80)
+				num >>= 7
+				j5++
+			}
+			dAtA6[j5] = uint8(num)
+			j5++
+		}
+		i -= j5
+		copy(dAtA[i:], dAtA6[:j5])
+		i = encodeVarintGraph(dAtA, i, uint64(j5))
+		i--
+		dAtA[i] = 0x72
+	}
+	if len(m.TX_PrimeBases) > 0 {
+		dAtA8 := make([]byte, len(m.TX_PrimeBases)*10)
+		var j7 int
+		for _, num := range m.TX_PrimeBases {
+			for num >= 1<<7 {
+				dAtA8[j7] = uint8(uint64(num)&0x7f | 0x80)
+				num >>= 7
+				j7++
+			}
+			dAtA8[j7] = uint8(num)
+			j7++
+		}
+		i -= j7
+		copy(dAtA[i:], dAtA8[:j7])
+		i = encodeVarintGraph(dAtA, i, uint64(j7))
+		i--
+		dAtA[i] = 0x6a
+	}
+	if len(m.TX_CycleCounts) > 0 {
+		dAtA10 := make([]byte, len(m.TX_CycleCounts)*10)
+		var j9 int
+		for _, num1 := range m.TX_CycleCounts {
+			num := uint64(num1)
+			for num >= 1<<7 {
+				dAtA10[j9] = uint8(uint64(num)&0x7f | 0x80)
+				num >>= 7
+				j9++
+			}
+			dAtA10[j9] = uint8(num)
+			j9++
+		}
+		i -= j9
+		copy(dAtA[i:], dAtA10[:j9])
+		i = encodeVarintGraph(dAtA, i, uint64(j9))
+		i--
+		dAtA[i] = 0x62
+	}
+	if len(m.TX_Normalized) > 0 {
+		for iNdEx := len(m.TX_Normalized) - 1; iNdEx >= 0; iNdEx-- {
+			f11 := math.Float32bits(float32(m.TX_Normalized[iNdEx]))
+			i -= 4
+			encoding_binary.LittleEndian.PutUint32(dAtA[i:], uint32(f11))
+		}
+		i = encodeVarintGraph(dAtA, i, uint64(len(m.TX_Normalized)*4))
+		i--
+		dAtA[i] = 0x5a
+	}
+	if m.TX_Tag_2 != 0 {
+		i -= 8
+		encoding_binary.LittleEndian.PutUint64(dAtA[i:], uint64(m.TX_Tag_2))
+		i--
+		dAtA[i] = 0x41
+	}
+	if m.TX_Tag_1 != 0 {
+		i -= 8
+		encoding_binary.LittleEndian.PutUint64(dAtA[i:], uint64(m.TX_Tag_1))
+		i--
+		dAtA[i] = 0x39
+	}
+	if m.TX_Tag_0 != 0 {
+		i -= 8
+		encoding_binary.LittleEndian.PutUint64(dAtA[i:], uint64(m.TX_Tag_0))
+		i--
+		dAtA[i] = 0x31
+	}
+	if m.Sign != 0 {
+		i = encodeVarintGraph(dAtA, i, uint64(m.Sign))
+		i--
+		dAtA[i] = 0x20
+	}
+	if m.Cycle != 0 {
+		i = encodeVarintGraph(dAtA, i, uint64(m.Cycle))
+		i--
+		dAtA[i] = 0x18
+	}
+	if m.VtxCount != 0 {
+		i = encodeVarintGraph(dAtA, i, uint64(m.VtxCount))
+		i--
+		dAtA[i] = 0x8
+	}
+	return len(dAtA) - i, nil
+}
+
 func (m *VtxEdge) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
@@ -1233,21 +1750,21 @@ func (m *VtxGroup) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	var l int
 	_ = l
 	if len(m.Cycles) > 0 {
-		dAtA6 := make([]byte, len(m.Cycles)*10)
-		var j5 int
+		dAtA13 := make([]byte, len(m.Cycles)*10)
+		var j12 int
 		for _, num1 := range m.Cycles {
 			num := uint64(num1)
 			for num >= 1<<7 {
-				dAtA6[j5] = uint8(uint64(num)&0x7f | 0x80)
+				dAtA13[j12] = uint8(uint64(num)&0x7f | 0x80)
 				num >>= 7
-				j5++
+				j12++
 			}
-			dAtA6[j5] = uint8(num)
-			j5++
+			dAtA13[j12] = uint8(num)
+			j12++
 		}
-		i -= j5
-		copy(dAtA[i:], dAtA6[:j5])
-		i = encodeVarintGraph(dAtA, i, uint64(j5))
+		i -= j12
+		copy(dAtA[i:], dAtA13[:j12])
+		i = encodeVarintGraph(dAtA, i, uint64(j12))
 		i--
 		dAtA[i] = 0x1
 		i--
@@ -1468,6 +1985,74 @@ func (m *GraphDef) Size() (n int) {
 	return n
 }
 
+func (m *TracesTerm) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if m.VtxCount != 0 {
+		n += 1 + sovGraph(uint64(m.VtxCount))
+	}
+	if m.Cycle != 0 {
+		n += 1 + sovGraph(uint64(m.Cycle))
+	}
+	if m.Sign != 0 {
+		n += 1 + sovGraph(uint64(m.Sign))
+	}
+	if m.TX_Tag_0 != 0 {
+		n += 9
+	}
+	if m.TX_Tag_1 != 0 {
+		n += 9
+	}
+	if m.TX_Tag_2 != 0 {
+		n += 9
+	}
+	if len(m.TX_Normalized) > 0 {
+		n += 1 + sovGraph(uint64(len(m.TX_Normalized)*4)) + len(m.TX_Normalized)*4
+	}
+	if len(m.TX_CycleCounts) > 0 {
+		l = 0
+		for _, e := range m.TX_CycleCounts {
+			l += sovGraph(uint64(e))
+		}
+		n += 1 + sovGraph(uint64(l)) + l
+	}
+	if len(m.TX_PrimeBases) > 0 {
+		l = 0
+		for _, e := range m.TX_PrimeBases {
+			l += sovGraph(uint64(e))
+		}
+		n += 1 + sovGraph(uint64(l)) + l
+	}
+	if len(m.TX_FactorCounts) > 0 {
+		l = 0
+		for _, e := range m.TX_FactorCounts {
+			l += sovGraph(uint64(e))
+		}
+		n += 1 + sovGraph(uint64(l)) + l
+	}
+	l = len(m.Graph)
+	if l > 0 {
+		n += 2 + l + sovGraph(uint64(l))
+	}
+	l = len(m.GraphMediaType)
+	if l > 0 {
+		n += 2 + l + sovGraph(uint64(l))
+	}
+	if m.Link_UIDx0 != 0 {
+		n += 10
+	}
+	if m.Link_UIDx1 != 0 {
+		n += 10
+	}
+	if m.Link_UIDx2 != 0 {
+		n += 10
+	}
+	return n
+}
+
 func (m *VtxEdge) Size() (n int) {
 	if m == nil {
 		return 0
@@ -1597,6 +2182,30 @@ func (this *GraphDef) String() string {
 		`GraphEncoding:` + fmt.Sprintf("%v", this.GraphEncoding) + `,`,
 		`CanonicGraphExpr:` + fmt.Sprintf("%v", this.CanonicGraphExpr) + `,`,
 		`GraphExprs:` + fmt.Sprintf("%v", this.GraphExprs) + `,`,
+		`}`,
+	}, "")
+	return s
+}
+func (this *TracesTerm) String() string {
+	if this == nil {
+		return "nil"
+	}
+	s := strings.Join([]string{`&TracesTerm{`,
+		`VtxCount:` + fmt.Sprintf("%v", this.VtxCount) + `,`,
+		`Cycle:` + fmt.Sprintf("%v", this.Cycle) + `,`,
+		`Sign:` + fmt.Sprintf("%v", this.Sign) + `,`,
+		`TX_Tag_0:` + fmt.Sprintf("%v", this.TX_Tag_0) + `,`,
+		`TX_Tag_1:` + fmt.Sprintf("%v", this.TX_Tag_1) + `,`,
+		`TX_Tag_2:` + fmt.Sprintf("%v", this.TX_Tag_2) + `,`,
+		`TX_Normalized:` + fmt.Sprintf("%v", this.TX_Normalized) + `,`,
+		`TX_CycleCounts:` + fmt.Sprintf("%v", this.TX_CycleCounts) + `,`,
+		`TX_PrimeBases:` + fmt.Sprintf("%v", this.TX_PrimeBases) + `,`,
+		`TX_FactorCounts:` + fmt.Sprintf("%v", this.TX_FactorCounts) + `,`,
+		`Graph:` + fmt.Sprintf("%v", this.Graph) + `,`,
+		`GraphMediaType:` + fmt.Sprintf("%v", this.GraphMediaType) + `,`,
+		`Link_UIDx0:` + fmt.Sprintf("%v", this.Link_UIDx0) + `,`,
+		`Link_UIDx1:` + fmt.Sprintf("%v", this.Link_UIDx1) + `,`,
+		`Link_UIDx2:` + fmt.Sprintf("%v", this.Link_UIDx2) + `,`,
 		`}`,
 	}, "")
 	return s
@@ -2138,6 +2747,519 @@ func (m *GraphDef) Unmarshal(dAtA []byte) error {
 			}
 			m.GraphExprs = append(m.GraphExprs, string(dAtA[iNdEx:postIndex]))
 			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipGraph(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthGraph
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *TracesTerm) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowGraph
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: TracesTerm: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: TracesTerm: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field VtxCount", wireType)
+			}
+			m.VtxCount = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowGraph
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.VtxCount |= int64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 3:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Cycle", wireType)
+			}
+			m.Cycle = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowGraph
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.Cycle |= TracesCycle(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 4:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Sign", wireType)
+			}
+			m.Sign = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowGraph
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.Sign |= TracesSign(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 6:
+			if wireType != 1 {
+				return fmt.Errorf("proto: wrong wireType = %d for field TX_Tag_0", wireType)
+			}
+			m.TX_Tag_0 = 0
+			if (iNdEx + 8) > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.TX_Tag_0 = uint64(encoding_binary.LittleEndian.Uint64(dAtA[iNdEx:]))
+			iNdEx += 8
+		case 7:
+			if wireType != 1 {
+				return fmt.Errorf("proto: wrong wireType = %d for field TX_Tag_1", wireType)
+			}
+			m.TX_Tag_1 = 0
+			if (iNdEx + 8) > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.TX_Tag_1 = uint64(encoding_binary.LittleEndian.Uint64(dAtA[iNdEx:]))
+			iNdEx += 8
+		case 8:
+			if wireType != 1 {
+				return fmt.Errorf("proto: wrong wireType = %d for field TX_Tag_2", wireType)
+			}
+			m.TX_Tag_2 = 0
+			if (iNdEx + 8) > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.TX_Tag_2 = uint64(encoding_binary.LittleEndian.Uint64(dAtA[iNdEx:]))
+			iNdEx += 8
+		case 11:
+			if wireType == 5 {
+				var v uint32
+				if (iNdEx + 4) > l {
+					return io.ErrUnexpectedEOF
+				}
+				v = uint32(encoding_binary.LittleEndian.Uint32(dAtA[iNdEx:]))
+				iNdEx += 4
+				v2 := float32(math.Float32frombits(v))
+				m.TX_Normalized = append(m.TX_Normalized, v2)
+			} else if wireType == 2 {
+				var packedLen int
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return ErrIntOverflowGraph
+					}
+					if iNdEx >= l {
+						return io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					packedLen |= int(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				if packedLen < 0 {
+					return ErrInvalidLengthGraph
+				}
+				postIndex := iNdEx + packedLen
+				if postIndex < 0 {
+					return ErrInvalidLengthGraph
+				}
+				if postIndex > l {
+					return io.ErrUnexpectedEOF
+				}
+				var elementCount int
+				elementCount = packedLen / 4
+				if elementCount != 0 && len(m.TX_Normalized) == 0 {
+					m.TX_Normalized = make([]float32, 0, elementCount)
+				}
+				for iNdEx < postIndex {
+					var v uint32
+					if (iNdEx + 4) > l {
+						return io.ErrUnexpectedEOF
+					}
+					v = uint32(encoding_binary.LittleEndian.Uint32(dAtA[iNdEx:]))
+					iNdEx += 4
+					v2 := float32(math.Float32frombits(v))
+					m.TX_Normalized = append(m.TX_Normalized, v2)
+				}
+			} else {
+				return fmt.Errorf("proto: wrong wireType = %d for field TX_Normalized", wireType)
+			}
+		case 12:
+			if wireType == 0 {
+				var v int64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return ErrIntOverflowGraph
+					}
+					if iNdEx >= l {
+						return io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					v |= int64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				m.TX_CycleCounts = append(m.TX_CycleCounts, v)
+			} else if wireType == 2 {
+				var packedLen int
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return ErrIntOverflowGraph
+					}
+					if iNdEx >= l {
+						return io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					packedLen |= int(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				if packedLen < 0 {
+					return ErrInvalidLengthGraph
+				}
+				postIndex := iNdEx + packedLen
+				if postIndex < 0 {
+					return ErrInvalidLengthGraph
+				}
+				if postIndex > l {
+					return io.ErrUnexpectedEOF
+				}
+				var elementCount int
+				var count int
+				for _, integer := range dAtA[iNdEx:postIndex] {
+					if integer < 128 {
+						count++
+					}
+				}
+				elementCount = count
+				if elementCount != 0 && len(m.TX_CycleCounts) == 0 {
+					m.TX_CycleCounts = make([]int64, 0, elementCount)
+				}
+				for iNdEx < postIndex {
+					var v int64
+					for shift := uint(0); ; shift += 7 {
+						if shift >= 64 {
+							return ErrIntOverflowGraph
+						}
+						if iNdEx >= l {
+							return io.ErrUnexpectedEOF
+						}
+						b := dAtA[iNdEx]
+						iNdEx++
+						v |= int64(b&0x7F) << shift
+						if b < 0x80 {
+							break
+						}
+					}
+					m.TX_CycleCounts = append(m.TX_CycleCounts, v)
+				}
+			} else {
+				return fmt.Errorf("proto: wrong wireType = %d for field TX_CycleCounts", wireType)
+			}
+		case 13:
+			if wireType == 0 {
+				var v uint64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return ErrIntOverflowGraph
+					}
+					if iNdEx >= l {
+						return io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					v |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				m.TX_PrimeBases = append(m.TX_PrimeBases, v)
+			} else if wireType == 2 {
+				var packedLen int
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return ErrIntOverflowGraph
+					}
+					if iNdEx >= l {
+						return io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					packedLen |= int(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				if packedLen < 0 {
+					return ErrInvalidLengthGraph
+				}
+				postIndex := iNdEx + packedLen
+				if postIndex < 0 {
+					return ErrInvalidLengthGraph
+				}
+				if postIndex > l {
+					return io.ErrUnexpectedEOF
+				}
+				var elementCount int
+				var count int
+				for _, integer := range dAtA[iNdEx:postIndex] {
+					if integer < 128 {
+						count++
+					}
+				}
+				elementCount = count
+				if elementCount != 0 && len(m.TX_PrimeBases) == 0 {
+					m.TX_PrimeBases = make([]uint64, 0, elementCount)
+				}
+				for iNdEx < postIndex {
+					var v uint64
+					for shift := uint(0); ; shift += 7 {
+						if shift >= 64 {
+							return ErrIntOverflowGraph
+						}
+						if iNdEx >= l {
+							return io.ErrUnexpectedEOF
+						}
+						b := dAtA[iNdEx]
+						iNdEx++
+						v |= uint64(b&0x7F) << shift
+						if b < 0x80 {
+							break
+						}
+					}
+					m.TX_PrimeBases = append(m.TX_PrimeBases, v)
+				}
+			} else {
+				return fmt.Errorf("proto: wrong wireType = %d for field TX_PrimeBases", wireType)
+			}
+		case 14:
+			if wireType == 0 {
+				var v int64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return ErrIntOverflowGraph
+					}
+					if iNdEx >= l {
+						return io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					v |= int64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				m.TX_FactorCounts = append(m.TX_FactorCounts, v)
+			} else if wireType == 2 {
+				var packedLen int
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return ErrIntOverflowGraph
+					}
+					if iNdEx >= l {
+						return io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					packedLen |= int(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				if packedLen < 0 {
+					return ErrInvalidLengthGraph
+				}
+				postIndex := iNdEx + packedLen
+				if postIndex < 0 {
+					return ErrInvalidLengthGraph
+				}
+				if postIndex > l {
+					return io.ErrUnexpectedEOF
+				}
+				var elementCount int
+				var count int
+				for _, integer := range dAtA[iNdEx:postIndex] {
+					if integer < 128 {
+						count++
+					}
+				}
+				elementCount = count
+				if elementCount != 0 && len(m.TX_FactorCounts) == 0 {
+					m.TX_FactorCounts = make([]int64, 0, elementCount)
+				}
+				for iNdEx < postIndex {
+					var v int64
+					for shift := uint(0); ; shift += 7 {
+						if shift >= 64 {
+							return ErrIntOverflowGraph
+						}
+						if iNdEx >= l {
+							return io.ErrUnexpectedEOF
+						}
+						b := dAtA[iNdEx]
+						iNdEx++
+						v |= int64(b&0x7F) << shift
+						if b < 0x80 {
+							break
+						}
+					}
+					m.TX_FactorCounts = append(m.TX_FactorCounts, v)
+				}
+			} else {
+				return fmt.Errorf("proto: wrong wireType = %d for field TX_FactorCounts", wireType)
+			}
+		case 19:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Graph", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowGraph
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthGraph
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthGraph
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Graph = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 20:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field GraphMediaType", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowGraph
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthGraph
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthGraph
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.GraphMediaType = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 24:
+			if wireType != 1 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Link_UIDx0", wireType)
+			}
+			m.Link_UIDx0 = 0
+			if (iNdEx + 8) > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Link_UIDx0 = uint64(encoding_binary.LittleEndian.Uint64(dAtA[iNdEx:]))
+			iNdEx += 8
+		case 25:
+			if wireType != 1 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Link_UIDx1", wireType)
+			}
+			m.Link_UIDx1 = 0
+			if (iNdEx + 8) > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Link_UIDx1 = uint64(encoding_binary.LittleEndian.Uint64(dAtA[iNdEx:]))
+			iNdEx += 8
+		case 26:
+			if wireType != 1 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Link_UIDx2", wireType)
+			}
+			m.Link_UIDx2 = 0
+			if (iNdEx + 8) > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Link_UIDx2 = uint64(encoding_binary.LittleEndian.Uint64(dAtA[iNdEx:]))
+			iNdEx += 8
 		default:
 			iNdEx = preIndex
 			skippy, err := skipGraph(dAtA[iNdEx:])
