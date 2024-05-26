@@ -1,7 +1,7 @@
 package lib2x3
 
 import (
-	"github.com/fine-structures/sdk-go/go2x3"
+	"github.com/astronomical-grace/fine-structures-go/go2x3"
 )
 
 // VtxID is one-based index that identifies a vertex in a given graph (1..VtxMax)

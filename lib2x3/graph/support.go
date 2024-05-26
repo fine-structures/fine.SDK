@@ -68,8 +68,8 @@ func (g GroupID) GroupRune() byte {
 	return r
 }
 
-func (X *VtxGraph) IsNormalized() bool {
-	return X.Status >= GraphStatus_Normalized
+func (X *VtxGraph) IsComputed() bool {
+	return X.Status >= GraphStatus_Computed
 }
 
 func (X *VtxGraph) IsCanonized() bool {

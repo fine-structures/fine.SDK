@@ -4,7 +4,7 @@ import (
 	"sync"
 	"unsafe"
 
-	"github.com/fine-structures/sdk-go/go2x3"
+	"github.com/astronomical-grace/fine-structures-go/go2x3"
 	"github.com/emirpasic/gods/trees/redblacktree"
 )
 

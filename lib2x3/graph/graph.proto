@@ -1,7 +1,7 @@
 syntax = "proto3";
 package graph;
 
-//option go_package = "github.com/fine-structures/sdk-go/lib2x3/graph";
+//option go_package = "github.com/astronomical-grace/fine-structures-go/lib2x3/graph";
 
 
 message CatalogState {
@@ -78,9 +78,8 @@ enum GraphStatus {
     // Each Vtx is in its own separate group and has exactly 3 VtxEdges.
     GraphStatus_Validated = 2;
     
-    // First, edges are sorted by DstVtxID then SrcVtxID.
     // Next, edges that have matching DstVtxID and SrcVtxID are combined (summed).
-    GraphStatus_Normalized  = 4;
+    GraphStatus_Computed = 4;
     
     // A cycle spectrum is performed on the graph to canonically order vtx groups.
     // Vtx determined to be in the same group are merged into a single vtx group.

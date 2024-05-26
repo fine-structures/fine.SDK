@@ -3,9 +3,10 @@ package graph
 import (
 	"fmt"
 	"io"
+	"math"
 	"sort"
 
-	"github.com/fine-structures/sdk-go/go2x3"
+	"github.com/astronomical-grace/fine-structures-go/go2x3"
 )
 
 type ComputeVtx struct {

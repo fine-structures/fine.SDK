@@ -4,10 +4,10 @@ import (
 	"bytes"
 	"runtime"
 
-	"github.com/fine-structures/sdk-go/go2x3"
-	"github.com/fine-structures/sdk-go/lib2x3"
-	"github.com/fine-structures/sdk-go/lib2x3/factor"
-	"github.com/fine-structures/sdk-go/lib2x3/graph"
+	"github.com/astronomical-grace/fine-structures-go/go2x3"
+	"github.com/astronomical-grace/fine-structures-go/lib2x3"
+	"github.com/astronomical-grace/fine-structures-go/lib2x3/factor"
+	"github.com/astronomical-grace/fine-structures-go/lib2x3/graph"
 	"github.com/pkg/errors"
 
 	"github.com/dgraph-io/badger/v4"

@@ -1,4 +1,4 @@
-module github.com/fine-structures/sdk-go
+module github.com/astronomical-grace/fine-structures-go
 
 go 1.19
 

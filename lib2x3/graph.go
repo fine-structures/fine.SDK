@@ -7,8 +7,8 @@ import (
 	"sort"
 	"sync"
 
-	"github.com/fine-structures/sdk-go/go2x3"
-	"github.com/fine-structures/sdk-go/lib2x3/graph"
+	"github.com/astronomical-grace/fine-structures-go/go2x3"
+	"github.com/astronomical-grace/fine-structures-go/lib2x3/graph"
 )
 
 
