@@ -8,7 +8,7 @@ Welcome to the go2x3 tutorial series!
 |       "OH LET ME BEHOLD YOUR PRESENCE”  EXODUS 33:2x3x3       |
 =================================================================
 
-בראשית ברא אלהים את השמים ואת הארץ
+בְּרֵאשִׁ֖ית בָּרָ֣א אֱלֹהִ֑ים אֵ֥ת הַשָּׁמַ֖יִם וְאֵ֥ת הָאָֽרֶץ
 
 Let us look at the electron, muon, and tau particles:
 
