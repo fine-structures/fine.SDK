@@ -73,6 +73,14 @@ ShowGraph("y8  (quad-gamma)",    "1=2-3=4-5=6-7=8-1")
 ShowGraph("y8d ",                "1-2-3=4-5=6-7=8-1")
 ShowGraph("y8d_flip",            "1-2-3-~4-5=6-7=8-1")
 
+ShowGraph("rando1",              "1^^-2-~3-4-5~~6-4")
+ShowGraph("rando1~",             "1~2~-3~4~5--6~4")
+
+ShowGraph("rando2",              "1-2-~3-4-~5^"   )
+ShowGraph("rando2~",             "1^^~2~-3~4~-5")
+
+ShowGraph("rando3",              "1~2~3-4^-6-2, 3-5~6")
+ShowGraph("rando3~",             "1^^-2-3~4~6~2, 3~5^-6")
 
 print("\n===============================================  \n")
 ShowPhases("tetra",             "1-2-3-1-4-2, 4-3")
