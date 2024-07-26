@@ -27,12 +27,11 @@ message CatalogState {
 }
 
 
-// IsPrime specifies if a graph system has constituent factors or not.
-// If a graph is prime, then it cannot be formed by combining any other particles.
-enum IsPrime {
-    IsPrime_Unspecified = 0;
-    IsPrime_Yes         = 1;
-    IsPrime_No          = 2;
+
+enum Bool {
+    Bool_Unknown = 0;
+    Bool_No      = 1;
+    Bool_Yes     = 3;
 }
 
 
@@ -40,7 +39,7 @@ enum IsPrime {
 // Has similarities to a "Contributing structure" in quantum|chemistry lingo. https://en.wikipedia.org/wiki/Resonance_(chemistry)
 message GraphDef {
 
-    IsPrime             IsPrime                     = 1;
+    Bool                IsPrime                     = 1;
                 
     // If non-zero, the Traces of this graph has a registered ID. 
     // These values can be used to lookup a graph's common ascii symbolic name, UTF8 symbolic name, or nickname
@@ -58,6 +57,8 @@ message GraphDef {
     repeated string     GraphExprs                  = 12;
     
 }
+
+
 
 // GroupID is a vertex group ID containing one or more Vtx.
 enum GroupID {
@@ -92,6 +93,20 @@ enum OddSign {
     OddSign_Natural = 0; // Odd cycles are not inverted 
     OddSign_Zero    = 1; // Odd cycles are zero
     OddSign_Invert  = 2; // Odd cycles are inverted
+}
+
+
+enum TracesSign {
+    TracesSign_Unknown  = 0;
+    TracesSign_Zero     = 1;
+    TracesSign_Positive = 2;
+    TracesSign_Negative = 3;
+}
+
+enum TracesCycle {
+    TracesCycle_Nil    = 0; 
+    TracesCycle_Odd    = 1;
+    TracesCycle_Even   = 2; 
 }
 
 // VtxEdge
@@ -142,17 +157,63 @@ message VtxGroup {
 }
 
 
-
-message Tag {
-    string              Label                      = 1;
-    string              TagURI                     = 2;
-    string              Expr                       = 3;
+// בְּרֵאשִׁ֖ית בָּרָ֣א אֱלֹהִ֑ים אֵ֥ת הַשָּׁמַ֖יִם וְאֵ֥ת הָאָֽרֶץ
+message GraphTerm {
+	uint32 VertexCount = 1; // number of vertices in the graph
+	uint64 StructureID = 2; // graph structure enumeration ID
+	uint64 VariantID   = 3; // graph structure variant ID; 0 always implies positive edges ("root variant")
+	
+    // IsPrime specifies if a graph system has constituent factors or not.
+    // If a graph is prime, then it cannot be formed by combining any other particles.
+	Bool IsPrime = 6;
+	
+	// IsCanonic specifies if this VariantID is canonic (i.e. first appearing) 
+	Bool IsCanonic = 7;
+	
+    // C1 and C2 can be regarded as the instance count (or amplitude) of the odd and even traces terms.
+    //
+    // C1 is the instance count of odd traces -- negating is equivalent to flipping sign of odd traces, which is to flip all edge signs (including loops)
+	int64 C1 = 11; 
+	
+    // C2 is the instance count of even traces and is only negative if expressing subtraction (rare)
+	int64 C2 = 12;
 }
 
-message VtxGraph {
-    GraphStatus            Status                  = 1;
-    repeated Tag           Tags                    = 2;
-    repeated VtxGroup      Vtx                     = 3;
+
+// GrowOpCode is a graph-building op code, specifying a way to grow a 2x3 graph.
+enum GrowOpCode {
+	GrowOpCode_Nil           = 0;
+	
+    // Adds another edge connecting the existing vertices of a specified existing edge
+	GrowOpCode_EdgeDuplicate = 1; 
+	
+    // Splits an existing edge into a new vertex, filling the first two slots in the new vertex
+	GrowOpCode_EdgeSplit     = 2; 
+
+    // Sprouts an existing vertex loop into a new vertex, filling the first edge slot in the new vertex
+	GrowOpCode_EdgeSprout    = 3; 
 }
 
 
+// GrowStep is a graph building step, specifying how to add an vertex and/or edge
+message GrowStep {
+    GrowOpCode OpCode   = 1; // operation to perform
+    int32      EdgeSign = 2; // +1 or -1
+    uint32     VertexID = 3; // 1, 2, 3, 4, 5, ...
+    uint32     SlotID   = 4; // 1, 2, or 3 
+}
+
+
+enum EncodingForm {
+    EncodingForm_AutoDetect = 0;
+    
+    // e.g. "1; 1-2-3"
+    EncodingForm_GraphExpr = 1;
+    
+    // Serialized sequence of GraphOps used to create this graph
+    EncodingForm_BinaryOpString = 2;
+    
+    // Canonic binary enumeration ID formed from from the []GraphOps used to create this graph
+    EncodingForm_EnumerationID = 3;
+
+}

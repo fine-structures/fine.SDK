@@ -68,14 +68,6 @@ func (g GroupID) GroupRune() byte {
 	return r
 }
 
-func (X *VtxGraph) IsComputed() bool {
-	return X.Status >= GraphStatus_Computed
-}
-
-func (X *VtxGraph) IsCanonized() bool {
-	return X.Status >= GraphStatus_Canonized
-}
-
 var signChar = [3]byte{' ', ' ', '~'}
 
 func (v *VtxGroup) AppendDesc(io []byte) []byte {

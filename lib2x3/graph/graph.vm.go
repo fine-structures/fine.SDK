@@ -20,7 +20,7 @@ type ComputeVtx struct {
 }
 
 type VtxGraphVM struct {
-	VtxGraph
+	Status GraphStatus
 
 	edgeCount int        // allocated edges: edgePool[:edgeCount]
 	edgePool  []*VtxEdge // used and non-used edges
@@ -388,7 +388,7 @@ func (X *VtxGraphVM) consolidateVtx() {
 	   		for _, vi := range vtx {
 
 	   			// The smallest non-zero cycle value is the max GCF, so start there
-	   			factorLimit := int64(2701 * 1072) // בראשית ברא אלהים את השמים ואת הארץ
+	   			factorLimit := int64(2701 * 1072)
 	   			for _, ci := range vi.Cycles {
 	   				if ci > 0 && ci < factorLimit {
 	   					factorLimit = ci

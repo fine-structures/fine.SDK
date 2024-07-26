@@ -54,7 +54,7 @@ type TracesProvider interface {
 	Traces(numTraces int) Traces
 }
 
-// Traces is an arbitrarily length sequence of a phoneix Graph "Trace" values.
+// Traces is a sequence of a 2x3 graph "traces" values (successive powers of the graph adjacency matrix).
 type Traces []int64
 
 // TracesLSM is a LSM binary encoding / symbol of a Traces.
