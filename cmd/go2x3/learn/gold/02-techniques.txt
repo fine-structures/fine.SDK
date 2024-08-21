@@ -111,7 +111,7 @@ Mixed,000036,p=1,v=3," ooB  oAC  ooB  __   _     _  ","","1^^-2^-3^",-3,9,-21,
 Mixed,000037,p=1,v=3,"2ooB  oAA 2__       ","","1^^-2-3^^",-3,13,-21,
 Mixed,000038,p=1,v=3,"2ooB  oAA 2__   _   ","","1^^-2^-3^^",-5,13,-35,
 
-Finally, let's include *all* possible particles using AllEdgeSigns().
+Finally, let's include *all* possible particles using PermuteEdgeSigns().
 We call this the "complete" catalog since every possible particle (having any combination of negative edges).
 
 With a complete catalog, we can query for a given particle's Traces and get a list of all possible equivalent "phase modes":

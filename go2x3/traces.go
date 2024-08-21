@@ -154,7 +154,7 @@ func (tid *TracesID) Unmarshal(in []byte) error {
 	return nil
 }
 
-func (tid TracesID) NumVertices() uint32 {
+func (tid TracesID) VertexCount() uint32 {
 	return uint32(byte(tid >> 48))
 }
 
@@ -163,5 +163,5 @@ func (tid TracesID) SeriesID() uint64 {
 }
 
 func (tid TracesID) WriteAsString(out io.Writer) {
-	fmt.Fprintf(out, "%d-%d", tid.NumVertices(), tid.SeriesID())
+	fmt.Fprintf(out, "%d-%d", tid.VertexCount(), tid.SeriesID())
 }

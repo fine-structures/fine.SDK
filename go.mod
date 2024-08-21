@@ -10,7 +10,7 @@ go 1.22
 
 require (
 	github.com/alecthomas/participle/v2 v2.1.1
-	github.com/amp-3d/amp-sdk-go v0.8.1
+	github.com/amp-3d/amp-sdk-go v0.8.2-0.20240806235402-1f7301cc2c50
 	github.com/dgraph-io/badger/v4 v4.2.0
 	github.com/emirpasic/gods v1.18.1
 	github.com/go-python/gpython v0.2.0
@@ -34,7 +34,7 @@ require (
 	github.com/peterh/liner v1.2.2 // indirect
 	github.com/rivo/uniseg v0.4.7 // indirect
 	go.opencensus.io v0.24.0 // indirect
-	golang.org/x/net v0.27.0 // indirect
-	golang.org/x/sys v0.22.0 // indirect
+	golang.org/x/net v0.28.0 // indirect
+	golang.org/x/sys v0.23.0 // indirect
 	google.golang.org/protobuf v1.34.2 // indirect
 )

@@ -65,14 +65,6 @@ class Graph:
     def AddTo(self, catalog):
         return self._graph.Stream().AddTo(catalog)
         
-        
-    '''
-    Emits all canonically unique permutations of given graph's edge signs.
-    '''
-    def EdgeModes(self):
-        sel = GraphSelector()
-        sel.traces = self
-        return self.AllEdgeSigns().Select(sel).DropDupes()
 
     '''
     Emits all canonically unique permutations of given graph's edge signs.
@@ -96,12 +88,9 @@ class Graph:
         sel.traces = self
         sel.factor = True
         return prime_catalog.Select(sel)
-
-    def AllVtxSigns(self):
-        return self._graph.Stream().AllVtxSigns()
         
-    def AllEdgeSigns(self):
-        return self._graph.Stream().AllEdgeSigns()
+    def PermuteEdgeSigns(self):
+        return self._graph.Stream().PermuteEdgeSigns()
         
         
         
@@ -280,8 +269,7 @@ class Catalog:
             if self.NumPrimes(vi) == 0:
              
                 count = EnumPureParticles(vi, vi)       \
-                    .DropDupes().AllVtxSigns()          \
-                    .DropDupes().AllEdgeSigns()         \
+                    .PermuteEdgeSigns()                 \
                     .AddTo(self).Go()
         
                 print("##  v=%2d:%13d graphs %11d traces %11d primes   ##" % 

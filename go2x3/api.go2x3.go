@@ -3,7 +3,7 @@ package go2x3
 import (
 	"io"
 
-	"github.com/git-amp/amp-sdk-go/stdlib/generics"
+	"github.com/amp-3d/amp-sdk-go/stdlib/generics"
 )
 
 const (
@@ -27,10 +27,90 @@ const (
 	ExportGraphDef
 )
 
+type AsciiDigiOrd byte
+
+type Octal byte // 0..7
+
+/*
+type Encoding struct {
+	byte     Octal
+	Commands []tag.CanonicOctalDigit
+
+}
+
+*/
+
+type System interface {
+	AssignFromEncoding()
+
+	// From the current graph.Encoding, constructs this graph.GraphState.
+	Recompute() error
+
+	Canonize() error
+}
+
+// func (gb *graphWalker) AssignFromEncoding(enc Encoding) {
+
+// }
+
+// var ordinalMap = [128]byte {
+// 	0,
+// 	1, 2, 3, 4, 5, 6, 7, 8,
+// |
+
+
+// func (gb *graphBuilder) EmitNextEdgeSweep(uptoShapeID uint64, tag.OctalDigit) {
+
+// }
+
+// ShapeID   uint64 // canonic enumeration step of a 2x3 tree instance "walk"
+// VariantID uint64 // canonical "complete" natural 2x3 graph (0 corresponds to all positive edge variant)
+
+/*
+func (gb *graphBuilder) EnumerateStructureShapes(uptoShapeID uint64, ) {
+	sockets := make([]VtxSocket, 3*MaxVtxID)
+
+
+	{
+		si := gb.addVertex()
+
+
+		gb.PushState()
+		gb.sweepPhase = 0
+		for kind := 0; kind < 8; kind++ {
+
+		}
+		gb.sockets[vi].EdgeKind = 0
+		gb.sockets[vi].ConnectsTo =
+	}
+
+
+
+
+
+
+}
+// */
+
+// func (gw *graphWalker) addVertex() byte {
+// 	gw.vertexCount++
+// 	vtxID := gw.vertexCount
+// 	socket := VtxSocket{
+// 		VertexID: vtxID,
+// 	}
+// 	for i := 0; i < 3; i++ {
+// 		gw.sockets = append(gw.sockets, socket)
+// 	}
+// 	return vtxID
+// }
+
+// func (gw *graphWalker) Recompute() error {
+
+// }
+
 type GraphState interface {
 	TracesProvider
 
-	PermuteVtxSigns(dst *GraphStream)
 	PermuteEdgeSigns(dst *GraphStream)
 
 	Canonize(normalize bool) error
@@ -50,7 +130,7 @@ type GraphState interface {
 }
 
 type TracesProvider interface {
-	NumVertices() int
+	VertexCount() int
 	Traces(numTraces int) Traces
 }
 
@@ -85,10 +165,10 @@ type CatalogContext interface {
 
 // CatalogOpts specifies params for opening a lib2x3 Catalog
 type CatalogOpts struct {
-	DbPathName string
-	ReadOnly   bool
-	TraceCount int32
-	NeedPrimes bool
+	DbPathName string // omit or for in-memory db
+	ReadOnly   bool   // open in read-only mode
+	TraceCount int32  // number of traces to preallocate
+	NeedPrimes bool   // set if this catalog will be used for prime detection
 }
 
 type GraphAdder interface {
@@ -121,7 +201,7 @@ type Catalog interface {
 
 type GraphInfo struct {
 	NumParticles byte
-	NumVerts     byte
+	NumVertex    byte
 	NegLoops     byte
 	PosLoops     byte
 	NegEdges     byte
@@ -157,7 +237,7 @@ type FactorCatalog interface {
 	generics.RefCloser
 
 	// Tries to add the given graph encoding to this catalog.
-	// Assumes TX is being added in ascending order of NumVertices() since prime detection requires all primes of lesser vertex count to have already been added.
+	// Assumes TX is being added in ascending order of VertexCount() since prime detection requires all primes of lesser vertex count to have already been added.
 	TryAddTraces(TX TracesProvider) (TracesID, bool)
 
 	// NumTraces returns the number of Traces in this catalog for a given vertex count.

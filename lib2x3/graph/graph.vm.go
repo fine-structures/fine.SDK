@@ -9,6 +9,91 @@ import (
 	"github.com/astronomical-grace/fine-structures-go/go2x3"
 )
 
+const (
+	VertexBits    = 5
+	VertexBitMask = (1 << VertexBits) - 1
+	MaxVertexID   = VertexBitMask
+
+	IsPrimeBit  = 1 << 6
+	ReservedBit = 1 << 7
+)
+
+// Returns the
+func (Xi *GraphTerm) CatalogID() CatalogID {
+	Nv := Xi.VertexCount
+	if Nv < 1 || Nv > MaxVertexID ||
+		Xi.IsPrime == Bool_Unknown ||
+		Xi.IsCanonic == Bool_Unknown ||
+		Xi.StructureID < 1 {
+
+		//return GraphID{}
+		panic("invalid GraphTerm")
+	}
+
+	cid := CatalogID{
+		byte(Nv),
+		byte(Xi.IsPrime),
+		byte(Xi.StructureID >> 24),
+		byte(Xi.StructureID >> 16),
+		byte(Xi.StructureID >> 8),
+		byte(Xi.StructureID),
+		byte(Xi.VariantID >> 24),
+		byte(Xi.VariantID >> 16),
+		byte(Xi.VariantID >> 8),
+		byte(Xi.VariantID),
+	}
+	return cid
+}
+
+func (Xi *GraphTerm) PrimeID() (pid PrimeID, ok bool) {
+	if Xi.IsPrime != Bool_Yes {
+		return PrimeID(0), false
+	}
+	return FormPrimeID(Xi.VertexCount, Xi.StructureID, Xi.VariantID), true
+}
+
+// A unique identifier for a canonical prime graph.
+//
+//	     Nv     StructureID     VariantID
+//	    -----------------------------------
+//	0x   FF      FF FF FF       FF FF FF FF
+type PrimeID uint64
+
+func FormPrimeID(Nv uint32, structureID, variantID uint64) PrimeID {
+	if Nv < 1 || Nv > MaxVertexID ||
+		structureID < 1 || structureID > 0x00ffffff || variantID > 0xffffffff {
+		panic("invalid PrimeID")
+	}
+	pid := PrimeID(Nv)<<56 | PrimeID(structureID)<<32 | PrimeID(variantID)
+	return pid
+}
+
+func (pid PrimeID) CatalogID() CatalogID {
+	cid := CatalogID{
+		byte(pid.VertexCount()),
+		byte(Bool_Yes),
+		byte(0),
+		byte(pid >> 48),
+		byte(pid >> 40),
+		byte(pid >> 32),
+		byte(pid >> 24),
+		byte(pid >> 16),
+		byte(pid >> 8),
+		byte(pid),
+	}
+	return cid
+}
+
+// Extracts the number of vertices embedded in a PrimeID
+func (pid PrimeID) VertexCount() uint32 {
+	return uint32(pid >> 56)
+}
+
+// Extracts the ID of the structure variant tuple ID that uniquely corresponds to a canonical prime graph.
+func (pid PrimeID) PrimeCatalogID() uint64 {
+	return uint64(pid) & 0x00ffffffffffffff
+}
+
 type ComputeVtx struct {
 	VtxGroup
 
@@ -626,6 +711,240 @@ var (
 	gLineSep = "........."
 )
 
+func T_ceiling_240303(Nv int, Ci int, prevTraces int64) float64 {
+	scale := float64(1) //float64(Nv)
+	if prevTraces != 0 {
+		scale *= float64(prevTraces)
+		if prevTraces < 0 {
+			scale = -scale
+		}
+	}
+	return scale
+}
+
+/*
+	func T_ceiling_240303(Nv int, Ci int, prevC0, prevC1 int64) (float64, float64) {
+		scale := float64(1) // float64(Nv)
+		if (prevTraces != 0) {
+			scale *= float64(prevTraces)
+			if prevTraces < 0 {
+				scale = -scale
+			}
+		}
+		return scale
+	}
+*/
+func T_FibLucas(Nv int, Ci int, Fn0, Fn1 int64) float64 {
+	Fn2 := Fn0 + Fn1
+	Fn2_norm := math.Log(float64(Fn2))
+	return Fn2_norm
+}
+
+func T_NormEclipse2024(Nv int, Ci int, Fn0, Fn1 int64) float64 {
+	Fn2 := Fn0 + Fn1
+	Fn2_norm := math.Log(float64(Fn2))
+	return Fn2_norm
+}
+
+// func T_NormEclipse2024_alt(Nv int, Ci int, Fn0, Fn1 int64) float64 {
+// 	C_norm := float64(1)
+// 	for i := 0; i < Ci; i++ {
+// 		C_norm *= 3
+// 	}
+// 	f0 :=  float64(Fn0) * C_norm
+// 	f1 := -float64(Fn1) * C_norm
+
+// 	sign := float64(1)
+// 	if Ci%2 == 1 {
+// 		sign = -1
+// 	}
+
+// 	Fn2 := Fn0 + Fn1
+// 	Fn2_norm := math.Log(float64(Fn2))
+// 	return Fn2_norm
+// }
+
+// func Factorize(factorCounts *[]int64, primeFactors *[]int64, x int64) {
+
+func PrintNormalizedTraces(Nv int, TX go2x3.Traces, out io.Writer) {
+
+	//Xv := X.Vtx()
+	//Nc := len(TX)
+
+	Nc := len(TX)
+	var buf [512]byte
+	f64Buf := make([]float64, 0, 32)
+	TX_norm := f64Buf[:Nc]
+	// prOpts := PrintIntOpts{
+	// 	MinWidth: len(gLineSep),
+	// }
+
+	// Write header
+	{
+		line := buf[:0]
+		line = append(line, "                 ##        "...)
+
+		// factorCounts := make([]int64, 0, 32)
+		// primeFactors := make([]int64, 0, 32)
+
+		// Print TX entries
+		{
+			line := buf[:0]
+			//Tn0 := int64(0)
+			for ci := 0; ci < Nc; ci++ {
+				Tn1 := TX[ci]
+				//TX_norm[ci] = T_FibLucas(Nv, ci, Tn0, Tn1)
+				TX_norm[ci] = float64(Tn1) //float64(Tn0 + Tn1)
+				//Tn0 = Tn1
+			}
+
+			//Tn1_norm := 1 / TX_norm[0]
+
+			Tn0_norm := float64(+1) / float64(3*Nv)
+			Tn1_norm := float64(-1) / float64(3*Nv)
+
+			for ci := 0; ci < Nc; ci++ {
+				TX_norm[ci] = Tn0_norm + Tn1_norm
+				Tn0_norm = Tn1_norm
+				Tn1_norm *= Tn1_norm
+			}
+
+			// if TX[0] != 0 {
+			// 	Tn0_norm = 1.0 / float64(TX[0])
+			// }
+			// if TX[1] != 0 {
+			// 	Tn1_norm = 1.0 / float64(TX[1])
+			// }
+
+			// for isEven := 0; isEven < 2; isEven++ {
+			// 	for ci := isEven ; ci < Nc; ci +=2 {
+
+			// 	}
+			// }
+
+			// 	C_norm := float64(1)
+			// 	for i := 0; i < Ci; i++ {
+			// 		C_norm *= 3
+			// 	}
+			// for ci := Nc - 2; ci > 0; ci-- {
+			// 	norm := T_norm
+			// 	if TX_norm[ci] != 0 {
+			// 		norm /= TX_norm[ci]
+			// 	}
+			// 	TX_norm[ci] = norm * TX_norm[ci+1]
+			// }
+
+			// for i := 0; i < Nc/2; i += 2 {
+
+			// }
+
+			// TODO: explore Codd being a modulus of 3^Ci (aka the particle integer "characteristic")
+			//  and Ceven being floating point energy "characteristic")
+			for isEven := 0; isEven < 2; isEven++ {
+				for ci := isEven; ci < Nc; ci += 2 {
+					Ti := TX_norm[ci] //TX[ci]
+					//A := Ti % 3
+					// if i == isEven {
+					// 	if Ti != 0 {
+					// 		norm = 1.0 / A
+					// 		A = 1.0
+					// 	}
+					// } else {
+					// 	A *= norm
+					// }
+					line = fmt.Appendf(line, " C%02d: %+9d  %+9f   ", ci, TX[ci], Ti)
+
+					// factorCounts = factorCounts[:0]
+					// primeFactors = primeFactors[:0]
+					// graph.Factorize(&factorCounts, &primeFactors, Ti)
+					// for i, factor := range primeFactors {
+					// 	line = fmt.Appendf(line, " %03d %-3d  ", factorCounts[i], factor)
+					// }
+
+					line = fmt.Appendf(line, " \n")
+
+					// //line = fmt.Appendf(line, " %+7.4f  ", A)
+					// Tn0 = Tn1
+					// Tn1 = Ti
+				}
+
+				// norm := float64(1)
+				// if A != 0 {
+				// 	norm = 1.0 / A
+				// }
+				// Tprev = 0
+				// for i := isEven ; i < Nc; i +=2 {
+				// 	denom := T_ceiling_240303(Nv, i+1, Tprev)
+				// 	Ti := TX[i]
+				// 	A = norm * float64(Ti) / denom
+				// 	line = fmt.Appendf(line, " %+7.4f  ", A)
+				// 	Tprev = Ti
+				// }
+
+				line = append(line, '\n')
+			}
+
+			// func T_ceiling_240303(Nv int, Ci int, prevC0, prevC1 int64) float64 {
+			/*
+				prevC0 := int64(0)
+				prevC1 := int64(0)
+				// for ci := 0; ci < Nc; ci += 2 {
+				// 	denom := T_ceiling_240303(Nv, ci, prevC0, prevC1)
+				// }
+				for i, Ti := range TX {
+					if (Tprev != 0) {
+						scale *= float64(Tprev)
+						if Tprev < 0 {
+							scale = -scale
+						}
+					}
+					// denom := T_ceiling_240303(Nv, i+1, Tprev)
+					// deflection := float64(Ti) / denom
+					// fmt.Printf(" %-7.3f  ", deflection)
+					// line = fmt.Appendf(line, " %-7.3f  ", deflection)
+
+					if i%2 == 0 {
+						prevC0 = Ti
+					} else {
+						prevC1 = Ti
+						line = append(line, '\n')
+					}
+				}
+			*/
+			out.Write(line)
+		}
+
+		// line = append(line, "\n----------            "...)
+		// for i := 0; i < Nc; i++ {
+		// 	line = append(line, gLineSep...)
+		// }
+		// line = append(line, '\n')
+
+		// out.Write(line)
+	}
+	/*
+		{
+			for _, vi := range X.Vtx() {
+				//for ni := int64(0); ni < ei.Count; ni++ {
+				{
+					line := vi.AppendDesc(buf[:0])
+					line = append(line, "  "...)
+					for i := 0; i < Nc; i++ {
+						line = AppendInt(line, vi.Cycles[i], prOpts)
+					}
+					line = append(line, '\n')
+					// for _, ej := range vi.Edges {
+					// 	dst := byte('A') - 1 + byte(ej.DstVtxID)
+					// 	src := byte('A') - 1 + byte(ej.SrcVtxID)
+					// 	line = fmt.Appendf(line, "  %c  <=  %3d x %c \n", dst, ej.Count, src)
+					// }
+					out.Write(line)
+				}
+			}
+		}
+	*/
+}
+
 func (X *VtxGraphVM) PrintCycleSpectrum(numTraces int, out io.Writer) {
 	TX := X.Traces(numTraces)
 
@@ -686,6 +1005,80 @@ func (X *VtxGraphVM) PrintCycleSpectrum(numTraces int, out io.Writer) {
 	}
 
 }
+
+/*
+func (X *VtxGraphVM) RegenNormalizedTraces() {
+
+//PrintNormalizedTraces(X.VertexCount(), X.Traces(16), out)
+
+//Xv := X.Vtx()
+//Nc := len(TX)
+
+var buf [512]byte
+
+// prOpts := PrintIntOpts{
+// 	MinWidth: len(gLineSep),
+// }
+
+// Write header
+{
+	line := buf[:0]
+	line = append(line, "                 ##        "...)
+
+	// Print TX entries
+	{
+		line := buf[:0]
+		Nv := len(X.Vtx())
+
+		for isEven := 0; isEven < 2; isEven++ {
+			Tprev := int64(0)
+			Nc := len(TX)
+			//norm := float64(1)
+			for i := isEven; i < Nc; i += 2 {
+				denom := T_ceiling_240303(Nv, i+1, Tprev)
+				Ti := TX[i]
+				A := float64(Ti) / denom
+				// if i == isEven {
+				// 	if Ti != 0 {
+				// 		norm = 1.0 / A
+				// 		A = 1.0
+				// 	}
+				// } else {
+				// 	A *= norm
+				// }
+
+				line = fmt.Appendf(line, " %+7.4f  ", A)
+				Tprev = Ti
+			}
+			line = append(line, '\n')
+		}
+
+		// for i, Ti := range TX {
+
+		// 	denom := T_ceiling_240303(Nv, i+1, Tprev)
+		// 	deflection := float64(Ti) / denom
+		// 	fmt.Printf(" %-7.3f  ", deflection)
+		// 	line = fmt.Appendf(line, " %-7.3f  ", deflection)
+
+		// 	if i%2 == 0 {
+		// 		Tprev[0] = Ti
+		// 	} else {
+		// 		Tprev[1] = Ti
+		// 		line = append(line, '\n')
+		// 	}
+		// }
+		out.Write(line)
+	}
+
+	line = append(line, "\n----------            "...)
+	// for i := 0; i < Nc; i++ {
+	// 	line = append(line, gLineSep...)
+	// }
+	// line = append(line, '\n')
+
+	// out.Write(line)
+}
+*/
 
 func (X *VtxGraphVM) setupBufs(Nc int) {
 	Xv := X.Vtx()

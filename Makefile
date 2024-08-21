@@ -61,5 +61,16 @@ generate:
 		--gogoslick_opt=paths=source_relative   \
 		--gogoslick_out=plugins=grpc:.          \
 		--proto_path=.  \
+		fine/fine.proto
+		
+		
+		
+		
+		
+	protoc \
+		-I='${GOPATH}/src' \
+		--gogoslick_opt=paths=source_relative   \
+		--gogoslick_out=plugins=grpc:.          \
+		--proto_path=.  \
 		lib2x3/graph/graph.proto
 		

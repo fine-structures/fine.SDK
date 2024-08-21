@@ -1,0 +1,34 @@
+syntax = "proto3";
+package fine;
+
+//option go_package = "github.com/astronomical-grace/fine-structures-go/lib2x3/graph";
+
+
+// message Const {
+
+//     EdgeSlotsPerVertex = 3
+// }
+
+message CatalogState {
+
+    int32               MajorVers                   = 1;
+    int32               MinorVers                   = 2;
+    
+    // TraceCount is the Traces len for this Catalog's Traces index.
+    // This effectively sets a vertex size limit for Graphs this Catalog can process.
+    // DefaultCatalogTraceCount specifies the default TraceCount for new catalogs. 
+    int32               TraceCount                  = 10;
+                
+    // NumTraces[Nv] is the number of traces of in this catalog for a given number of vertices.
+    // Note: NumTraces[0] is always 0 and len(NumTraces) == TraceCount+1
+    repeated uint64     NumTraces                   = 11;
+    
+    // NumPrimes[Nv] is the number of particle primes for a given number of vertices.
+    // Note: NumPrimes[0] is always 0 and len(NumPrimes) == TraceCount+1
+    repeated uint64     NumPrimes                   = 12;
+    
+    // Set if this catalog is to auto-determine if a newly added Graph / Traces are primes.
+    bool                IsPrimeCatalog              = 20;
+}
+
+

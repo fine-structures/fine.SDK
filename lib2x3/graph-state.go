@@ -16,9 +16,6 @@ func chopBuf(consume []int64, N int) (alloc []int64, remain []int64) {
 	return consume[0:N], consume[N:]
 }
 
-// GraphTriID is a 2x3 cycle spectrum encoding
-type GraphTriID []byte
-
 var (
 	ErrNilGraph = errors.New("nil graph")
 	ErrBadEdges = errors.New("edge count does not correspond to vertex count")
@@ -38,11 +35,10 @@ type graphState struct {
 // triVtx starts as a vertex in a conventional "2x3" vertex+edge and used to derive a canonical LSM-friendly encoding (i.e. TriID)
 // El Shaddai's Grace abounds.  Emmanuel, God with us!  Yashua has come and victory has been sealed!
 type triVtx struct {
-	graph.GroupID              // which group this is
-	//VtxType                    // which type of vertex this is
-	VtxIdx        byte         // Initial vertex ID (zero-based index)
-	GroupT0       int8         // Traces sum of path length 1 (net sum of loops for group)
-	edges         [3]groupEdge // Edges to other vertices
+	graph.GroupID // which group this is
+	VtxIdx  byte         // Initial vertex ID (zero-based index)
+	GroupT0 int8         // Traces sum of path length 1 (net sum of loops for group)
+	edges   [3]groupEdge // Edges to other vertices
 }
 
 type groupEdge struct {
@@ -163,7 +159,7 @@ func (X *graphState) AssignGraph(Xsrc *Graph) error {
 		return ErrNilGraph
 	}
 
-	Nv := Xsrc.NumVertices()
+	Nv := Xsrc.VertexCount()
 	X.reset(Nv)
 
 	// Init vtx lookup map so we can find the group for a given initial vertex idx
@@ -437,8 +433,7 @@ func (X *graphState) Canonize() {
 			}
 		}
 
-
-    // A=vi-vj=B => A-vi-B, A-vj-B
+		// A=vi-vj=B => A-vi-B, A-vj-B
 		//X.forEveryGroupVtxPair(func(vi, vj *graphVtx) {
 		X.forEveryNonGroupVtxPair(func(vi, vj *graphVtx) {
 			/*
@@ -639,14 +634,11 @@ func (X *graphState) getTraitRun(Xv []*graphVtx, vi int, trait EdgeTrait) int {
 	return runLen
 }
 
-
-
-
 func (X *graphState) ExportEncoding(io []byte, opts go2x3.ExportOpts) ([]byte, error) {
 	X.Canonize()
 
 	var buf [32]byte
-	
+
 	Xv := X.Vtx()
 	Nv := len(Xv)
 	ascii := (opts & go2x3.ExportAsAscii) != 0

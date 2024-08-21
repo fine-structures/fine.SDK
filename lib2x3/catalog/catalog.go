@@ -4,10 +4,10 @@ import (
 	"bytes"
 	"runtime"
 
+	"github.com/astronomical-grace/fine-structures-go/fine"
 	"github.com/astronomical-grace/fine-structures-go/go2x3"
 	"github.com/astronomical-grace/fine-structures-go/lib2x3"
 	"github.com/astronomical-grace/fine-structures-go/lib2x3/factor"
-	"github.com/astronomical-grace/fine-structures-go/lib2x3/graph"
 	"github.com/pkg/errors"
 
 	"github.com/dgraph-io/badger/v4"
@@ -95,7 +95,7 @@ type catalog struct {
 	ctx          go2x3.CatalogContext
 	readOnly     bool
 	stateDirty   bool
-	state        graph.CatalogState
+	state        fine.CatalogState
 	db           *badger.DB
 	CatalogDesig string
 	primeCache   *factor.FactorCatalog
@@ -265,7 +265,7 @@ func (cat *catalog) issueNextPrimeID(numVerts int) go2x3.TracesID {
 }
 
 func (cat *catalog) formCatalogKeyFromPrimeFactor(key []byte, factor go2x3.TracesID) []byte {
-	Nv := uint32(factor.NumVertices())
+	Nv := uint32(factor.VertexCount())
 	TX := cat.primeCache.GetFactorTraces(Nv, uint32(factor.SeriesID()))
 
 	key = append(key, byte(Nv)) // needed?  or use edge info sorter?
@@ -276,7 +276,7 @@ func (cat *catalog) formCatalogKeyFromPrimeFactor(key []byte, factor go2x3.Trace
 }
 
 func (cat *catalog) formTracesKey(key []byte, X go2x3.TracesProvider) []byte {
-	Nv := X.NumVertices()
+	Nv := X.VertexCount()
 	Nt := Nv // cat.TraceCount()
 	TX := X.Traces(Nt)
 	// if len(TX) == 0 || len(TX) < Nt {
@@ -328,7 +328,7 @@ func loadAndPushGraph(item *badger.Item, onHit go2x3.OnGraphHit) error {
 }
 
 func (cat *catalog) selectEncodings(sel *go2x3.GraphSelector, onHit go2x3.OnGraphHit) {
-	minKey := [1]byte{sel.Min.NumVerts}
+	minKey := [1]byte{sel.Min.NumVertex}
 
 	txn := cat.db.NewTransaction(false)
 	defer txn.Discard()
@@ -347,7 +347,7 @@ func (cat *catalog) selectEncodings(sel *go2x3.GraphSelector, onHit go2x3.OnGrap
 		curKey := curItem.Key()
 
 		// Stop when the vtx count is over the max
-		if curKey[0] > sel.Max.NumVerts {
+		if curKey[0] > sel.Max.NumVertex {
 			break
 		}
 
@@ -720,7 +720,7 @@ func (cat *catalog) TryAddGraph(X go2x3.GraphState) bool {
 
 	// If nothing new, we're done
 	if isNewTraces {
-		cat.issueNextTracesID(X.NumVertices())
+		cat.issueNextTracesID(X.VertexCount())
 	} else if !isNewGraph {
 		return false
 	}
@@ -731,7 +731,7 @@ func (cat *catalog) TryAddGraph(X go2x3.GraphState) bool {
 	if isNewTraces && cat.state.IsPrimeCatalog {
 
 		// Importantly, prime testing only requires primes up to Nv-1
-		Nv := X.NumVertices()
+		Nv := X.VertexCount()
 		cat.cachePrimesAsNeeded(int(Nv - 1))
 
 		TX := X.Traces(0)

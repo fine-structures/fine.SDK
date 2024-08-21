@@ -52,16 +52,10 @@ count = EnumPureParticles(1,v_hi).AddTo(pure_matter).Print("Pure").Go()
 print("...so there's exactly *%d* particles in the pure matter catalog for v=1..%d, nice!" % (count, v_hi))
 
 print('''
-How about a catalog that includes anti-matter particles?  For that, we use AllVtxSigns().
-We call this the "mixed matter" catalog since contains it particles constructions with negative loops (negative self-edges).''')
-mixed_matter = NewCatalog()
-pure_matter.Select().AllVtxSigns().AddTo(mixed_matter).Print("Mixed").Go()
-
-print('''
-Finally, let's include *all* possible particles using AllEdgeSigns().
+Finally, let's include all possible particles using PermuteEdgeSigns().
 We call this the "complete" catalog since every possible particle (having any combination of negative edges).''')
 complete_catalog = NewCatalog()
-mixed_matter.Select().AllEdgeSigns().AddTo(complete_catalog).Print("Complete", file="learn/gold/My First Catalog.csv", matrix=True).Go()
+pure_matter.Select().PermuteEdgeSigns().AddTo(complete_catalog).Print("Complete", file="learn/gold/My First Catalog.csv", matrix=True).Go()
 
 print('''
 With a complete catalog, we can query for a given particle's Traces and get a list of all possible equivalent "phase modes":''')

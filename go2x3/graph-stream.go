@@ -258,21 +258,6 @@ func (ctx *canonizeCtx) goCanonize(X *Graph) error {
 }
 */
 
-func (stream *GraphStream) PermuteVtxSigns() *GraphStream {
-	next := &GraphStream{
-		Outlet: make(chan GraphState, 1),
-	}
-
-	go func() {
-		for Xsrc := range stream.Outlet {
-			Xsrc.PermuteVtxSigns(next)
-			Xsrc.Reclaim()
-		}
-		next.Close()
-	}()
-
-	return next
-}
 
 func (stream *GraphStream) PermuteEdgeSigns() *GraphStream {
 	next := &GraphStream{

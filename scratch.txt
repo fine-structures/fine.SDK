@@ -1,0 +1,114 @@
+
+
+ideas:
+    - Consider an [aho trie](https://github.com/nreco/AhoCorasickDoubleArrayTrie) as a way to efficiently store (walk) a LSM particle catalog
+    - Consider an [Ukkonen trie](https://github.com/gmamaladze/trienet/tree/master/TrieNet) is attractive since it is prefix-suffix symmetric!
+        
+next steps:
+    - ***!!
+        - the number of path "heads" at ci is always: Nv * 3^(ci+1)
+            - they are distributed around the Graph
+            - when they from a cycle, the net count is pos - neg
+            - i.e. total_heads = pos_heads + neg_heads
+            => cycle count = pos_heads_at_vi - neg_heads_at_vi + heads_elsewhere
+    
+circle-packing-art/
+    - cycles as shapes?  (as if tracing path of cycles adn then consolidating them visually)
+    - examine normalization by successively "subtracting out" cycles that are known to be combos of others.
+for examples, for C4, C1*C3 or C2*C2
+    - explore lead: note how 3,9,27... is a ceiling values for an edge -- how can we normalize with this fact?  
+    - fix consolidation for multiple-particle systems
+    - explore partitioning for successive Ci (materials: neutrino series, electron series, y6d).
+    - remove even/odd count => single count
+    - explore ways to "efficiently compress traces -- prime * coeff? + ...
+
+
+
+
+
+
+
+## Next Steps
+
+    - Make prime catalog for edges (VtxEdgePrimeID <-> VtxEdge)
+    - as new edges comes in for increasing Nv, build up the prime table
+    - now any edge can be expressed as []FactorRun of (prime factors and occurence count)
+    - then the factor Runs can be consolidated (NumPos, NumNeg of VtxEdgePrimeID)
+    
+    
+    - How can edge traces be expressed as 0..1, 0..π, R1 or R2?  
+        - what bounds the Traces (Traces metic numerator & denom)
+        - "subtract out" C1 from C2, C3, C4, ...
+        - Repeat for C2, etc.
+        => C' terms reflect newly added length cycles (not contributions from shorter cycles that are already accounted for)
+    - edge metric: 
+        - max term is known for each ci: modulus of term i is 3^(Nt-i)
+        - goal: find edge traces metrix that is 1:1 
+            => usable as TracesID *and* as 0..1 visualization!
+            => be able to add/subtract directly??
+    - edge traces normalization: 
+        - "subtract out" C1 from C2, C3, C4, ...
+        - Repeat for C2, etc.
+        => causes C' values to reflect that length cycles (not contributions from shorter cycles that are already accounted for)
+        
+        
+
+- VtxEdge
+    - contains cycles vector for that edge
+    - only one edge type (and sign)
+    => Vtx maintains its own cycles vector (sum of child edges cycles)
+- After vtx (and edges) cycles computed, same-cycle edges can be merged into groups (edge groups)
+    - nice: consider higgs with mixed signs -- even edges with different signs will group up since they have the same cycle vector -- "easy" normalization!
+    - works well with yN and dN!
+- let CyclesVector be a particular cycle vector generated from a graph for a particular edge.
+- let CyclesVectorUID be a uint64 unique identifier for a CyclesVector
+- let EdgeGroup be a set of edges all having the same CyclesVector
+- a specific vertex can now be defined as being composed of a specific set of EdgeGroups
+- Praise be to Jesus Christ, our Lord and Savior, who died for our sins and rose again on the third day, and who will come again to judge the living and the dead. Amen.
+
+- [ ] add `go2x3 learn/09-vertex-edge-groups.py`
+- with edge cycle vectors computed, sort & stack edges canonically
+- rewrite graph:
+    - each "edge group" vertex is a group of edges that all have the same unique cycle vector
+    - an "vertex group" edge connects two edge groups with a weight of the number of vertices they share
+    
+- a "symmetric edge" is an edge that contributes the same number of cycles to each vertex it connects (or is a self edge)
+=> 
+
+- conjecture: all non-self edges contribute the same cycle vector to each vertex they connect.
+    - basis: property of cycle trace direction (every cycle walked in reverse would contribute the same)
+- assuming true, 
+
+1. canonically sort and stack edges by cycle vector
+2. label each edge group (canonic edge group number)
+3. rewrite each vtx as the edge group numbers it connects to
+4. canonically sort and stack vertices
+5. K8 collapses into 1!
+6. TBD: how to make v=1 work
+    - maybe only consolidate self edges if they have the same sign?
+    - factor out (-1) from edges? 
+    
+    
+
+
+Permission to disappoint 
+    -
+    
+Edge normalization:
+    - three traces types: 
+        1. all odd Ci are 0
+        2. the first odd Ci is positive
+        3. the first odd Ci is negative (normalizes to 2 with via factor of [-1  1 -1  1 ...])
+    - new rule: 
+        
+        
+    
+
+So 3 by 2 is a land where the fundamental unit is any valid “3 by 2 graph” encoding.   A vast permutation of vocabulary of “digits” (characters) -- and so can be regarded as an integer.  This is mathematically valid as even the number of enumerable items is more of a series question,  infinity is large enough to contain all possible particle combinations and enumerations for a given vertex size.  In short: for every graph encoding configuration, it uniquely maps to a fixed-sized integer value.  Fixed as in, the number of variants of a super symmetric v=20 porticle are more numerous than all the protons in our known time space horizon. 
+
+As a fun aside, the number of graphs that satisfy a v=20 Higgs-like has many enumerations of all possible protons and neutrons in the current known universe. 
+
+This means a particle catalog of all possible graphs (physical particles) can be deterministically (canonically) constructed that offers powerful tools for performing mass-energy macro conversion processes.   
+
+
+

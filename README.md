@@ -26,11 +26,11 @@ Explore or run any of the tutorial scripts:
 % ./go2x3 learn/08-catalog-inspect.py
 ```
 
-Or skip the above and go directly to the [learn](https://github.com/fine-structures/sdk-go/tree/main/cmd/go2x3/learn) scripts and their "[gold](https://github.com/fine-structures/sdk-go/tree/main/cmd/go2x3/learn/gold)" output.
+Or skip the above and go directly to the [learn](https://github.com/astronomical-grace/fine-structures-go/tree/main/cmd/go2x3/learn) scripts and their "[gold](https://github.com/astronomical-grace/fine-structures-go/tree/main/cmd/go2x3/learn/gold)" output.
 
 ## Getting Started
 
-This project is a library & demonstration toolkit for [Fine Structures](https://github.com/fine-strucutures/prime-materials).  Although [lib2x3](http://https://github.com/fine-structures/sdk-go/tree/main/lib2x3) is a pure Go library, [`gpython`](http://github.com/go-python/gpython) is used to embed and expose it.  This means scripting is easy  — see for yourself in the [first tutorial](https://github.com/fine-structures/sdk-go/blob/main/cmd/go2x3/learn/01-foundations.py) as you follow along in its [output](https://github.com/fine-structures/sdk-go/blob/main/cmd/go2x3/learn/gold/01-foundations.txt).
+This project is a library & demonstration toolkit for [Fine Structures](https://github.com/fine-strucutures/prime-materials).  Although [lib2x3](http://https://github.com/astronomical-grace/fine-structures-go/tree/main/lib2x3) is a pure Go library, [`gpython`](http://github.com/go-python/gpython) is used to embed and expose it.  This means scripting is easy  — see for yourself in the [first tutorial](https://github.com/astronomical-grace/fine-structures-go/blob/main/cmd/go2x3/learn/01-foundations.py) as you follow along in its [output](https://github.com/astronomical-grace/fine-structures-go/blob/main/cmd/go2x3/learn/gold/01-foundations.txt).
 
 
 ## Releases
@@ -66,3 +66,40 @@ This project is a library & demonstration toolkit for [Fine Structures](https://
     - the odd cycles can only come from passing through one the two loops in this graph.
 
 - Factor Traces into "prime basis vector" (count of each prime dot prime[i])
+
+- There seems to be a clear path to "2-bit encodings" -- see GraphOp
+   1) Graph builder walks thru all constructions.
+   2) Because the walker is a canoinic walk, when an unwitnessed graph appears, assign it a new Traces ID (uint64).
+   3) When a vertex length completes, for each Traces ID, choose the graph that most suitable canonic graph (most positive edge count?)
+   4) The command list that builds the canonic graph can now be reduced to 2-bits per GraphOp (removing the VtxSlot operand) -- this now becomes the canonic graph encoding -- or the graph Traces ID itself.
+   5) Browsing a TracesID could be visualls seeing all its variants
+   
+   // A graph encoding 
+   
+   // Allows the canonic traces ID to be found for any graph (by using the db)
+   Traces => CanonicTracesID
+   ...
+   
+   // Allows a canonic encoding for any encoding (without any computation) 
+   CanonicEncoding => CanonicTracesID
+   ...
+   
+   CanonicTracesID (uint64) => Traces, CanonicEncoding
+        GraphEnc1
+        GraphEnc2
+        GraphEnc3
+        ...
+    ...
+        
+        
+   
+    if X is complete: 
+       for each edge socket:
+            for each GraphOp type:
+                apply the op to the socket
+        
+   2)    For each GraphOp type, trying each graph op if possible.
+   
+   Plan:
+   1) emit all "pure" (positive) graphs in canonic order (see OpCode)
+   

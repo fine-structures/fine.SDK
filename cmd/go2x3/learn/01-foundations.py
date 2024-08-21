@@ -58,30 +58,14 @@ Adding .Print(label) prints each graph that passes though the stream, printing t
 Adding .Go() terminates a stream and pulls all the graphs through it:''')
 proton.Stream().Print("Hello proton!").Go()
 
-
-# Some commands "fan out", meaning for each given graph, they output multiple graphs
-# Two of these are AllVtxSigns() and AllEdgeSigns()...
-# AllVtxSigns() emits all possible +/- loops permutations for each input particle.
-print('''
-For each particle that AllVtxSigns() takes in, it sends out all possible permutations of loop signs:''')
-electron.AllVtxSigns().Print("electron.AllVtxSigns").Go()
-
-print('''
-The more loops that are present, the more permutations that are possible:''')
-proton.AllVtxSigns().Print("proton.AllVtxSigns").Go()
-
-print('''
-For particles containing only 'gamma' vertices, only one permutation is possible:''')
-photon.AllVtxSigns().Print("gamma.AllVtxSigns").Go()
-
 print('''
 All edge permutations for a two-vertex photon:''')
-photon.AllEdgeSigns().Print("gamma.AllEdgeSigns").Go()
+photon.PermuteEdgeSigns().Print("gamma.PermuteEdgeSigns").Go()
 
-# AllEdgeSigns() emits all possible edge sign permutations for each input particle.
+# PermuteEdgeSigns() emits all possible edge sign permutations for each input particle.
 print('''
-For each particle that AllEdgeSigns() takes in, it sends out all possible permutations of positive and negative edges:''')
-proton.AllEdgeSigns().Print("proton.AllEdgeSigns").Go()
+For each particle that PermuteEdgeSigns() takes in, it sends out all possible permutations of positive and negative edges:''')
+proton.PermuteEdgeSigns().Print("proton.PermuteEdgeSigns").Go()
 
 
 # Since we're using python, we can use data structures like lists and dicts to make life easier:
@@ -99,47 +83,6 @@ print("neutron[c]: ", neutrons["c"])
 
 
 print('''
-EnumPureParticles() runs an algorithm that generates all possible valid particles having only loops and positive edges.
-This algorithm is mechanical and will therefore repeat equivalent particles having different labels. 
+EnumPureParticles() runs an algorithm that generates all possible valid particles having only positive loops and edges.
 Let's generate from v=1 to v=3:''')
 EnumPureParticles(1,3).Print().Go()
-
-
-print('''
-The DropDupes() operator only emits unique graphs while dropping duplicates.''')
-EnumPureParticles(1,3).DropDupes().Print().Go()
-
-# Now we introduce a powerful GraphStream() operator called Select() that is a filter and selects Graphs that meet criteria that we provide.
-# The Select() operator uses a struct called a GraphSelector that specifies which graphs you want to select.
-sel = NewSelector()
-
-print('''
-We can select by matching Traces:''')
-sel.traces = photon
-EnumPureParticles(1,3).Select(sel).Print().Go()
-
-print('''
-We can also select by min and max vertex count:''')
-sel.traces = None
-sel.min.verts = 1
-sel.max.verts = 2
-EnumPureParticles(1,3).Select(sel).Print().Go()
-
-print('''
-We can select by + or - loops:''')
-sel.Init()
-sel.min.pos_loops = 2
-sel.max.pos_loops = 3
-EnumPureParticles(1,3).Select(sel).Print().Go()
-
-print('''
-We can select by + or - loops:''')
-sel.Init()
-sel.min.pos_loops = 2
-sel.max.pos_loops = 3
-sel.min.neg_loops = 1
-sel.max.neg_loops = 100
-proton.AllVtxSigns().Select(sel).Print().Go()
-
-
-

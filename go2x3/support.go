@@ -58,7 +58,7 @@ func (factors *FactorSet) Clear() {
 func (factors FactorSet) TotalVtxCount() uint32 {
 	Nv := uint32(0)
 	for _, Fi := range factors {
-		Nv += Fi.Count * Fi.ID.NumVertices()
+		Nv += Fi.Count * Fi.ID.VertexCount()
 	}
 	return Nv
 }
@@ -121,9 +121,6 @@ func (ctx *catalogContext) Close() {
 
 }
 
-
-
-
 // Appends the defining info about a Graph to the given buffer.
 //
 // The order of fields is such that, lexicographically, graphs with all-positive edges and vertices appear first,
@@ -131,7 +128,7 @@ func (ctx *catalogContext) Close() {
 func (info *GraphInfo) AppendGraphEncodingHeader(prefix []byte) []byte {
 	prefix = append(prefix,
 		info.NumParticles,
-		info.NumVerts,
+		info.NumVertex,
 		info.NegEdges,
 		info.NegLoops,
 		info.PosLoops,
@@ -141,20 +138,19 @@ func (info *GraphInfo) AppendGraphEncodingHeader(prefix []byte) []byte {
 
 // NumEdges returns the number of edges implied for a graph that has a given number of vertices and total loop count.
 func (info *GraphInfo) NumEdges() byte {
-	return (3*info.NumVerts - info.PosLoops - info.NegLoops) / 2
+	return (3*info.NumVertex - info.PosLoops - info.NegLoops) / 2
 
 }
-
 
 // DefaultGraphSelector selects all valid lib2x3 graphs.
 var DefaultGraphSelector = GraphSelector{
 	Min: GraphInfo{
 		NumParticles: 1,
-		NumVerts:     1,
+		NumVertex:    1,
 	},
 	Max: GraphInfo{
 		NumParticles: MaxVtxID,
-		NumVerts:     MaxVtxID,
+		NumVertex:    MaxVtxID,
 		NegEdges:     MaxEdges,
 		PosEdges:     MaxEdges,
 		PosLoops:     3 * MaxVtxID,
@@ -165,12 +161,11 @@ var DefaultGraphSelector = GraphSelector{
 // AllowGraph is a convenience function used to see if a Graph is selected according to a GraphSelector.
 func (sel *GraphSelector) SelectsGraph(X GraphState) bool {
 	info := X.GetInfo()
-	if info.NumParticles < sel.Min.NumParticles || info.NumVerts < sel.Min.NumVerts || info.PosLoops < sel.Min.PosLoops || info.NegLoops < sel.Min.NegLoops || info.PosEdges < sel.Min.PosEdges || info.NegEdges < sel.Min.NegEdges {
+	if info.NumParticles < sel.Min.NumParticles || info.NumVertex < sel.Min.NumVertex || info.PosLoops < sel.Min.PosLoops || info.NegLoops < sel.Min.NegLoops || info.PosEdges < sel.Min.PosEdges || info.NegEdges < sel.Min.NegEdges {
 		return false
 	}
-	if info.NumParticles > sel.Max.NumParticles || info.NumVerts > sel.Max.NumVerts || info.PosLoops > sel.Max.PosLoops || info.NegLoops > sel.Max.NegLoops || info.PosEdges > sel.Max.PosEdges || info.NegEdges > sel.Max.NegEdges {
+	if info.NumParticles > sel.Max.NumParticles || info.NumVertex > sel.Max.NumVertex || info.PosLoops > sel.Max.PosLoops || info.NegLoops > sel.Max.NegLoops || info.PosEdges > sel.Max.PosEdges || info.NegEdges > sel.Max.NegEdges {
 		return false
 	}
 	return true
 }
-

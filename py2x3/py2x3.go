@@ -13,6 +13,7 @@ import (
 	"strings"
 	"sync/atomic"
 
+	walker "github.com/astronomical-grace/fine-structures-go/fine/graph-walker"
 	"github.com/astronomical-grace/fine-structures-go/go2x3"
 	"github.com/astronomical-grace/fine-structures-go/lib2x3"
 	"github.com/astronomical-grace/fine-structures-go/lib2x3/catalog"
@@ -32,16 +33,18 @@ var (
 
 // Arg 1 (int): Nv_start
 // Arg 2 (int): Nv_end
-func ph_EnumPureParticles(module py.Object, args py.Tuple) (py.Object, error) {
+func py_EnumPureParticles(module py.Object, args py.Tuple) (py.Object, error) {
 	var v_min, v_max py.Object
 	err := py.ParseTuple(args, "ii", &v_min, &v_max)
 	if err != nil {
 		return nil, err
 	}
 
-	n0 := int(v_min.(py.Int))
-	n1 := int(v_max.(py.Int))
-	stream := lib2x3.EnumPureParticles(n0, n1, "BackConnect.1")
+	opts := walker.EnumOpts{
+		VertexMax: int(v_max.(py.Int)),
+		Params:    "-d BackConnect.1",
+	}
+	stream := lib2x3.EnumPureParticles(opts)
 	return wrapGraphSteam(stream), nil
 }
 
@@ -77,22 +80,22 @@ func (X pyGraph) M__repr__() (py.Object, error) {
 	return X.M__str__()
 }
 
-func ph_NewGraph(module py.Object, args py.Tuple) (py.Object, error) {
+func py_NewGraph(module py.Object, args py.Tuple) (py.Object, error) {
 	X := lib2x3.NewGraph(nil)
 	return py.Object(pyGraph{X}), nil
 }
 
-func ph_Graph_NumVerts(self py.Object, args py.Tuple) (py.Object, error) {
+func py_Graph_NumVerts(self py.Object, args py.Tuple) (py.Object, error) {
 	X := self.(pyGraph)
-	return py.Object(py.Int(X.NumVertices())), nil
+	return py.Object(py.Int(X.VertexCount())), nil
 }
 
-func ph_Graph_NumParts(self py.Object, args py.Tuple) (py.Object, error) {
+func py_Graph_NumParts(self py.Object, args py.Tuple) (py.Object, error) {
 	X := self.(pyGraph)
 	return py.Object(py.Int(X.NumParticles())), nil
 }
 
-func ph_Graph_Traces(self py.Object, args py.Tuple) (py.Object, error) {
+func py_Graph_Traces(self py.Object, args py.Tuple) (py.Object, error) {
 	X := self.(pyGraph)
 	numTraces := 0
 	if len(args) > 0 {
@@ -110,7 +113,7 @@ func ph_Graph_Traces(self py.Object, args py.Tuple) (py.Object, error) {
 	return py.Object(traces), nil
 }
 
-func ph_Graph_Concat(self py.Object, args py.Tuple) (py.Object, error) {
+func py_Graph_Concat(self py.Object, args py.Tuple) (py.Object, error) {
 	X := self.(pyGraph)
 	srcGraphs := args[0].(py.Tuple)
 	var Xi lib2x3.Graph
@@ -135,7 +138,7 @@ func ph_Graph_Concat(self py.Object, args py.Tuple) (py.Object, error) {
 	return py.Object(X), nil
 }
 
-func ph_Graph_Stream(self py.Object, args py.Tuple) (py.Object, error) {
+func py_Graph_Stream(self py.Object, args py.Tuple) (py.Object, error) {
 	X := self.(pyGraph)
 	next := go2x3.StreamGraph(X)
 	return wrapGraphSteam(next), nil
@@ -162,7 +165,7 @@ func (ws *Workspace) Type() *py.Type {
 	return pyWorkspaceType
 }
 
-func ph_GetWorkspace(module py.Object, args py.Tuple) (py.Object, error) {
+func py_GetWorkspace(module py.Object, args py.Tuple) (py.Object, error) {
 	wsObj, _ := py.GetAttrString(module, kWorkspaceAttr)
 	if wsObj == nil {
 		ws := &Workspace{
@@ -175,7 +178,7 @@ func ph_GetWorkspace(module py.Object, args py.Tuple) (py.Object, error) {
 	return wsObj, nil
 }
 
-func ph_Workspace_CatalogExists(self py.Object, args py.Tuple) (py.Object, error) {
+func py_Workspace_CatalogExists(self py.Object, args py.Tuple) (py.Object, error) {
 	_ = self.(*Workspace)
 
 	var pathname string
@@ -190,7 +193,7 @@ func ph_Workspace_CatalogExists(self py.Object, args py.Tuple) (py.Object, error
 	return py.True, nil
 }
 
-func ph_Workspace_OpenCatalog(self py.Object, args py.Tuple) (py.Object, error) {
+func py_Workspace_OpenCatalog(self py.Object, args py.Tuple) (py.Object, error) {
 	ws := self.(*Workspace)
 
 	var pathname string
@@ -226,7 +229,7 @@ func (cat pyCatalog) Type() *py.Type {
 	return pyCatalogType
 }
 
-func ph_Catalog_Close(self py.Object, args py.Tuple) (py.Object, error) {
+func py_Catalog_Close(self py.Object, args py.Tuple) (py.Object, error) {
 	cat := self.(pyCatalog)
 	if cat.Catalog != nil {
 		cat.Close()
@@ -234,7 +237,7 @@ func ph_Catalog_Close(self py.Object, args py.Tuple) (py.Object, error) {
 	return py.None, nil
 }
 
-func ph_Catalog_Select(self py.Object, args py.Tuple) (py.Object, error) {
+func py_Catalog_Select(self py.Object, args py.Tuple) (py.Object, error) {
 	cat := self.(pyCatalog)
 	sel := go2x3.DefaultGraphSelector
 	if len(args) > 0 {
@@ -248,7 +251,7 @@ func ph_Catalog_Select(self py.Object, args py.Tuple) (py.Object, error) {
 	return wrapGraphSteam(next), nil
 }
 
-func ph_Catalog_NumTraces(self py.Object, args py.Tuple) (py.Object, error) {
+func py_Catalog_NumTraces(self py.Object, args py.Tuple) (py.Object, error) {
 	cat := self.(pyCatalog)
 
 	Nv, err := py.GetInt(args[0])
@@ -260,7 +263,7 @@ func ph_Catalog_NumTraces(self py.Object, args py.Tuple) (py.Object, error) {
 	return py.Int(numTraces), nil
 }
 
-func ph_Catalog_NumPrimes(self py.Object, args py.Tuple) (py.Object, error) {
+func py_Catalog_NumPrimes(self py.Object, args py.Tuple) (py.Object, error) {
 	cat := self.(pyCatalog)
 
 	Nv, err := py.GetInt(args[0])
@@ -272,7 +275,7 @@ func ph_Catalog_NumPrimes(self py.Object, args py.Tuple) (py.Object, error) {
 	return py.Int(numPrimes), nil
 }
 
-func ph_GraphStream_Go(self py.Object, args py.Tuple) (py.Object, error) {
+func py_GraphStream_Go(self py.Object, args py.Tuple) (py.Object, error) {
 	stream := self.(graphStream)
 	count := stream.PullAll()
 	return py.Int(count), nil
@@ -306,7 +309,7 @@ func (echo *echoToWriter) Close() error {
 var gOutCount = int32(0)
 
 // See lib/py2x3.py Print() docs
-func ph_GraphStream_Print(self py.Object, args py.Tuple, kwargs py.StringDict) (py.Object, error) {
+func py_GraphStream_Print(self py.Object, args py.Tuple, kwargs py.StringDict) (py.Object, error) {
 	stream := self.(graphStream)
 	var pathname string
 
@@ -348,7 +351,7 @@ func ph_GraphStream_Print(self py.Object, args py.Tuple, kwargs py.StringDict) (
 }
 
 /*
-func ph_NewGraphStream(module py.Object) (py.Object, error) {
+func py_NewGraphStream(module py.Object) (py.Object, error) {
 	//
 	// TODO: add mechanism to close all open GraphStreams when a script finishes
 	//
@@ -358,7 +361,7 @@ func ph_NewGraphStream(module py.Object) (py.Object, error) {
 	return py.Object(stream), nil
 }
 
-func ph_GraphStream_PushGraph(self py.Object, args py.Tuple) (py.Object, error) {
+func py_GraphStream_PushGraph(self py.Object, args py.Tuple) (py.Object, error) {
 	stream := self.(*GraphStream)
 	X := args[0].(*Graph)
 	// attr, err := py.GetAttrString(args[0], "_graph")
@@ -373,7 +376,7 @@ func ph_GraphStream_PushGraph(self py.Object, args py.Tuple) (py.Object, error) 
 	return py.None, nil
 }
 
-func ph_GraphStream_PullGraph(self py.Object, args py.Tuple) (py.Object, error) {
+func py_GraphStream_PullGraph(self py.Object, args py.Tuple) (py.Object, error) {
 	stream := self.(*GraphStream)
 	X := stream.PullGraph()
 	if X == nil {
@@ -397,7 +400,7 @@ func wrapGraphSteam(stream *go2x3.GraphStream) py.Object {
 	return py.Object(graphStream{stream})
 }
 
-func ph_GraphStream_AddTo(self py.Object, args py.Tuple) (py.Object, error) {
+func py_GraphStream_AddTo(self py.Object, args py.Tuple) (py.Object, error) {
 	stream := self.(graphStream)
 	attr, err := py.GetAttrString(args[0], "_cat")
 	if err != nil {
@@ -412,7 +415,7 @@ func ph_GraphStream_AddTo(self py.Object, args py.Tuple) (py.Object, error) {
 	return wrapGraphSteam(next), nil
 }
 
-func ph_GraphStream_DropDupes(self py.Object, args py.Tuple) (py.Object, error) {
+func py_GraphStream_DropDupes(self py.Object, args py.Tuple) (py.Object, error) {
 	stream := self.(graphStream)
 
 	// Create a memory resident catalog that get auto-closed when the stream closes
@@ -421,7 +424,7 @@ func ph_GraphStream_DropDupes(self py.Object, args py.Tuple) (py.Object, error) 
 	return wrapGraphSteam(next), nil
 }
 
-func ph_GraphStream_Canonize(self py.Object, args py.Tuple) (py.Object, error) {
+func py_GraphStream_Canonize(self py.Object, args py.Tuple) (py.Object, error) {
 	stream := self.(graphStream)
 	normalize := false
 	err := py.LoadTuple(args, []interface{}{&normalize})
@@ -432,7 +435,7 @@ func ph_GraphStream_Canonize(self py.Object, args py.Tuple) (py.Object, error) {
 	return wrapGraphSteam(next), nil
 }
 
-func ph_GraphStream_Select(self py.Object, args py.Tuple) (py.Object, error) {
+func py_GraphStream_Select(self py.Object, args py.Tuple) (py.Object, error) {
 	sel := go2x3.DefaultGraphSelector
 	err := getGraphSelector(args[0], &sel)
 	if err != nil {
@@ -443,13 +446,7 @@ func ph_GraphStream_Select(self py.Object, args py.Tuple) (py.Object, error) {
 	return wrapGraphSteam(next), nil
 }
 
-func ph_GraphStream_PermuteVtxSigns(self py.Object, args py.Tuple) (py.Object, error) {
-	stream := self.(graphStream)
-	next := stream.PermuteVtxSigns()
-	return wrapGraphSteam(next), nil
-}
-
-func ph_GraphStream_PermuteEdgeSigns(self py.Object, args py.Tuple) (py.Object, error) {
+func py_GraphStream_PermuteEdgeSigns(self py.Object, args py.Tuple) (py.Object, error) {
 	stream := self.(graphStream)
 	next := stream.PermuteEdgeSigns()
 	return wrapGraphSteam(next), nil
@@ -460,51 +457,50 @@ func init() {
 	/////////////////////////////////
 	// Graph
 	{
-		pyGraphType.Dict["Traces"] = py.MustNewMethod("Traces", ph_Graph_Traces, 0, "exports this Graph's Traces as a bytes object")
-		pyGraphType.Dict["NumVerts"] = py.MustNewMethod("NumVerts", ph_Graph_NumVerts, 0, "")
-		pyGraphType.Dict["NumParts"] = py.MustNewMethod("NumParts", ph_Graph_NumParts, 0, "")
-		pyGraphType.Dict["Concat"] = py.MustNewMethod("Concat", ph_Graph_Concat, 0, "")
-		pyGraphType.Dict["Stream"] = py.MustNewMethod("Stream", ph_Graph_Stream, 0, "")
+		pyGraphType.Dict["Traces"] = py.MustNewMethod("Traces", py_Graph_Traces, 0, "exports this Graph's Traces as a bytes object")
+		pyGraphType.Dict["NumVerts"] = py.MustNewMethod("NumVerts", py_Graph_NumVerts, 0, "")
+		pyGraphType.Dict["NumParts"] = py.MustNewMethod("NumParts", py_Graph_NumParts, 0, "")
+		pyGraphType.Dict["Concat"] = py.MustNewMethod("Concat", py_Graph_Concat, 0, "")
+		pyGraphType.Dict["Stream"] = py.MustNewMethod("Stream", py_Graph_Stream, 0, "")
 	}
 
 	/////////////////////////////////
 	// Catalog
 	{
-		pyCatalogType.Dict["Select"] = py.MustNewMethod("Select", ph_Catalog_Select, 0, "")
-		pyCatalogType.Dict["NumTraces"] = py.MustNewMethod("NumTraces", ph_Catalog_NumTraces, 0, "")
-		pyCatalogType.Dict["NumPrimes"] = py.MustNewMethod("NumPrimes", ph_Catalog_NumPrimes, 0, "")
-		pyCatalogType.Dict["Close"] = py.MustNewMethod("Close", ph_Catalog_Close, 0, "")
+		pyCatalogType.Dict["Select"] = py.MustNewMethod("Select", py_Catalog_Select, 0, "")
+		pyCatalogType.Dict["NumTraces"] = py.MustNewMethod("NumTraces", py_Catalog_NumTraces, 0, "")
+		pyCatalogType.Dict["NumPrimes"] = py.MustNewMethod("NumPrimes", py_Catalog_NumPrimes, 0, "")
+		pyCatalogType.Dict["Close"] = py.MustNewMethod("Close", py_Catalog_Close, 0, "")
 	}
 
 	/////////////////////////////////
 	// Workspace
 	{
-		pyWorkspaceType.Dict["OpenCatalog"] = py.MustNewMethod("OpenCatalog", ph_Workspace_OpenCatalog, 0, "")
-		pyWorkspaceType.Dict["CatalogExists"] = py.MustNewMethod("CatalogExists", ph_Workspace_CatalogExists, 0, "")
+		pyWorkspaceType.Dict["OpenCatalog"] = py.MustNewMethod("OpenCatalog", py_Workspace_OpenCatalog, 0, "")
+		pyWorkspaceType.Dict["CatalogExists"] = py.MustNewMethod("CatalogExists", py_Workspace_CatalogExists, 0, "")
 	}
 
 	/////////////////////////////////
 	// GraphStream
 	{
-		pyGraphStreamType.Dict["Go"] = py.MustNewMethod("Go", ph_GraphStream_Go, 0, "counts the number of graphs output from the GraphStream")
-		pyGraphStreamType.Dict["Print"] = py.MustNewMethod("Print", ph_GraphStream_Print, 0, "prints each graph from the GraphStream")
-		// pyGraphStreamType.Dict["PullGraph"] = py.MustNewMethod("PullGraph", ph_GraphStream_PullGraph, 0, "")
-		// pyGraphStreamType.Dict["PushGraph"] = py.MustNewMethod("PushGraph", ph_GraphStream_PushGraph, 0, "")
-		pyGraphStreamType.Dict["AddTo"] = py.MustNewMethod("AddTo", ph_GraphStream_AddTo, 0, "")
-		pyGraphStreamType.Dict["Canonize"] = py.MustNewMethod("Canonize", ph_GraphStream_Canonize, 0, "")
-		pyGraphStreamType.Dict["DropDupes"] = py.MustNewMethod("DropDupes", ph_GraphStream_DropDupes, 0, "")
-		pyGraphStreamType.Dict["Select"] = py.MustNewMethod("Select", ph_GraphStream_Select, 0, "")
-		pyGraphStreamType.Dict["AllVtxSigns"] = py.MustNewMethod("AllVtxSigns", ph_GraphStream_PermuteVtxSigns, 0, "")
-		pyGraphStreamType.Dict["AllEdgeSigns"] = py.MustNewMethod("AllEdgeSigns", ph_GraphStream_PermuteEdgeSigns, 0, "")
+		pyGraphStreamType.Dict["Go"] = py.MustNewMethod("Go", py_GraphStream_Go, 0, "counts the number of graphs output from the GraphStream")
+		pyGraphStreamType.Dict["Print"] = py.MustNewMethod("Print", py_GraphStream_Print, 0, "prints each graph from the GraphStream")
+		// pyGraphStreamType.Dict["PullGraph"] = py.MustNewMethod("PullGraph", py_GraphStream_PullGraph, 0, "")
+		// pyGraphStreamType.Dict["PushGraph"] = py.MustNewMethod("PushGraph", py_GraphStream_PushGraph, 0, "")
+		pyGraphStreamType.Dict["AddTo"] = py.MustNewMethod("AddTo", py_GraphStream_AddTo, 0, "")
+		pyGraphStreamType.Dict["Canonize"] = py.MustNewMethod("Canonize", py_GraphStream_Canonize, 0, "")
+		pyGraphStreamType.Dict["DropDupes"] = py.MustNewMethod("DropDupes", py_GraphStream_DropDupes, 0, "")
+		pyGraphStreamType.Dict["Select"] = py.MustNewMethod("Select", py_GraphStream_Select, 0, "")
+		pyGraphStreamType.Dict["PermuteEdgeSigns"] = py.MustNewMethod("PermuteEdgeSigns", py_GraphStream_PermuteEdgeSigns, 0, "")
 
 	}
 
 	{
 		methods := []*py.Method{
-			py.MustNewMethod("NewGraph", ph_NewGraph, 0, ""),
-			//py.MustNewMethod("GraphStream", ph_NewGraphStream, 0, ""),
-			py.MustNewMethod("EnumPureParticles", ph_EnumPureParticles, 0, ""),
-			py.MustNewMethod("GetWorkspace", ph_GetWorkspace, 0, ""),
+			py.MustNewMethod("NewGraph", py_NewGraph, 0, ""),
+			//py.MustNewMethod("GraphStream", py_NewGraphStream, 0, ""),
+			py.MustNewMethod("EnumPureParticles", py_EnumPureParticles, 0, ""),
+			py.MustNewMethod("GetWorkspace", py_GetWorkspace, 0, ""),
 		}
 
 		// stdin, stdout, stderr := &py.String{os.Stdin, py.FileRead},
@@ -557,7 +553,7 @@ func byteAttr(obj py.Object, attr string) byte {
 func exportGraphInfo(graphInfo py.Object) go2x3.GraphInfo {
 	info := go2x3.GraphInfo{
 		NumParticles: byteAttr(graphInfo, "parts"),
-		NumVerts:     byteAttr(graphInfo, "verts"),
+		NumVertex:    byteAttr(graphInfo, "verts"),
 		PosEdges:     byteAttr(graphInfo, "pos_edges"),
 		NegEdges:     byteAttr(graphInfo, "neg_edges"),
 		PosLoops:     byteAttr(graphInfo, "pos_loops"),
@@ -615,8 +611,8 @@ func getGraphSelector(graph_selector py.Object, sel *go2x3.GraphSelector) error 
 		if err != nil {
 			return err
 		}
-		sel.Min.NumVerts = byte(X.NumVertices())
-		sel.Max.NumVerts = byte(X.NumVertices())
+		sel.Min.NumVertex = byte(X.VertexCount())
+		sel.Max.NumVertex = byte(X.VertexCount())
 		sel.Traces = X
 	}
 

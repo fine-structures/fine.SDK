@@ -4,28 +4,10 @@ package graph;
 //option go_package = "github.com/astronomical-grace/fine-structures-go/lib2x3/graph";
 
 
-message CatalogState {
+// message Const {
 
-    int32               MajorVers                   = 1;
-    int32               MinorVers                   = 2;
-    
-    // TraceCount is the Traces len for this Catalog's Traces index.
-    // This effectively sets a vertex size limit for Graphs this Catalog can process.
-    // DefaultCatalogTraceCount specifies the default TraceCount for new catalogs. 
-    int32               TraceCount                  = 10;
-                
-    // NumTraces[Nv] is the number of traces of in this catalog for a given number of vertices.
-    // Note: NumTraces[0] is always 0 and len(NumTraces) == TraceCount+1
-    repeated uint64     NumTraces                   = 11;
-    
-    // NumPrimes[Nv] is the number of particle primes for a given number of vertices.
-    // Note: NumPrimes[0] is always 0 and len(NumPrimes) == TraceCount+1
-    repeated uint64     NumPrimes                   = 12;
-    
-    // Set if this catalog is to auto-determine if a newly added Graph / Traces are primes.
-    bool                IsPrimeCatalog              = 20;
-}
-
+//     EdgeSlotsPerVertex = 3
+// }
 
 
 enum Bool {
@@ -96,6 +78,14 @@ enum OddSign {
 }
 
 
+enum EdgeSign {
+    EdgeSign_PosLoop = 0; // +0
+    EdgeSign_PosEdge = 1; // +1
+    EdgeSign_NegLoop = 2; // +2
+    EdgeSign_NegEdge = 3; // +3
+}
+
+
 enum TracesSign {
     TracesSign_Unknown  = 0;
     TracesSign_Zero     = 1;
@@ -108,6 +98,50 @@ enum TracesCycle {
     TracesCycle_Odd    = 1;
     TracesCycle_Even   = 2; 
 }
+
+/*
+enum EdgeKind {
+    EdgeKind_Nil     = 0; // '-'
+    EdgeKind_PosLoop = 1; // '.'
+    EdgeKind_PosEdge = 2; // '*'
+    EdgeKind_PosEdge = 2; // '*'
+    
+    EdgeKind_NegVoid = 4; // '-'
+    EdgeKind_NegVoid = 4; // 'o'
+    EdgeKind_NegLoop = 5; // 'O'
+    EdgeKind_NegEdge = 6; // '@'
+}
+*/
+/*
+message TracesTerm {
+    int64               VtxCount = 1; // Vertex count -- 1, 2, 3..
+    TracesCycle         Cycle    = 3; 
+    TracesSign          Sign     = 4;
+    
+    // Reserved for future use
+    fixed64             TX_Tag_0 = 6;
+    fixed64             TX_Tag_1 = 7;
+    fixed64             TX_Tag_2 = 8;
+    
+    repeated float      TX_Normalized = 11; // Traces (cycles)
+
+    repeated int64      TX_CycleCounts = 12; // Traces (cycles)
+    
+    // product(TX_CycleCounts[i]) == product(TX_PrimeBases[i]^TX_FactorCounts[i])
+    repeated uint64     TX_PrimeBases  = 13; // Prime factor bases
+    repeated int64      TX_FactorCounts = 14; // Quantity of each prime base factor
+    
+    // repeated int64      TX_Numerator   = 14; // Traces (numerator)
+    // repeated int64      TX_Denominator = 15; // Traces (denominator)
+    
+    string              Graph = 19;  // graph that represents this term
+    string              GraphMediaType = 20;  // "text/2x3-graph"
+    
+    fixed64             Link_UIDx0 = 24;
+    fixed64             Link_UIDx1 = 25;
+    fixed64             Link_UIDx2 = 26;
+}
+*/
 
 // VtxEdge
 message VtxEdge {
@@ -180,28 +214,27 @@ message GraphTerm {
 }
 
 
-// GrowOpCode is a graph-building op code, specifying a way to grow a 2x3 graph.
-enum GrowOpCode {
-	GrowOpCode_Nil           = 0;
+// OpCode is a graph-building op code, specifying a way to grow a 2x3 graph.
+enum OpCode {
+
+	// Negates edge sign of the specified edge
+	OpCode_NegateEdge    = 0; //    ~
 	
     // Adds another edge connecting the existing vertices of a specified existing edge
-	GrowOpCode_EdgeDuplicate = 1; 
+	// Consumes 2 open edge slots
+	OpCode_EdgeDuplicate = 1;  //   =
 	
     // Splits an existing edge into a new vertex, filling the first two slots in the new vertex
-	GrowOpCode_EdgeSplit     = 2; 
+	// Reassigns 2 slots, consumes 2 newly open slots => net +1 new open slots
+	OpCode_EdgeSplit     = 2;  //   :
 
     // Sprouts an existing vertex loop into a new vertex, filling the first edge slot in the new vertex
-	GrowOpCode_EdgeSprout    = 3; 
+	// Assigns 1 open slot, consumes 1 newly open slot => net +2 open slots
+	OpCode_Sprout        = 3; //    ^
+	
 }
 
 
-// GrowStep is a graph building step, specifying how to add an vertex and/or edge
-message GrowStep {
-    GrowOpCode OpCode   = 1; // operation to perform
-    int32      EdgeSign = 2; // +1 or -1
-    uint32     VertexID = 3; // 1, 2, 3, 4, 5, ...
-    uint32     SlotID   = 4; // 1, 2, or 3 
-}
 
 
 enum EncodingForm {
