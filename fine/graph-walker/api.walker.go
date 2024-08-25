@@ -14,30 +14,37 @@ func EnumPureParticles(opts EnumOpts) (*go2x3.GraphStream, error) {
 type GrowOp struct {
 	OpCode graph.OpCode
 	VtxA   VtxID
-	//VtxB   VtxID
 	SlotA  uint8
-	//SlotB  uint8
+}
+
+// func (op *GrowOp) AddsVertex() bool {
+// 	return op.OpCode == graph.OpAddVertex || op.OpCode == graph.OpAddVertexAndEdge
+// }
+
+func (op *GrowOp) EdgeSlotOrdinal() int {
+	return int(op.VtxA)*EdgesPerVertex + int(op.SlotA)
 }
 
 type EdgeSlot struct {
-	To   VtxID   // 1, 2, 3, ..   where 0 denotes inward / unassigned edge
-	Sign Sign // +1, 0, -1
+	To   VtxID // 1, 2, 3, ..   where 0 denotes inward / unassigned edge
+	Sign Sign  // +1, 0, -1
 }
 
 // Vertex is a node of a graph, with a fixed number of edges per vertex
 type Vertex struct {
 	ID    VtxID // 1, 2, 3, ..
-	Edges [SlotsPerVertex]EdgeSlot
+	Count int64 // aka accumulation
+	Edges [EdgesPerVertex]EdgeSlot
 }
 
 // VtxID is one-based index that identifies a vertex in a given graph (1..VtxMax)
 type VtxID byte
 
-// SlotID embeds a one-based vertex index (1..VtxMax) and zero-based slot index (0..SlotsPerVertex-1)
-type SlotID byte
+// SlotID embeds a one-based vertex index (1..VtxMax) and zero-based slot index (0..EdgesPerVertex-1)
+type EdgeSlotID byte
 
-func (slot SlotID) VtxAndSlot() (vtxIndex, slotIndex uint8) {
-	return uint8(slot) / SlotsPerVertex, uint8(slot) % SlotsPerVertex
+func (slot EdgeSlotID) VertexAndSlot() (vertexIdx, slotIndex uint8) {
+	return uint8(slot) / EdgesPerVertex, uint8(slot) % EdgesPerVertex
 }
 
 type EnumOpts struct {
@@ -50,7 +57,7 @@ type EnumOpts struct {
 type Sign byte
 
 const (
-	SlotsPerVertex = 3
+	EdgesPerVertex = 3
 
 	Sign_Natural Sign = 0 // odd cycles are not inverted (default)
 	Sign_Invert  Sign = 1 // odd cycles are inverted

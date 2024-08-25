@@ -4,11 +4,6 @@ package catalog;
 //option go_package = "github.com/astronomical-grace/fine-structures-go/lib2x3/graph";
 
 
-// message Const {
-
-//     EdgeSlotsPerVertex = 3
-// }
-
 message CatalogState {
 
     int32               MajorVers                   = 1;

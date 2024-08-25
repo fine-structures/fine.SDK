@@ -1,7 +1,9 @@
 package walker
 
 import (
+	"fmt"
 	"io"
+	"strings"
 	"sync"
 	"sync/atomic"
 
@@ -78,15 +80,71 @@ func (X *Construction) Canonize(normalize bool) error {
 	return nil
 }
 
+var kOpRunes = [4]string{"~ ", "||", "><", "->"}
+
 func (X *Construction) ExportStateEncoding(out []byte, opts go2x3.ExportOpts) ([]byte, error) {
-	return nil, nil
+	b := strings.Builder{}
+	for _, op := range X.Ops {
+		fmt.Fprintf(&b, "%02d%s ", op.EdgeSlotOrdinal(), kOpRunes[op.OpCode])
+	}
+	return []byte(b.String()), nil
 }
 
 func (X *Construction) GetInfo() go2x3.GraphInfo {
 	return go2x3.GraphInfo{
-		NumParticles: byte(1), // FIX ME
+		NumParticles: byte(X.ParticleCount()),
 		NumVertex:    byte(X.VertexCount()),
 	}
+}
+
+// Returns the number of particles (partitions) in this graph
+func (X *Construction) ParticleCount() int64 {
+
+	// We find number of total partitions.  Start by assuming each vertex its own partition.
+	// Each time we connect two vertices with an edge, propagate their connectedness.
+	var vtxBuf [go2x3.MaxVtxID]VtxID
+	Nv := VtxID(len(X.Vtx))
+	vtx := vtxBuf[:Nv]
+	for i := VtxID(0); i < Nv; i++ {
+		vtx[i] = i + 1
+	}
+	// for _, edge := range X.Edges() {  FIX ME
+	// 	va, vb := edge.VtxIdx()
+	// 	v_lo := vtx[va]
+	// 	v_hi := vtx[vb]
+	// 	if v_lo == v_hi {
+	// 		continue
+	// 	}
+	// 	if v_lo > v_hi {
+	// 		v_lo, v_hi = v_hi, v_lo
+	// 	}
+	// 	for i, vi := range vtx {
+	// 		if vi == v_hi {
+	// 			vtx[i] = v_lo
+	// 		}
+	// 	}
+	// }
+
+	// The number of unique values in the vtx list is the number of partitions
+	count := int64(0)
+	if Nv > 0 {
+		count++
+	}
+	for _, vi := range vtx {
+		newPart := true
+		for j := int64(0); j < count; j++ {
+			if vtx[j] == vi {
+				newPart = false
+			}
+		}
+		if newPart {
+			vtx[count] = vi
+			count++
+		}
+	}
+
+	return count
+
 }
 
 // PermuteEdgeSigns emits a Graph for every possible edge sign permutation of the given Graph.
@@ -240,7 +298,51 @@ func (X *Construction) GraphInfo() go2x3.GraphInfo {
 }
 
 func (X *Construction) WriteAsString(out io.Writer, opts go2x3.PrintOpts) {
+	var scrap [512]byte
+	encFull, _ := X.ExportStateEncoding(scrap[:0], go2x3.ExportAsAscii)
+	fmt.Fprintf(out, "p=%d,v=%d,%q,%q,", X.ParticleCount(), X.VertexCount(), encFull, "")
 
+	if opts.Graph {
+		//X.WriteAsGraphExprStr(out)
+	}
+	if opts.Matrix {
+		// X.WriteAsMatrixStr(out)
+	}
+	if opts.NumTraces != 0 {
+		X.WriteTracesAsCSV(out, opts.NumTraces)
+	}
+	//out.Write(newline)
+
+}
+
+// func (X *Construction) WriteAsGraphExprStr(out io.Writer) {
+// 	for _, vi := range X.Vtx {
+// 		fmt.Fprintf(out, "%d:", vi.ID)
+// 		for _, ej := range vi.Edges {
+// 			if ej.To == 0 {
+// 				continue
+// 			}
+// 			fmt.Fprintf(out, "%d", ej.To)
+// 			if ej.Sign == Sign_Invert {
+// 				out.Write([]byte{'-'})
+// 			} else {
+// 				out.Write([]byte{'+'})
+// 			}
+// 			out.Write([]byte{' '})
+// 		}
+// 		out.Write([]byte{'\n'})
+// 	}
+// }
+
+func (X *Construction) WriteTracesAsCSV(out io.Writer, numTraces int) {
+	TX := X.Traces(numTraces)
+
+	var buf [24]byte
+
+	for _, TXi := range TX {
+		out.Write(graph.PrintInt(buf[:], TXi))
+		out.Write([]byte{','})
+	}
 }
 
 // Recycles this GraphState instance into a pool for reuse.
@@ -343,7 +445,7 @@ func NewState(Xsrc *Construction) *Construction {
 }
 
 func (X *Construction) NegateEdge(vi VtxID, vi_slot int32) {
-	if vi <= 0 || vi > VtxID(len(X.Vtx)) || vi_slot > SlotsPerVertex {
+	if vi <= 0 || vi > VtxID(len(X.Vtx)) || vi_slot > EdgesPerVertex {
 		panic("NegateEdge: invalid edge")
 	}
 
@@ -351,7 +453,7 @@ func (X *Construction) NegateEdge(vi VtxID, vi_slot int32) {
 
 // findEdge returns the vertex and slot of the edge that connects to the given vertex and slot
 func (X *Construction) findEdge(vi VtxID, vi_slot byte) (vj VtxID, vj_slot_edge, vj_slot_free byte) {
-	if vi <= 0 || int(vi) > len(X.Vtx) || vi_slot == 0 || vi_slot > SlotsPerVertex {
+	if vi <= 0 || int(vi) > len(X.Vtx) || vi_slot == 0 || vi_slot > EdgesPerVertex {
 		return // invalid input
 	}
 	vj = X.Vtx[vi-1].Edges[vi_slot-1].To
@@ -395,7 +497,7 @@ func (X *Construction) applyOp(op GrowOp) bool {
 	slotB_ID := byte(0)
 	newVtxID := VtxID(0)
 
-	if vtxA <= 0 || slotA_ID == 0 || slotA_ID > SlotsPerVertex {
+	if vtxA <= 0 || slotA_ID == 0 || slotA_ID > EdgesPerVertex {
 		return false
 	}
 
@@ -589,7 +691,8 @@ func (gw *graphWalker) duplicateEdges(X *Construction) {
 func (X *Construction) addNewVertex() (newVtxID VtxID) {
 	newVtxID = VtxID(len(X.Vtx) + 1)
 	X.Vtx = append(X.Vtx, Vertex{
-		ID: newVtxID,
+		ID:    newVtxID,
+		Count: 1,
 	})
 	return newVtxID
 }

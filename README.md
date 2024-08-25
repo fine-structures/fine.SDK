@@ -55,8 +55,9 @@ This project is a library & demonstration toolkit for [Fine Structures](https://
     - [Hopf mapping](https://www.youtube.com/watch?v=PYR9worLEGo)
     - 3D volume packing of [Trapezo-Rhombic Dodecahedra](https://mathworld.wolfram.com/Trapezo-RhombicDodecahedron.html)
         - [Wikipedia](https://en.wikipedia.org/wiki/Trapezo-rhombic_dodecahedron)
-        - [Cosmic evidence](https://www.cosmic-core.org/free/article-261-astronomy-the-geometry-of-galactic-clusters-part-2/)
-        
+        - [Cosmic evidence](https://www.cosmic-core.org/free/article-261-astronomy-the-geometry-of-galactic-clusters-part-2/)  
+    - [Rydberg constant](https://en.wikipedia.org/wiki/Rydberg_constant)
+    
 - p-adic numbers & visualization: 
     - https://www.youtube.com/watch?v=tRaq4aYPzCc
     - https://en.wikipedia.org/wiki/P-adic_number

@@ -3,13 +3,6 @@ package graph;
 
 //option go_package = "github.com/astronomical-grace/fine-structures-go/lib2x3/graph";
 
-
-// message Const {
-
-//     EdgeSlotsPerVertex = 3
-// }
-
-
 enum Bool {
     Bool_Unknown = 0;
     Bool_No      = 1;

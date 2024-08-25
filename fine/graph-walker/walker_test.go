@@ -32,7 +32,7 @@ func TestEnum(t *testing.T) {
         X.WriteAsString(&buf, printOpts)
         
         buf.WriteByte('\n')
-        fmt.Printf("%s\n", buf.String())
+        fmt.Printf("%s", buf.String())
         buf.Reset()
         
         X.Reclaim()
