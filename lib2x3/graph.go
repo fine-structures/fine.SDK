@@ -7,9 +7,9 @@ import (
 	"sort"
 	"sync"
 
-	walker "github.com/astronomical-grace/fine-structures-go/fine/graph-walker"
-	"github.com/astronomical-grace/fine-structures-go/go2x3"
-	"github.com/astronomical-grace/fine-structures-go/lib2x3/graph"
+	walker "github.com/fine-structures/fst-sdk-go/fine/graph-walker"
+	"github.com/fine-structures/fst-sdk-go/go2x3"
+	"github.com/fine-structures/fst-sdk-go/lib2x3/graph"
 )
 
 func NewGraph(Xsrc *Graph) *Graph {

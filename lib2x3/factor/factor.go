@@ -4,8 +4,8 @@ import (
 	"sync"
 	"unsafe"
 
-	"github.com/astronomical-grace/fine-structures-go/go2x3"
 	"github.com/emirpasic/gods/trees/redblacktree"
+	"github.com/fine-structures/fst-sdk-go/go2x3"
 )
 
 /*

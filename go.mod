@@ -1,4 +1,4 @@
-module github.com/astronomical-grace/fine-structures-go
+module github.com/fine-structures/fst-sdk-go
 
 go 1.22
 

@@ -1,7 +1,7 @@
 syntax = "proto3";
 package graph;
 
-//option go_package = "github.com/astronomical-grace/fine-structures-go/lib2x3/graph";
+//option go_package = "github.com/fine-structures/fst-sdk-go/lib2x3/graph";
 
 enum Bool {
     Bool_Unknown = 0;

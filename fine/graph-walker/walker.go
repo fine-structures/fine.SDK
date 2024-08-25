@@ -9,9 +9,9 @@ import (
 
 	"github.com/amp-3d/amp-sdk-go/stdlib/symbol"
 	"github.com/amp-3d/amp-sdk-go/stdlib/symbol/memory_table"
-	"github.com/astronomical-grace/fine-structures-go/go2x3"
-	"github.com/astronomical-grace/fine-structures-go/lib2x3/graph"
-	//"github.com/astronomical-grace/fine-structures-go/lib2x3/catalog"
+	"github.com/fine-structures/fst-sdk-go/go2x3"
+	"github.com/fine-structures/fst-sdk-go/lib2x3/graph"
+	//"github.com/fine-structures/fst-sdk-go/lib2x3/catalog"
 )
 
 func enumPureParticles(opts EnumOpts) (*go2x3.GraphStream, error) {

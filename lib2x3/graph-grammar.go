@@ -3,8 +3,8 @@ package lib2x3
 import (
 	"fmt"
 
-	"github.com/astronomical-grace/fine-structures-go/go2x3"
 	"github.com/alecthomas/participle/v2"
+	"github.com/fine-structures/fst-sdk-go/go2x3"
 )
 
 type GraphExpr struct {
