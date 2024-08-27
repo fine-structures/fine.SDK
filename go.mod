@@ -1,16 +1,16 @@
-module github.com/fine-structures/fst-sdk-go
+module github.com/fine-structures/fine-sdk-go
 
 go 1.22
 
 // List versions of a module:
-//    go list -m -versions github.com/arcspace/go-arc-sdk
+//    go list -m -versions github.com/art-media-platform/amp-sdk-go
 //
 // go list & get cheatsheet:
 //    https://stackoverflow.com/a/61312937/3958082
 
 require (
 	github.com/alecthomas/participle/v2 v2.1.1
-	github.com/amp-3d/amp-sdk-go v0.8.2-0.20240806235402-1f7301cc2c50
+	github.com/art-media-platform/amp-sdk-go v0.8.3
 	github.com/dgraph-io/badger/v4 v4.2.0
 	github.com/emirpasic/gods v1.18.1
 	github.com/go-python/gpython v0.2.0
@@ -35,6 +35,6 @@ require (
 	github.com/rivo/uniseg v0.4.7 // indirect
 	go.opencensus.io v0.24.0 // indirect
 	golang.org/x/net v0.28.0 // indirect
-	golang.org/x/sys v0.23.0 // indirect
+	golang.org/x/sys v0.24.0 // indirect
 	google.golang.org/protobuf v1.34.2 // indirect
 )

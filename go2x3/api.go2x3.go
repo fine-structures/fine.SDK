@@ -3,7 +3,7 @@ package go2x3
 import (
 	"io"
 
-	"github.com/amp-3d/amp-sdk-go/stdlib/generics"
+	"github.com/art-media-platform/amp-sdk-go/stdlib/generics"
 )
 
 const (

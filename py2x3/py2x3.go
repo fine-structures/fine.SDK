@@ -13,10 +13,10 @@ import (
 	"strings"
 	"sync/atomic"
 
-	walker "github.com/fine-structures/fst-sdk-go/fine/graph-walker"
-	"github.com/fine-structures/fst-sdk-go/go2x3"
-	"github.com/fine-structures/fst-sdk-go/lib2x3"
-	"github.com/fine-structures/fst-sdk-go/lib2x3/catalog"
+	walker "github.com/fine-structures/fine-sdk-go/fine/graph-walker"
+	"github.com/fine-structures/fine-sdk-go/go2x3"
+	"github.com/fine-structures/fine-sdk-go/lib2x3"
+	"github.com/fine-structures/fine-sdk-go/lib2x3/catalog"
 	"github.com/go-python/gpython/py"
 )
 

@@ -3,7 +3,7 @@ package lib2x3
 import (
 	"sort"
 
-	"github.com/fine-structures/fst-sdk-go/go2x3"
+	"github.com/fine-structures/fine-sdk-go/go2x3"
 )
 
 // EdgeID contains a two VtxIDs and an EdgeType

@@ -7,11 +7,11 @@ import (
 	"sync"
 	"sync/atomic"
 
-	"github.com/amp-3d/amp-sdk-go/stdlib/symbol"
-	"github.com/amp-3d/amp-sdk-go/stdlib/symbol/memory_table"
-	"github.com/fine-structures/fst-sdk-go/go2x3"
-	"github.com/fine-structures/fst-sdk-go/lib2x3/graph"
-	//"github.com/fine-structures/fst-sdk-go/lib2x3/catalog"
+	"github.com/art-media-platform/amp-sdk-go/stdlib/symbol"
+	"github.com/art-media-platform/amp-sdk-go/stdlib/symbol/memory_table"
+	"github.com/fine-structures/fine-sdk-go/go2x3"
+	"github.com/fine-structures/fine-sdk-go/lib2x3/graph"
+	//"github.com/fine-structures/fine-sdk-go/lib2x3/catalog"
 )
 
 func enumPureParticles(opts EnumOpts) (*go2x3.GraphStream, error) {

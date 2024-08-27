@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"hash/maphash"
 
-	"github.com/fine-structures/fst-sdk-go/go2x3"
+	"github.com/fine-structures/fine-sdk-go/go2x3"
 )
 
 type dropDupes struct {

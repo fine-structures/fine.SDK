@@ -6,7 +6,7 @@ import (
 	"math"
 	"sort"
 
-	"github.com/fine-structures/fst-sdk-go/go2x3"
+	"github.com/fine-structures/fine-sdk-go/go2x3"
 )
 
 const (
