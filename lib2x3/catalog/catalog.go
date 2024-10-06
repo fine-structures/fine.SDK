@@ -4,10 +4,9 @@ import (
 	"bytes"
 	"runtime"
 
-	"github.com/fine-structures/fine-sdk-go/fine"
 	"github.com/fine-structures/fine-sdk-go/go2x3"
-	"github.com/fine-structures/fine-sdk-go/lib2x3"
 	"github.com/fine-structures/fine-sdk-go/lib2x3/factor"
+	lib2x3 "github.com/fine-structures/fine-sdk-go/lib2x3/graph-legacy"
 	"github.com/pkg/errors"
 
 	"github.com/dgraph-io/badger/v4"
@@ -95,7 +94,7 @@ type catalog struct {
 	ctx          go2x3.CatalogContext
 	readOnly     bool
 	stateDirty   bool
-	state        fine.CatalogState
+	state        go2x3.CatalogState
 	db           *badger.DB
 	CatalogDesig string
 	primeCache   *factor.FactorCatalog

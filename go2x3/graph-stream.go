@@ -6,8 +6,6 @@ import (
 	"strings"
 )
 
-
-
 type GraphStream struct {
 	Outlet chan GraphState
 }
@@ -257,7 +255,6 @@ func (ctx *canonizeCtx) goCanonize(X *Graph) error {
 	return nil
 }
 */
-
 
 func (stream *GraphStream) PermuteEdgeSigns() *GraphStream {
 	next := &GraphStream{

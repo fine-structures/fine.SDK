@@ -7,9 +7,9 @@ import (
 	"sort"
 	"sync"
 
-	walker "github.com/fine-structures/fine-sdk-go/fine/graph-walker"
 	"github.com/fine-structures/fine-sdk-go/go2x3"
 	"github.com/fine-structures/fine-sdk-go/lib2x3/graph"
+	walker "github.com/fine-structures/fine-sdk-go/lib2x3/graph-walker"
 )
 
 func NewGraph(Xsrc *Graph) *Graph {
@@ -37,7 +37,7 @@ func (V VtxList) Swap(i, j int)      { V[i], V[j] = V[j], V[i] }
 // GraphEncoding a fully serialized Graph. See initFromEncoding() for format info.
 type GraphEncoding []byte
 
-func (Xenc GraphEncoding) GetInfo() go2x3.GraphInfo {
+func GetInfo(Xenc GraphEncoding) go2x3.GraphInfo {
 	info := go2x3.GraphInfo{
 		NumParticles: Xenc[0],
 		NumVertex:    Xenc[1],
@@ -529,7 +529,7 @@ var graphPool = sync.Pool{
 func (X *Graph) initFromEncoding(Xe GraphEncoding) error {
 	X.Init(nil)
 
-	info := Xe.GetInfo()
+	info := GetInfo(Xe)
 	X.vtxCount = int(info.NumVertex)
 
 	if int(info.NumParticles) > X.vtxCount {

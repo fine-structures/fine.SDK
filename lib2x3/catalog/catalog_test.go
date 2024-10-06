@@ -8,8 +8,8 @@ import (
 	"testing"
 
 	"github.com/fine-structures/fine-sdk-go/go2x3"
-	"github.com/fine-structures/fine-sdk-go/lib2x3"
 	"github.com/fine-structures/fine-sdk-go/lib2x3/catalog"
+	lib2x3 "github.com/fine-structures/fine-sdk-go/lib2x3/graph-legacy"
 )
 
 var primes = []string{
