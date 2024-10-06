@@ -288,8 +288,6 @@ func (X *VtxGraphVM) AddEdge(
 }
 
 func (X *VtxGraphVM) Validate() error {
-	var err error
-
 	vtx := X.Vtx()
 
 	// Keep doing passes until edge propagation doesn't change GraphID assignments
@@ -330,15 +328,10 @@ func (X *VtxGraphVM) Validate() error {
 			v.GraphID = uint32(remap[v.GraphID])
 		}
 	}
-
-	if err == nil {
-		if X.Status < GraphStatus_Validated {
-			X.Status = GraphStatus_Validated
-		}
-		return nil
+	if X.Status < GraphStatus_Validated {
+		X.Status = GraphStatus_Validated
 	}
-
-	return err
+	return nil
 }
 
 func (X *VtxGraphVM) Canonize() {
@@ -781,9 +774,6 @@ func PrintNormalizedTraces(Nv int, TX go2x3.Traces, out io.Writer) {
 
 	// Write header
 	{
-		line := buf[:0]
-		line = append(line, "                 ##        "...)
-
 		// factorCounts := make([]int64, 0, 32)
 		// primeFactors := make([]int64, 0, 32)
 

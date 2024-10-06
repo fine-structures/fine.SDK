@@ -159,8 +159,8 @@ var DefaultGraphSelector = GraphSelector{
 }
 
 // AllowGraph is a convenience function used to see if a Graph is selected according to a GraphSelector.
-func (sel *GraphSelector) SelectsGraph(X GraphState) bool {
-	info := X.GetInfo()
+func (sel *GraphSelector) SelectsGraph(X State) bool {
+	info := X.GraphInfo()
 	if info.NumParticles < sel.Min.NumParticles || info.NumVertex < sel.Min.NumVertex || info.PosLoops < sel.Min.PosLoops || info.NegLoops < sel.Min.NegLoops || info.PosEdges < sel.Min.PosEdges || info.NegEdges < sel.Min.NegEdges {
 		return false
 	}

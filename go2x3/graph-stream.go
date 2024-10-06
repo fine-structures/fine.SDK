@@ -7,17 +7,17 @@ import (
 )
 
 type GraphStream struct {
-	Outlet chan GraphState
+	Outlet chan State
 }
 
 func NewGraphStream() *GraphStream {
 	stream := &GraphStream{
-		Outlet: make(chan GraphState),
+		Outlet: make(chan State),
 	}
 	return stream
 }
 
-func StreamGraph(X GraphState) *GraphStream {
+func StreamGraph(X State) *GraphStream {
 	next := NewGraphStream()
 
 	go func() {
@@ -34,11 +34,11 @@ func (stream *GraphStream) Close() {
 	}
 }
 
-func (stream *GraphStream) PushGraph(X GraphState) {
+func (stream *GraphStream) PushGraph(X State) {
 	stream.Outlet <- X.MakeCopy()
 }
 
-func (stream *GraphStream) PullGraph() GraphState {
+func (stream *GraphStream) PullGraph() State {
 	X := <-stream.Outlet
 	return X
 }
@@ -57,7 +57,7 @@ func (stream *GraphStream) Print(
 	opts PrintOpts) *GraphStream {
 
 	next := &GraphStream{
-		Outlet: make(chan GraphState, 1),
+		Outlet: make(chan State, 1),
 	}
 
 	go func() {
@@ -88,7 +88,7 @@ func (stream *GraphStream) Print(
 
 func (stream *GraphStream) AddTo(target GraphAdder) *GraphStream {
 	next := &GraphStream{
-		Outlet: make(chan GraphState, 1),
+		Outlet: make(chan State, 1),
 	}
 
 	go func() {
@@ -108,10 +108,10 @@ func (stream *GraphStream) AddTo(target GraphAdder) *GraphStream {
 
 func SelectFromCatalog(cat Catalog, sel GraphSelector) *GraphStream {
 	next := &GraphStream{
-		Outlet: make(chan GraphState, 1),
+		Outlet: make(chan State, 1),
 	}
 
-	onHit := make(chan GraphState, 4)
+	onHit := make(chan State, 4)
 
 	go func() {
 		cat.Select(sel, onHit)
@@ -134,7 +134,7 @@ func SelectFromCatalog(cat Catalog, sel GraphSelector) *GraphStream {
 
 func (stream *GraphStream) SelectFromStream(sel GraphSelector) *GraphStream {
 	next := &GraphStream{
-		Outlet: make(chan GraphState, 1),
+		Outlet: make(chan State, 1),
 	}
 
 	go func() {
@@ -166,7 +166,7 @@ func (stream *GraphStream) SelectFromStream(sel GraphSelector) *GraphStream {
 
 func (stream *GraphStream) Canonize(normalize bool) *GraphStream {
 	next := &GraphStream{
-		Outlet: make(chan GraphState, 1),
+		Outlet: make(chan State, 1),
 	}
 
 	go func() {
@@ -258,7 +258,7 @@ func (ctx *canonizeCtx) goCanonize(X *Graph) error {
 
 func (stream *GraphStream) PermuteEdgeSigns() *GraphStream {
 	next := &GraphStream{
-		Outlet: make(chan GraphState, 1),
+		Outlet: make(chan State, 1),
 	}
 
 	go func() {

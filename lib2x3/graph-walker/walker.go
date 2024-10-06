@@ -26,7 +26,7 @@ func enumPureParticles(opts EnumOpts) (*go2x3.GraphStream, error) {
 		walkingVertex: 1,
 		emitted:       emitted,
 		EnumStream: &go2x3.GraphStream{
-			Outlet: make(chan go2x3.GraphState, 1),
+			Outlet: make(chan go2x3.State, 1),
 		},
 	}
 
@@ -82,15 +82,16 @@ func (X *Construction) Canonize(normalize bool) error {
 
 var kOpRunes = [4]string{"~ ", "||", "><", "->"}
 
-func (X *Construction) ExportStateEncoding(out []byte, opts go2x3.ExportOpts) ([]byte, error) {
+func (X *Construction) MarshalOut(out []byte, opts go2x3.MarshalOpts) ([]byte, error) {
 	b := strings.Builder{}
 	for _, op := range X.Ops {
 		fmt.Fprintf(&b, "%02d%s ", op.EdgeSlotOrdinal(), kOpRunes[op.OpCode])
+		// TODO: export expr & svg 1xR "tri" visual or "tri-tree diagram" (.3TD)
 	}
 	return []byte(b.String()), nil
 }
 
-func (X *Construction) GetInfo() go2x3.GraphInfo {
+func (X *Construction) GraphInfo() go2x3.GraphInfo {
 	return go2x3.GraphInfo{
 		NumParticles: byte(X.ParticleCount()),
 		NumVertex:    byte(X.VertexCount()),
@@ -285,21 +286,14 @@ func (X *Construction) Traces(numTraces int) go2x3.Traces {
 	return TX
 }
 
-func (X *Construction) MakeCopy() go2x3.GraphState {
+func (X *Construction) MakeCopy() go2x3.State {
 	return NewState(X)
 }
 
-// Returns info about this graph
-func (X *Construction) GraphInfo() go2x3.GraphInfo {
-	return go2x3.GraphInfo{
-		NumParticles: byte(len(X.Vtx)),
-		NumVertex:    byte(X.VertexCount()),
-	}
-}
 
 func (X *Construction) WriteAsString(out io.Writer, opts go2x3.PrintOpts) {
 	var scrap [512]byte
-	encFull, _ := X.ExportStateEncoding(scrap[:0], go2x3.ExportAsAscii)
+	encFull, _ := X.MarshalOut(scrap[:0], go2x3.AsAscii)
 	fmt.Fprintf(out, "p=%d,v=%d,%q,%q,", X.ParticleCount(), X.VertexCount(), encFull, "")
 
 	if opts.Graph {
@@ -345,7 +339,7 @@ func (X *Construction) WriteTracesAsCSV(out io.Writer, numTraces int) {
 	}
 }
 
-// Recycles this GraphState instance into a pool for reuse.
+// Recycles this State instance into a pool for reuse.
 // Caller asserts that no more references to this instance will persist.
 func (X *Construction) Reclaim() {
 	for X != nil {
@@ -742,8 +736,8 @@ func (gw *graphWalker) sproutEdges(X *Construction) {
 }
 
 func (gw *graphWalker) emitSubParticles() {
-
-	for X := gw.dequeueNext(); X != nil; X = gw.dequeueNext() {
+	var X *Construction
+	for X = gw.dequeueNext(); X != nil; X = gw.dequeueNext() {
 
 		// fork 1: iF we can duplicate an edge, then do so.
 		gw.duplicateEdges(X)
