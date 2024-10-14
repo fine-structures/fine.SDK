@@ -87,11 +87,3 @@ func PrintCycles(Xstr string) {
 	fmt.Println(str)
 	X.Reclaim()
 }
-
-func TestGraphsParsing(t *testing.T) {
-	X, err := ParseGraphsExpr("(.(+(---)=)(...))")
-	if err != nil {
-		t.Error(err)
-	}
-	fmt.Println(X)
-}

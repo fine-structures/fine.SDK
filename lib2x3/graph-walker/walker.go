@@ -56,7 +56,7 @@ type graphWalker struct {
 var graphPool = sync.Pool{
 	New: func() any {
 		return &Construction{
-			Vtx:    make([]Vertex, 0, 32),
+			Vtx:    make([]graph.Vertex, 0, 32),
 			Ops:    make([]GrowOp, 0, 64),
 			traces: make([]int64, 0, 12),
 		}
@@ -64,12 +64,14 @@ var graphPool = sync.Pool{
 }
 
 type Construction struct {
-	ParentID uint64        // instance ID
-	ForkID   uint64        // instance ID
-	Ops      []GrowOp      // build steps that yields State
-	Vtx      []Vertex      // active vertex state
-	Next     *Construction // next in linked list
-	traces   []int64       // traces storage
+	ParentID uint64         // instance ID
+	ForkID   uint64         // instance ID
+	Ops      []GrowOp       // build steps that yields State
+	Vtx      []graph.Vertex // active vertex state
+	Next     *Construction  // next in linked list
+	traces   []int64        // traces storage
+
+	Root graph.Vertex
 }
 
 func (X *Construction) VertexCount() int {
@@ -103,10 +105,10 @@ func (X *Construction) ParticleCount() int64 {
 
 	// We find number of total partitions.  Start by assuming each vertex its own partition.
 	// Each time we connect two vertices with an edge, propagate their connectedness.
-	var vtxBuf [go2x3.MaxVtxID]VtxID
-	Nv := VtxID(len(X.Vtx))
+	var vtxBuf [go2x3.MaxVtxID]graph.VtxID
+	Nv := graph.VtxID(len(X.Vtx))
 	vtx := vtxBuf[:Nv]
-	for i := VtxID(0); i < Nv; i++ {
+	for i := graph.VtxID(0); i < Nv; i++ {
 		vtx[i] = i + 1
 	}
 	// for _, edge := range X.Edges() {  FIX ME
@@ -265,7 +267,7 @@ func (X *Construction) Traces(numTraces int) go2x3.Traces {
 						v_src = vj.ID // inward edge
 					}
 					edgeFlow := Ci0_vi[v_src-1]
-					if vj_e.Sign == Sign_Invert {
+					if vj_e.Flow < 0 {
 						edgeFlow = -edgeFlow
 					}
 					totalFlow += edgeFlow
@@ -289,7 +291,6 @@ func (X *Construction) Traces(numTraces int) go2x3.Traces {
 func (X *Construction) MakeCopy() go2x3.State {
 	return NewState(X)
 }
-
 
 func (X *Construction) WriteAsString(out io.Writer, opts go2x3.PrintOpts) {
 	var scrap [512]byte
@@ -438,16 +439,16 @@ func NewState(Xsrc *Construction) *Construction {
 	return X
 }
 
-func (X *Construction) NegateEdge(vi VtxID, vi_slot int32) {
-	if vi <= 0 || vi > VtxID(len(X.Vtx)) || vi_slot > EdgesPerVertex {
+func (X *Construction) NegateEdge(vi graph.VtxID, vi_slot int32) {
+	if vi <= 0 || vi > graph.VtxID(len(X.Vtx)) || vi_slot > graph.EdgesPerVertex {
 		panic("NegateEdge: invalid edge")
 	}
 
 }
 
 // findEdge returns the vertex and slot of the edge that connects to the given vertex and slot
-func (X *Construction) findEdge(vi VtxID, vi_slot byte) (vj VtxID, vj_slot_edge, vj_slot_free byte) {
-	if vi <= 0 || int(vi) > len(X.Vtx) || vi_slot == 0 || vi_slot > EdgesPerVertex {
+func (X *Construction) findEdge(vi graph.VtxID, vi_slot byte) (vj graph.VtxID, vj_slot_edge, vj_slot_free byte) {
+	if vi <= 0 || int(vi) > len(X.Vtx) || vi_slot == 0 || vi_slot > graph.EdgesPerVertex {
 		return // invalid input
 	}
 	vj = X.Vtx[vi-1].Edges[vi_slot-1].To
@@ -468,7 +469,7 @@ func (X *Construction) findEdge(vi VtxID, vi_slot byte) (vj VtxID, vj_slot_edge,
 	return
 }
 
-func (X *Construction) findOpenSlot(vi VtxID) (vi_slot byte) {
+func (X *Construction) findOpenSlot(vi graph.VtxID) (vi_slot byte) {
 	for i, ej := range X.Vtx[vi-1].Edges {
 		if ej.To == 0 {
 			return byte(i + 1)
@@ -486,12 +487,11 @@ func (X *Construction) applyOp(op GrowOp) bool {
 	}
 
 	vtxA := op.VtxA
-	vtxB := VtxID(0)
+	vtxB := graph.VtxID(0)
 	slotA_ID := byte(op.SlotA)
 	slotB_ID := byte(0)
-	newVtxID := VtxID(0)
-
-	if vtxA <= 0 || slotA_ID == 0 || slotA_ID > EdgesPerVertex {
+	newVtxID := graph.VtxID(0)
+	if vtxA <= 0 || slotA_ID == 0 || slotA_ID > graph.EdgesPerVertex {
 		return false
 	}
 
@@ -510,19 +510,13 @@ func (X *Construction) applyOp(op GrowOp) bool {
 		vtxB, slotB_ID, _ = X.findEdge(vtxA, slotA_ID)
 	}
 
-	sign := Sign_Natural
-
 	slotA := &X.Vtx[vtxA-1].Edges[slotA_ID-1]
 
+	flow := int8(1)
 	switch op.OpCode {
-
 	case graph.OpCode_NegateEdge:
-		if slotA.Sign == Sign_Invert {
-			sign = Sign_Natural
-		} else {
-			sign = Sign_Invert
-		}
-		slotA.Sign = sign
+		flow = -slotA.Flow
+		slotA.Flow = flow
 		if vtxB != 0 {
 			return true
 		}
@@ -535,7 +529,7 @@ func (X *Construction) applyOp(op GrowOp) bool {
 
 	switch op.OpCode {
 	case graph.OpCode_NegateEdge:
-		slotB.Sign = sign
+		slotB.Flow = flow
 	case graph.OpCode_EdgeSplit:
 		newVtxID = X.addNewVertex()
 		slotA.To = newVtxID
@@ -682,11 +676,10 @@ func (gw *graphWalker) duplicateEdges(X *Construction) {
 	}
 }
 
-func (X *Construction) addNewVertex() (newVtxID VtxID) {
-	newVtxID = VtxID(len(X.Vtx) + 1)
-	X.Vtx = append(X.Vtx, Vertex{
-		ID:    newVtxID,
-		Count: 1,
+func (X *Construction) addNewVertex() (newVtxID graph.VtxID) {
+	newVtxID = graph.VtxID(len(X.Vtx) + 1)
+	X.Vtx = append(X.Vtx, graph.Vertex{
+		ID: newVtxID,
 	})
 	return newVtxID
 }

@@ -139,22 +139,3 @@ func (X *Graph) InitFromString(graphExpr string) error {
 	return nil
 }
 
-var parseGraphsExpr = participle.MustBuild[GraphsExpr]() //, participle.UseLookahead(2))
-
-func ParseGraphsExpr(graphsExpr string) (*GraphsExpr, error) {
-	return parseGraphsExpr.ParseString("", graphsExpr)
-}
-
-type GraphsExpr struct {
-	Graphs []*GraphTree `(@@ (";" @@)*)?`
-}
-
-type GraphTree struct {
-	Branches []EdgeSlot `"(" @@* ")"`
-}
-
-type EdgeSlot struct {
-	Op        string    `@( "+" | "." | "-" )`
-	Duplicate string    `| @("|" | "=")`
-	SubTree   GraphTree `| @@`
-}
