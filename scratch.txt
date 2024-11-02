@@ -23,6 +23,11 @@ for examples, for C4, C1*C3 or C2*C2
     - explore ways to "efficiently compress traces -- prime * coeff? + ...
 
 
+Next steps:
+- add traces dupe dropper in graph walker *before* a particle is emitted
+- remove "extended" generation (graph constructions don't matter)
+- explore even/odd particle cycles behqavior (even and odd cycles are orthogonal) ==> only two "characteristic traces" needed
+   - odd and even are orthogonal
 
 
 
