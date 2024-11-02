@@ -45,10 +45,10 @@ func (cat *dropDupes) Reset() {
 // 	return nil
 // }
 
-func (cat *dropDupes) TryAddGraph(X go2x3.GraphState) bool {
+func (cat *dropDupes) TryAddGraph(X go2x3.State) bool {
 	var keyBuf [512]byte
 	tracesKey := X.Traces(0).AppendTracesLSM(keyBuf[:0])
-	Xkey, _ := X.ExportStateEncoding(tracesKey, go2x3.ExportGraphState)
+	Xkey, _ := X.MarshalOut(tracesKey, go2x3.AsLSM)
 
 	cat.hasher.Reset()
 	cat.hasher.Write(Xkey)

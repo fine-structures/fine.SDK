@@ -1,4 +1,4 @@
-package lib2x3_test
+package lib2x3
 
 import (
 	"fmt"
@@ -6,11 +6,11 @@ import (
 	"testing"
 
 	"github.com/fine-structures/fine-sdk-go/go2x3"
-	"github.com/fine-structures/fine-sdk-go/lib2x3"
 )
 
 func TestBasics(t *testing.T) {
 	PrintCycles("1")
+	PrintCycles("1^^^")
 	PrintCycles("1-2=3")
 	PrintCycles("1-2=3-4=5")
 
@@ -72,7 +72,7 @@ func TestBasics(t *testing.T) {
 }
 
 func PrintCycles(Xstr string) {
-	X := lib2x3.NewGraph(nil)
+	X := NewGraph(nil)
 	X.InitFromString(Xstr)
 
 	b := strings.Builder{}

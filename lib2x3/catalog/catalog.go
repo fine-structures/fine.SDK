@@ -4,10 +4,9 @@ import (
 	"bytes"
 	"runtime"
 
-	"github.com/fine-structures/fine-sdk-go/fine"
 	"github.com/fine-structures/fine-sdk-go/go2x3"
-	"github.com/fine-structures/fine-sdk-go/lib2x3"
 	"github.com/fine-structures/fine-sdk-go/lib2x3/factor"
+	lib2x3 "github.com/fine-structures/fine-sdk-go/lib2x3/graph-legacy"
 	"github.com/pkg/errors"
 
 	"github.com/dgraph-io/badger/v4"
@@ -95,7 +94,7 @@ type catalog struct {
 	ctx          go2x3.CatalogContext
 	readOnly     bool
 	stateDirty   bool
-	state        fine.CatalogState
+	state        go2x3.CatalogState
 	db           *badger.DB
 	CatalogDesig string
 	primeCache   *factor.FactorCatalog
@@ -295,7 +294,7 @@ func (cat *catalog) formTracesKey(key []byte, X go2x3.TracesProvider) []byte {
 // Warning: if onHit() retains the given GraphEncoding, then it must make a copy.
 //
 // Enumeration stops when there are no more matches or if onHit() returns false.
-func (cat *catalog) Select(sel go2x3.GraphSelector, onHit go2x3.OnGraphHit) {
+func (cat *catalog) Select(sel go2x3.GraphSelector, onHit go2x3.OnStateHit) {
 	if sel.Traces != nil {
 		if sel.Factor {
 			cat.selectFactorizations(&sel, onHit)
@@ -312,7 +311,7 @@ const (
 	kIsPrime  = byte(0x01)
 )
 
-func loadAndPushGraph(item *badger.Item, onHit go2x3.OnGraphHit) error {
+func loadAndPushGraph(item *badger.Item, onHit go2x3.OnStateHit) error {
 	err := item.Value(func(val []byte) error {
 		X, err := lib2x3.NewGraphFromDef(val)
 		if err != nil {
@@ -327,7 +326,7 @@ func loadAndPushGraph(item *badger.Item, onHit go2x3.OnGraphHit) error {
 	return err
 }
 
-func (cat *catalog) selectEncodings(sel *go2x3.GraphSelector, onHit go2x3.OnGraphHit) {
+func (cat *catalog) selectEncodings(sel *go2x3.GraphSelector, onHit go2x3.OnStateHit) {
 	minKey := [1]byte{sel.Min.NumVertex}
 
 	txn := cat.db.NewTransaction(false)
@@ -391,7 +390,7 @@ func (cat *catalog) selectEncodings(sel *go2x3.GraphSelector, onHit go2x3.OnGrap
 func (cat *catalog) readPrimes(
 	txn *badger.Txn,
 	Nv byte,
-	onHit go2x3.OnGraphHit,
+	onHit go2x3.OnStateHit,
 ) {
 	minKey := [1]byte{Nv}
 
@@ -481,7 +480,7 @@ func (cat *catalog) lookupTracesID(txn *badger.Txn, X *lib2x3.Graph, autoAdd boo
 }
 */
 
-func (cat *catalog) selectByTraces(sel *go2x3.GraphSelector, onHit go2x3.OnGraphHit) {
+func (cat *catalog) selectByTraces(sel *go2x3.GraphSelector, onHit go2x3.OnStateHit) {
 	if sel.Traces == nil {
 		return
 	}
@@ -540,7 +539,7 @@ func (cat *catalog) selectByTraces(sel *go2x3.GraphSelector, onHit go2x3.OnGraph
 }
 
 /*
-func (cat *catalog) selectByTracesID(tid go2x3.TracesID, onHit lib2x3.OnGraphHit) {
+func (cat *catalog) selectByTracesID(tid go2x3.TracesID, onHit lib2x3.OnStateHit ) {
 	if tid == 0 {
 		return
 	}
@@ -693,10 +692,10 @@ func (cat *catalog) lookupGraph(X *lib2x3.Graph) (isNewTraces, isNewGraph bool) 
 // If true is returned, X was not present and was added.
 //
 // If false is returned, X already exists in the particle registry (or the graph is not valid
-func (cat *catalog) TryAddGraph(X go2x3.GraphState) bool {
+func (cat *catalog) TryAddGraph(X go2x3.State) bool {
 	var keyBuf [256]byte
 	tracesKey := cat.formTracesKey(keyBuf[:0], X)
-	completeKey, err := X.ExportStateEncoding(tracesKey, go2x3.ExportGraphState)
+	completeKey, err := X.MarshalOut(tracesKey, go2x3.AsGraphDef)
 	if err != nil {
 		return false
 	}
@@ -748,7 +747,7 @@ func (cat *catalog) TryAddGraph(X go2x3.GraphState) bool {
 		}
 		if isNewGraph {
 			var encBuf [128]byte
-			val, err := X.ExportStateEncoding(encBuf[:0], go2x3.ExportGraphDef)
+			val, err := X.MarshalOut(encBuf[:0], go2x3.AsGraphDef)
 			if err == nil {
 				txn.Set(completeKey, val)
 			}
@@ -764,7 +763,7 @@ func (cat *catalog) TryAddGraph(X go2x3.GraphState) bool {
 }
 
 // TODO: move to factor.go, i.e. factorCatalog.SelectFactorizations(cat, sel, onHit)
-func (cat *catalog) selectFactorizations(sel *go2x3.GraphSelector, onHit go2x3.OnGraphHit) {
+func (cat *catalog) selectFactorizations(sel *go2x3.GraphSelector, onHit go2x3.OnStateHit) {
 	if sel.Traces == nil {
 		return
 	}
@@ -943,7 +942,7 @@ func (cat *catalog) cachePrimesAsNeeded(Nv int) error {
 		cat.primeCache.NumFactorsHint(vi, cat.state.NumPrimes[vi])
 
 		// Used a buffered channel so that db I/O blocks don't stall Traces computation
-		onPrime := make(chan go2x3.GraphState, 4)
+		onPrime := make(chan go2x3.State, 4)
 
 		go func() {
 			cat.readPrimes(txnRO, byte(vi), onPrime)
@@ -1024,7 +1023,6 @@ func (cat *catalog) formGraphFromFactors(
 	var keyBuf [256]byte
 	for _, Pi := range primeFactors {
 		tracesKey := cat.formCatalogKeyFromPrimeFactor(keyBuf[:0], Pi.ID)
-
 		err := seeker.SeekAndGetFirstSub(tracesKey, func(val []byte) error {
 			err := Xi.InitFromDef(val)
 			return err

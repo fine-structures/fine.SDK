@@ -348,7 +348,7 @@ func (X *graphState) forEveryNonGroupVtxPair(iter func(vi, vj *graphVtx)) {
 		}
 	}
 }
-
+/*
 func (X *graphState) forEveryGroupEdgePair(iter func(vi, vj *graphVtx, ei, ej int)) {
 	Nv := X.vtxCount
 	Xv := X.Vtx()
@@ -373,7 +373,7 @@ func (X *graphState) forEveryGroupEdgePair(iter func(vi, vj *graphVtx, ei, ej in
 		}
 	}
 }
-
+*/
 func (X *graphState) Canonize() {
 
 	for {
@@ -634,14 +634,14 @@ func (X *graphState) getTraitRun(Xv []*graphVtx, vi int, trait EdgeTrait) int {
 	return runLen
 }
 
-func (X *graphState) ExportEncoding(io []byte, opts go2x3.ExportOpts) ([]byte, error) {
+func (X *graphState) MarshalOut(io []byte, opts go2x3.MarshalOpts) ([]byte, error) {
 	X.Canonize()
 
 	var buf [32]byte
 
 	Xv := X.Vtx()
 	Nv := len(Xv)
-	ascii := (opts & go2x3.ExportAsAscii) != 0
+	ascii := (opts & go2x3.AsAscii) != 0
 
 	traits := make([]EdgeTrait, 0, 4)
 

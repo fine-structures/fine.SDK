@@ -8,8 +8,8 @@ import (
 	"testing"
 
 	"github.com/fine-structures/fine-sdk-go/go2x3"
-	"github.com/fine-structures/fine-sdk-go/lib2x3"
 	"github.com/fine-structures/fine-sdk-go/lib2x3/catalog"
+	lib2x3 "github.com/fine-structures/fine-sdk-go/lib2x3/graph-legacy"
 )
 
 var primes = []string{
@@ -70,7 +70,7 @@ func TestBasics(t *testing.T) {
 	// Select -- we should get all the particles we've added so far
 	{
 		total := 0
-		onHit := make(chan go2x3.GraphState)
+		onHit := make(chan go2x3.State)
 		go func() {
 			cat.Select(go2x3.DefaultGraphSelector, onHit)
 			close(onHit)
@@ -94,7 +94,7 @@ func TestBasics(t *testing.T) {
 		sel.Traces = Xsrc
 
 		total := 0
-		onHit := make(chan go2x3.GraphState)
+		onHit := make(chan go2x3.State)
 		go func() {
 			cat.Select(sel, onHit)
 			close(onHit)
@@ -114,7 +114,7 @@ func TestBasics(t *testing.T) {
 
 
 
-func PrintGraph(prefix string, X go2x3.GraphState) {
+func PrintGraph(prefix string, X go2x3.State) {
 	b := strings.Builder{}
 	b.Grow(192)
 	b.WriteString(prefix)

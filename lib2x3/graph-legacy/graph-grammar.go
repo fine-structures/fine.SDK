@@ -138,3 +138,4 @@ func (X *Graph) InitFromString(graphExpr string) error {
 	X.Def.TryAddGraphExpr(graphExpr)
 	return nil
 }
+
