@@ -6,7 +6,7 @@
 |       "OH LET ME BEHOLD YOUR PRESENCE”  EXODUS 33:2x3x3       |
 =================================================================
 
-This outputs every isomorphically unique graph up to v=4
+This outputs every isomorphically unique graph up to v=6
 
 
 ALL,000001,p=1,v=1," ooo   __ ","","1^^",-1,1,-1,1,-1,1,-1,1,-1,1,-1,1,

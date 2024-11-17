@@ -45,6 +45,8 @@ This project is a library & demonstration toolkit for [Fine Structures](https://
 | v1.2023.3 | - edge traces factorization: all traces normalized |
 | v1.2023.4 | - switched to vertex group factorization  |
 | v1.2024.1 | - rename and copy edits  |
+| v1.2024.2 | - button up legacy, preps to move on
+| v1.2025.1 | - TODO fancy primes db, Vn transition to steps of one-sixths?
 
 
 ## Hot Topics
