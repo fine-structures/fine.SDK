@@ -6,24 +6,20 @@ import (
 	"math"
 	"sort"
 
-	"github.com/fine-structures/fst-sdk-go/go2x3"
+	"github.com/fine-structures/fine.SDK/go2x3"
 )
 
 const (
 	VertexBits    = 5
 	VertexBitMask = (1 << VertexBits) - 1
 	MaxVertexID   = VertexBitMask
-
-	IsPrimeBit  = 1 << 6
-	ReservedBit = 1 << 7
 )
 
 // Returns the
 func (Xi *GraphTerm) CatalogID() CatalogID {
 	Nv := Xi.VertexCount
 	if Nv < 1 || Nv > MaxVertexID ||
-		Xi.IsPrime == Bool_Unknown ||
-		Xi.IsCanonic == Bool_Unknown ||
+		//Xi.IsPrime == Bool_Unknown ||
 		Xi.StructureID < 1 {
 
 		//return GraphID{}
@@ -32,7 +28,7 @@ func (Xi *GraphTerm) CatalogID() CatalogID {
 
 	cid := CatalogID{
 		byte(Nv),
-		byte(Xi.IsPrime),
+		//byte(Xi.IsPrime),
 		byte(Xi.StructureID >> 24),
 		byte(Xi.StructureID >> 16),
 		byte(Xi.StructureID >> 8),
@@ -43,13 +39,6 @@ func (Xi *GraphTerm) CatalogID() CatalogID {
 		byte(Xi.VariantID),
 	}
 	return cid
-}
-
-func (Xi *GraphTerm) PrimeID() (pid PrimeID, ok bool) {
-	if Xi.IsPrime != Bool_Yes {
-		return PrimeID(0), false
-	}
-	return FormPrimeID(Xi.VertexCount, Xi.StructureID, Xi.VariantID), true
 }
 
 // A unique identifier for a canonical prime graph.
@@ -71,7 +60,7 @@ func FormPrimeID(Nv uint32, structureID, variantID uint64) PrimeID {
 func (pid PrimeID) CatalogID() CatalogID {
 	cid := CatalogID{
 		byte(pid.VertexCount()),
-		byte(Bool_Yes),
+		//byte(Bool_Yes),
 		byte(0),
 		byte(pid >> 48),
 		byte(pid >> 40),
@@ -288,8 +277,6 @@ func (X *VtxGraphVM) AddEdge(
 }
 
 func (X *VtxGraphVM) Validate() error {
-	var err error
-
 	vtx := X.Vtx()
 
 	// Keep doing passes until edge propagation doesn't change GraphID assignments
@@ -330,15 +317,10 @@ func (X *VtxGraphVM) Validate() error {
 			v.GraphID = uint32(remap[v.GraphID])
 		}
 	}
-
-	if err == nil {
-		if X.Status < GraphStatus_Validated {
-			X.Status = GraphStatus_Validated
-		}
-		return nil
+	if X.Status < GraphStatus_Validated {
+		X.Status = GraphStatus_Validated
 	}
-
-	return err
+	return nil
 }
 
 func (X *VtxGraphVM) Canonize() {
@@ -781,9 +763,6 @@ func PrintNormalizedTraces(Nv int, TX go2x3.Traces, out io.Writer) {
 
 	// Write header
 	{
-		line := buf[:0]
-		line = append(line, "                 ##        "...)
-
 		// factorCounts := make([]int64, 0, 32)
 		// primeFactors := make([]int64, 0, 32)
 

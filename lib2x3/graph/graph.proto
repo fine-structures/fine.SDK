@@ -1,13 +1,7 @@
 syntax = "proto3";
 package graph;
 
-//option go_package = "github.com/fine-structures/fst-sdk-go/lib2x3/graph";
-
-enum Bool {
-    Bool_Unknown = 0;
-    Bool_No      = 1;
-    Bool_Yes     = 3;
-}
+//option go_package = "github.com/fine-structures/fine.SDK/lib2x3/graph";
 
 
 // GraphDef is a particular vertex+edge assignment with bound names.
@@ -32,7 +26,6 @@ message GraphDef {
     repeated string     GraphExprs                  = 12;
     
 }
-
 
 
 // GroupID is a vertex group ID containing one or more Vtx.
@@ -63,78 +56,12 @@ enum GraphStatus {
     GraphStatus_Canonized = 6;
 }
 
-
 enum OddSign {
     OddSign_Natural = 0; // Odd cycles are not inverted 
     OddSign_Zero    = 1; // Odd cycles are zero
     OddSign_Invert  = 2; // Odd cycles are inverted
 }
 
-
-enum EdgeSign {
-    EdgeSign_PosLoop = 0; // +0
-    EdgeSign_PosEdge = 1; // +1
-    EdgeSign_NegLoop = 2; // +2
-    EdgeSign_NegEdge = 3; // +3
-}
-
-
-enum TracesSign {
-    TracesSign_Unknown  = 0;
-    TracesSign_Zero     = 1;
-    TracesSign_Positive = 2;
-    TracesSign_Negative = 3;
-}
-
-enum TracesCycle {
-    TracesCycle_Nil    = 0; 
-    TracesCycle_Odd    = 1;
-    TracesCycle_Even   = 2; 
-}
-
-/*
-enum EdgeKind {
-    EdgeKind_Nil     = 0; // '-'
-    EdgeKind_PosLoop = 1; // '.'
-    EdgeKind_PosEdge = 2; // '*'
-    EdgeKind_PosEdge = 2; // '*'
-    
-    EdgeKind_NegVoid = 4; // '-'
-    EdgeKind_NegVoid = 4; // 'o'
-    EdgeKind_NegLoop = 5; // 'O'
-    EdgeKind_NegEdge = 6; // '@'
-}
-*/
-/*
-message TracesTerm {
-    int64               VtxCount = 1; // Vertex count -- 1, 2, 3..
-    TracesCycle         Cycle    = 3; 
-    TracesSign          Sign     = 4;
-    
-    // Reserved for future use
-    fixed64             TX_Tag_0 = 6;
-    fixed64             TX_Tag_1 = 7;
-    fixed64             TX_Tag_2 = 8;
-    
-    repeated float      TX_Normalized = 11; // Traces (cycles)
-
-    repeated int64      TX_CycleCounts = 12; // Traces (cycles)
-    
-    // product(TX_CycleCounts[i]) == product(TX_PrimeBases[i]^TX_FactorCounts[i])
-    repeated uint64     TX_PrimeBases  = 13; // Prime factor bases
-    repeated int64      TX_FactorCounts = 14; // Quantity of each prime base factor
-    
-    // repeated int64      TX_Numerator   = 14; // Traces (numerator)
-    // repeated int64      TX_Denominator = 15; // Traces (denominator)
-    
-    string              Graph = 19;  // graph that represents this term
-    string              GraphMediaType = 20;  // "text/2x3-graph"
-    
-    fixed64             Link_UIDx0 = 24;
-    fixed64             Link_UIDx1 = 25;
-    fixed64             Link_UIDx2 = 26;
-}
-*/
 
 // VtxEdge
 message VtxEdge {
@@ -147,8 +74,6 @@ message VtxEdge {
     
     // Count is the instance count (coefficient) of Cycles.
     int64               Count = 6;
-    
-
     
 }
 
@@ -192,10 +117,7 @@ message GraphTerm {
 	
     // IsPrime specifies if a graph system has constituent factors or not.
     // If a graph is prime, then it cannot be formed by combining any other particles.
-	Bool IsPrime = 6;
-	
-	// IsCanonic specifies if this VariantID is canonic (i.e. first appearing) 
-	Bool IsCanonic = 7;
+	//Bool IsPrime = 6;
 	
     // C1 and C2 can be regarded as the instance count (or amplitude) of the odd and even traces terms.
     //
@@ -206,6 +128,7 @@ message GraphTerm {
 	int64 C2 = 12;
 }
 
+/*
 
 // OpCode is a graph-building op code, specifying a way to grow a 2x3 graph.
 enum OpCode {
@@ -227,7 +150,7 @@ enum OpCode {
 	
 }
 
-
+*/
 
 
 enum EncodingForm {

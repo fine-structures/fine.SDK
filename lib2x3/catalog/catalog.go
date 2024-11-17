@@ -4,10 +4,9 @@ import (
 	"bytes"
 	"runtime"
 
-	"github.com/fine-structures/fst-sdk-go/fine"
-	"github.com/fine-structures/fst-sdk-go/go2x3"
-	"github.com/fine-structures/fst-sdk-go/lib2x3"
-	"github.com/fine-structures/fst-sdk-go/lib2x3/factor"
+	"github.com/fine-structures/fine.SDK/go2x3"
+	"github.com/fine-structures/fine.SDK/lib2x3/factor"
+	lib2x3 "github.com/fine-structures/fine.SDK/lib2x3/graph-legacy"
 	"github.com/pkg/errors"
 
 	"github.com/dgraph-io/badger/v4"
@@ -95,7 +94,7 @@ type catalog struct {
 	ctx          go2x3.CatalogContext
 	readOnly     bool
 	stateDirty   bool
-	state        fine.CatalogState
+	state        go2x3.CatalogState
 	db           *badger.DB
 	CatalogDesig string
 	primeCache   *factor.FactorCatalog
@@ -295,7 +294,7 @@ func (cat *catalog) formTracesKey(key []byte, X go2x3.TracesProvider) []byte {
 // Warning: if onHit() retains the given GraphEncoding, then it must make a copy.
 //
 // Enumeration stops when there are no more matches or if onHit() returns false.
-func (cat *catalog) Select(sel go2x3.GraphSelector, onHit go2x3.OnGraphHit) {
+func (cat *catalog) Select(sel go2x3.GraphSelector, onHit go2x3.OnStateHit) {
 	if sel.Traces != nil {
 		if sel.Factor {
 			cat.selectFactorizations(&sel, onHit)
@@ -307,12 +306,7 @@ func (cat *catalog) Select(sel go2x3.GraphSelector, onHit go2x3.OnGraphHit) {
 	}
 }
 
-const (
-	tracesOfs = 1
-	kIsPrime  = byte(0x01)
-)
-
-func loadAndPushGraph(item *badger.Item, onHit go2x3.OnGraphHit) error {
+func loadAndPushGraph(item *badger.Item, onHit go2x3.OnStateHit) error {
 	err := item.Value(func(val []byte) error {
 		X, err := lib2x3.NewGraphFromDef(val)
 		if err != nil {
@@ -327,7 +321,7 @@ func loadAndPushGraph(item *badger.Item, onHit go2x3.OnGraphHit) error {
 	return err
 }
 
-func (cat *catalog) selectEncodings(sel *go2x3.GraphSelector, onHit go2x3.OnGraphHit) {
+func (cat *catalog) selectEncodings(sel *go2x3.GraphSelector, onHit go2x3.OnStateHit) {
 	minKey := [1]byte{sel.Min.NumVertex}
 
 	txn := cat.db.NewTransaction(false)
@@ -339,8 +333,16 @@ func (cat *catalog) selectEncodings(sel *go2x3.GraphSelector, onHit go2x3.OnGrap
 	})
 	defer it.Close()
 
+	wantFlags := byte(0)
+	if sel.SelectPrimes {
+		wantFlags |= go2x3.Flag_IsPrime
+	}
+	if sel.SelectBosons {
+		wantFlags |= go2x3.Flag_IsBoson
+	}
+
 	var keyBuf [256]byte
-	tracesKey := append(keyBuf[:0], 0xFF, 0xFF) // ensure no match
+	tracesKey := append(keyBuf[:0], 0xFF, 0xFF) // suffix ensures no match
 
 	for it.Seek(minKey[:]); it.Valid(); {
 		curItem := it.Item()
@@ -354,7 +356,6 @@ func (cat *catalog) selectEncodings(sel *go2x3.GraphSelector, onHit go2x3.OnGrap
 		nextTraces := false
 
 		if bytes.HasPrefix(curKey, tracesKey) {
-
 			loadAndPushGraph(curItem, onHit)
 
 			if sel.UniqueTraces {
@@ -368,10 +369,9 @@ func (cat *catalog) selectEncodings(sel *go2x3.GraphSelector, onHit go2x3.OnGrap
 
 			// A new prefix means a new Traces entry
 			tracesKey = append(tracesKey[:0], curKey...)
-			tracesIsPrime := (curItem.UserMeta() & kIsPrime) != 0
+			meta := curItem.UserMeta()
 
-			// If only looking for primes and this Traces isn't one, skip to the next
-			if sel.PrimesOnly && !tracesIsPrime {
+			if meta&wantFlags != wantFlags {
 				nextTraces = true
 			}
 		}
@@ -391,39 +391,35 @@ func (cat *catalog) selectEncodings(sel *go2x3.GraphSelector, onHit go2x3.OnGrap
 func (cat *catalog) readPrimes(
 	txn *badger.Txn,
 	Nv byte,
-	onHit go2x3.OnGraphHit,
+	onHit go2x3.OnStateHit,
 ) {
 	minKey := [1]byte{Nv}
-
 	it := txn.NewIterator(badger.IteratorOptions{
 		PrefetchValues: false,
 		Prefix:         minKey[:1],
 	})
 	defer it.Close()
 
-	var keyBuf [256]byte
-	tracesKey := append(keyBuf[:0], 0xFF, 0xFF) // ensure no match
-
+	var tracesBuf [256]byte
 	for it.Rewind(); it.Valid(); {
 		curItem := it.Item()
 		curKey := curItem.Key()
 
 		klen := len(curKey)
 		if curKey[klen-2] == 0 && curKey[klen-1] == 0 { // check double NUL suffix
+			// A new prefix means a new Traces entry (change NUL to 0x01 as a means to go to the next entry)
+			resumeAt := append(tracesBuf[:0], curKey...)
+			resumeAt[klen-1] = 1
 
-			tracesKey := append(tracesKey[:0], curKey...)
-
-			isPrime := (curItem.UserMeta() & kIsPrime) != 0
+			isPrime := (curItem.UserMeta() & go2x3.Flag_IsPrime) != 0
 			if isPrime {
+				// Use the first entry after the Traces entry as the prime's encoding
 				// We could also load primes directly from a primes table (also allowing us to easily store the "common" encoding of a prime)
 				it.Next()
 				loadAndPushGraph(it.Item(), onHit)
 			}
 
-			// A new prefix means a new Traces entry (change NUL to 0x01 as a means to go to the next entry)
-			tracesKey[klen-1] = 1
-			it.Seek(tracesKey)
-
+			it.Seek(resumeAt)
 		} else {
 			panic("expected Traces entry")
 		}
@@ -481,7 +477,7 @@ func (cat *catalog) lookupTracesID(txn *badger.Txn, X *lib2x3.Graph, autoAdd boo
 }
 */
 
-func (cat *catalog) selectByTraces(sel *go2x3.GraphSelector, onHit go2x3.OnGraphHit) {
+func (cat *catalog) selectByTraces(sel *go2x3.GraphSelector, onHit go2x3.OnStateHit) {
 	if sel.Traces == nil {
 		return
 	}
@@ -540,7 +536,7 @@ func (cat *catalog) selectByTraces(sel *go2x3.GraphSelector, onHit go2x3.OnGraph
 }
 
 /*
-func (cat *catalog) selectByTracesID(tid go2x3.TracesID, onHit lib2x3.OnGraphHit) {
+func (cat *catalog) selectByTracesID(tid go2x3.TracesID, onHit lib2x3.OnStateHit ) {
 	if tid == 0 {
 		return
 	}
@@ -693,26 +689,27 @@ func (cat *catalog) lookupGraph(X *lib2x3.Graph) (isNewTraces, isNewGraph bool) 
 // If true is returned, X was not present and was added.
 //
 // If false is returned, X already exists in the particle registry (or the graph is not valid
-func (cat *catalog) TryAddGraph(X go2x3.GraphState) bool {
-	var keyBuf [256]byte
-	tracesKey := cat.formTracesKey(keyBuf[:0], X)
-	completeKey, err := X.ExportStateEncoding(tracesKey, go2x3.ExportGraphState)
+func (cat *catalog) TryAddGraph(X go2x3.State) bool {
+	var keyBuf, valBuf [256]byte
+
+	lsmTraces := cat.formTracesKey(keyBuf[:0], X)
+	lsmState, err := X.MarshalOut(lsmTraces, go2x3.AsState)
 	if err != nil {
 		return false
 	}
-	isNewTraces := false
-	isNewGraph := false
 
 	// First see if we have this graph
 	txn := cat.db.NewTransaction(true)
 	defer txn.Discard()
 
-	_, err = txn.Get(tracesKey)
+	isNewTraces := false
+	isNewGraph := false
+	_, err = txn.Get(lsmTraces)
 	if err == badger.ErrKeyNotFound {
 		isNewTraces = true
 		isNewGraph = true
 	} else {
-		_, err = txn.Get(completeKey)
+		_, err = txn.Get(lsmState)
 		if err == badger.ErrKeyNotFound {
 			isNewGraph = true
 		}
@@ -725,32 +722,41 @@ func (cat *catalog) TryAddGraph(X go2x3.GraphState) bool {
 		return false
 	}
 
-	tracesFlags := byte(0)
+	flags := byte(0)
 
 	// If this Traces hasn't been prime tested before and this is a prime catalog, then do so now.
 	if isNewTraces && cat.state.IsPrimeCatalog {
 
-		// Importantly, prime testing only requires primes up to Nv-1
+		// prime testing requires primes up to Nv-1
 		Nv := X.VertexCount()
 		cat.cachePrimesAsNeeded(int(Nv - 1))
 
 		TX := X.Traces(0)
 		if cat.primeCache.IsPrime(TX) {
-			tracesFlags |= kIsPrime
+			flags |= go2x3.Flag_IsPrime
 			cat.issueNextPrimeID(Nv)
 		}
+		bosonFlag := go2x3.Flag_IsBoson
+		for i, TXi := range TX {
+			if i&1 == 0 && TXi != 0 { // if any odd traces are none-zero, then not a boson
+				bosonFlag = 0
+			}
+		}
+		flags |= bosonFlag
 	}
 
 	// Write the new entries
 	{
 		if isNewTraces {
-			txn.SetEntry(badger.NewEntry(tracesKey, nil).WithMeta(tracesFlags))
+			err = txn.SetEntry(badger.NewEntry(lsmTraces, nil).WithMeta(flags))
+			if err != nil {
+				panic(err)
+			}
 		}
 		if isNewGraph {
-			var encBuf [128]byte
-			val, err := X.ExportStateEncoding(encBuf[:0], go2x3.ExportGraphDef)
+			val, err := X.MarshalOut(valBuf[:0], go2x3.AsValue)
 			if err == nil {
-				txn.Set(completeKey, val)
+				txn.Set(lsmState, val)
 			}
 		}
 
@@ -764,13 +770,12 @@ func (cat *catalog) TryAddGraph(X go2x3.GraphState) bool {
 }
 
 // TODO: move to factor.go, i.e. factorCatalog.SelectFactorizations(cat, sel, onHit)
-func (cat *catalog) selectFactorizations(sel *go2x3.GraphSelector, onHit go2x3.OnGraphHit) {
+func (cat *catalog) selectFactorizations(sel *go2x3.GraphSelector, onHit go2x3.OnStateHit) {
 	if sel.Traces == nil {
 		return
 	}
 
 	TX := sel.Traces.Traces(0)
-
 	Nv := len(TX)
 	cat.cachePrimesAsNeeded(Nv)
 
@@ -924,7 +929,6 @@ func (cat *catalog) factorsForTID(
 */
 
 func (cat *catalog) cachePrimesAsNeeded(Nv int) error {
-
 	if cat.primeCache == nil {
 		return errors.New("not a prime catalog, son")
 	}
@@ -937,13 +941,13 @@ func (cat *catalog) cachePrimesAsNeeded(Nv int) error {
 	txnRO := cat.db.NewTransaction(false)
 	defer txnRO.Discard()
 
-	numTraces := cat.TraceCount()
+	dimTraces := cat.TraceCount()
 
 	for vi := have_vi + 1; vi <= Nv; vi++ {
 		cat.primeCache.NumFactorsHint(vi, cat.state.NumPrimes[vi])
 
 		// Used a buffered channel so that db I/O blocks don't stall Traces computation
-		onPrime := make(chan go2x3.GraphState, 4)
+		onPrime := make(chan go2x3.State, 4)
 
 		go func() {
 			cat.readPrimes(txnRO, byte(vi), onPrime)
@@ -951,7 +955,7 @@ func (cat *catalog) cachePrimesAsNeeded(Nv int) error {
 		}()
 
 		for Xpr := range onPrime {
-			TX := Xpr.Traces(numTraces)
+			TX := Xpr.Traces(dimTraces)
 			cat.primeCache.AddCopy(byte(vi), TX)
 			Xpr.Reclaim()
 		}
@@ -1024,7 +1028,6 @@ func (cat *catalog) formGraphFromFactors(
 	var keyBuf [256]byte
 	for _, Pi := range primeFactors {
 		tracesKey := cat.formCatalogKeyFromPrimeFactor(keyBuf[:0], Pi.ID)
-
 		err := seeker.SeekAndGetFirstSub(tracesKey, func(val []byte) error {
 			err := Xi.InitFromDef(val)
 			return err

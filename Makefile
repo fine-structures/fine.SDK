@@ -61,10 +61,9 @@ generate:
 		--gogoslick_opt=paths=source_relative   \
 		--gogoslick_out=plugins=grpc:.          \
 		--proto_path=.  \
-		fine/fine.proto
+		go2x3/go2x3.proto
 		
-		
-		
+			
 		
 		
 	protoc \

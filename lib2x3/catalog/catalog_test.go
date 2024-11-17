@@ -7,15 +7,18 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/fine-structures/fst-sdk-go/go2x3"
-	"github.com/fine-structures/fst-sdk-go/lib2x3"
-	"github.com/fine-structures/fst-sdk-go/lib2x3/catalog"
+	"github.com/fine-structures/fine.SDK/go2x3"
+	"github.com/fine-structures/fine.SDK/lib2x3/catalog"
+	lib2x3 "github.com/fine-structures/fine.SDK/lib2x3/graph-legacy"
 )
 
 var primes = []string{
 	"1", "1^", "1^^", "1^^^", // v1
 	"1=2^", "1^^-2^", "1-2^", // v2
+}
 
+var dupes = []string{
+	"1^=2", "1^^-2^", "1-2^", "1^-2",
 }
 
 var (
@@ -55,6 +58,13 @@ func TestBasics(t *testing.T) {
 		}
 	}
 
+	for _, Xstr := range dupes {
+		X.InitFromString(Xstr)
+		if added := cat.TryAddGraph(X); added {
+			t.Fatal("dupe fail")
+		}
+	}
+
 	// Add known non-prime
 	X.InitFromString("1-2")
 	if added := cat.TryAddGraph(X); !added {
@@ -70,7 +80,7 @@ func TestBasics(t *testing.T) {
 	// Select -- we should get all the particles we've added so far
 	{
 		total := 0
-		onHit := make(chan go2x3.GraphState)
+		onHit := make(chan go2x3.State)
 		go func() {
 			cat.Select(go2x3.DefaultGraphSelector, onHit)
 			close(onHit)
@@ -94,7 +104,7 @@ func TestBasics(t *testing.T) {
 		sel.Traces = Xsrc
 
 		total := 0
-		onHit := make(chan go2x3.GraphState)
+		onHit := make(chan go2x3.State)
 		go func() {
 			cat.Select(sel, onHit)
 			close(onHit)
@@ -112,12 +122,10 @@ func TestBasics(t *testing.T) {
 	}
 }
 
-
-
-func PrintGraph(prefix string, X go2x3.GraphState) {
+func PrintGraph(prefix string, X go2x3.State) {
 	b := strings.Builder{}
 	b.Grow(192)
 	b.WriteString(prefix)
-	X.WriteAsString(&b, go2x3.PrintOpts{})
+	X.WriteCSV(&b, go2x3.PrintOpts{})
 	fmt.Println(b.String())
 }

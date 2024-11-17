@@ -13,10 +13,10 @@ import (
 	"strings"
 	"sync/atomic"
 
-	walker "github.com/fine-structures/fst-sdk-go/fine/graph-walker"
-	"github.com/fine-structures/fst-sdk-go/go2x3"
-	"github.com/fine-structures/fst-sdk-go/lib2x3"
-	"github.com/fine-structures/fst-sdk-go/lib2x3/catalog"
+	"github.com/fine-structures/fine.SDK/go2x3"
+	"github.com/fine-structures/fine.SDK/lib2x3/catalog"
+	lib2x3 "github.com/fine-structures/fine.SDK/lib2x3/graph-legacy"
+	walker "github.com/fine-structures/fine.SDK/lib2x3/graph-walker"
 	"github.com/go-python/gpython/py"
 )
 
@@ -41,6 +41,7 @@ func py_EnumPureParticles(module py.Object, args py.Tuple) (py.Object, error) {
 	}
 
 	opts := walker.EnumOpts{
+		VertexMin: int(v_min.(py.Int)),
 		VertexMax: int(v_max.(py.Int)),
 		Params:    "-d BackConnect.1",
 	}
@@ -72,7 +73,7 @@ func (X pyGraph) Type() *py.Type {
 
 func (X pyGraph) M__str__() (py.Object, error) {
 	writer := strings.Builder{}
-	X.WriteAsString(&writer, go2x3.DefaultPrintOpts)
+	X.WriteCSV(&writer, go2x3.DefaultPrintOpts)
 	return py.String(writer.String()), nil
 }
 
@@ -447,9 +448,12 @@ func py_GraphStream_Select(self py.Object, args py.Tuple) (py.Object, error) {
 }
 
 func py_GraphStream_PermuteEdgeSigns(self py.Object, args py.Tuple) (py.Object, error) {
-	stream := self.(graphStream)
-	next := stream.PermuteEdgeSigns()
-	return wrapGraphSteam(next), nil
+	ch00 := self.(graphStream)
+	ch01 := ch00.PermuteVtxSigns()
+	cat := lib2x3.NewDropDupes(lib2x3.DropDupeOpts{})
+	ch02 := ch01.AddTo(cat)
+	ch03 := ch02.PermuteEdgeSigns()
+	return wrapGraphSteam(ch03), nil
 }
 
 func init() {
@@ -546,9 +550,50 @@ func intAttr(obj py.Object, key string, min, max int64) int64 {
 	return intVal
 }
 
-func byteAttr(obj py.Object, attr string) byte {
-	return byte(intAttr(obj, attr, 0, 255))
+func byteAttr(obj py.Object, attrName string) byte {
+	return byte(intAttr(obj, attrName, 0, 255))
 }
+
+func boolAttr(obj py.Object, attrName string) go2x3.Bool {
+	boolValue := false
+	if err := py.LoadAttr(obj, attrName, &boolValue); err != nil {
+		return go2x3.Bool_Unspecified
+	}
+	if boolValue {
+		return go2x3.Bool_Yes
+	} else {
+		return go2x3.Bool_No
+	}
+
+	// val, _ := py.GetInt(attr)
+
+	// if attr == "" {
+	// 	return go2x3.Bool_Unspecified
+	// }
+
+	// //acronym := strings.ToUpper(attr)
+	// spoken := strings.ToLower(attr)
+	// switch spoken {
+	// case "true", "yes", "on":
+	// 	return go2x3.Bool_Yes
+	// case "false", "no", "off":
+	// 	return go2x3.Bool_No
+	// default:
+	// 	val, _ := strconv.ParseInt(attr, 10, 0)
+	// 	if val != 0 {
+	// 		return go2x3.Bool_Yes
+	// 	} else if attr[0] == '0' {
+	// 		return go2x3.Bool_No
+	// 	}
+	// }
+	// return go2x3.Bool_Unspecified
+}
+
+// func boolAttr(obj py.Object, attr string) bool {
+// 	value := false
+// 	py.LoadAttr(obj, attr, &value)
+// 	return value
+// }
 
 func exportGraphInfo(graphInfo py.Object) go2x3.GraphInfo {
 	info := go2x3.GraphInfo{
@@ -558,6 +603,7 @@ func exportGraphInfo(graphInfo py.Object) go2x3.GraphInfo {
 		NegEdges:     byteAttr(graphInfo, "neg_edges"),
 		PosLoops:     byteAttr(graphInfo, "pos_loops"),
 		NegLoops:     byteAttr(graphInfo, "neg_loops"),
+		IsPrime:      boolAttr(graphInfo, "is_prime"),
 	}
 	return info
 }
@@ -580,7 +626,11 @@ func getGraphSelector(graph_selector py.Object, sel *go2x3.GraphSelector) error 
 		return err
 	}
 
-	if err = py.LoadAttr(graph_selector, "primes", &sel.PrimesOnly); err != nil {
+	if err = py.LoadAttr(graph_selector, "select_primes", &sel.SelectPrimes); err != nil {
+		return err
+	}
+
+	if err = py.LoadAttr(graph_selector, "select_bosons", &sel.SelectBosons); err != nil {
 		return err
 	}
 
@@ -588,8 +638,8 @@ func getGraphSelector(graph_selector py.Object, sel *go2x3.GraphSelector) error 
 		return err
 	}
 
-	if sel.Factor && (sel.PrimesOnly || sel.UniqueTraces) {
-		return py.ExceptionNewf(py.ValueError, "%v", errors.New("'factor' mode can't be used with 'primes' or 'unique_traces'"))
+	if sel.Factor && (sel.SelectPrimes || sel.UniqueTraces || sel.SelectBosons) {
+		return py.ExceptionNewf(py.ValueError, "%v", errors.New("'factor' mode can't be used with other modes"))
 	}
 
 	tracesObj, err := py.GetAttrString(graph_selector, "traces")

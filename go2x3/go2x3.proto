@@ -1,9 +1,7 @@
 syntax = "proto3";
-package fine;
+package catalog;
 
-//option go_package = "github.com/fine-structures/fst-sdk-go/lib2x3/graph";
-
-
+//option go_package = "github.com/fine-structures/fine.SDK/lib2x3/graph";
 
 
 message CatalogState {
@@ -29,3 +27,8 @@ message CatalogState {
 }
 
 
+enum Bool {
+    Bool_Unspecified = 0;
+    Bool_Yes         = 1;
+    Bool_No          = 3;
+}

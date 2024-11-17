@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/alecthomas/participle/v2"
-	"github.com/fine-structures/fst-sdk-go/go2x3"
+	"github.com/fine-structures/fine.SDK/go2x3"
 )
 
 type GraphExpr struct {
@@ -138,3 +138,4 @@ func (X *Graph) InitFromString(graphExpr string) error {
 	X.Def.TryAddGraphExpr(graphExpr)
 	return nil
 }
+

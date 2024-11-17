@@ -5,7 +5,7 @@ import (
 	"unsafe"
 
 	"github.com/emirpasic/gods/trees/redblacktree"
-	"github.com/fine-structures/fst-sdk-go/go2x3"
+	"github.com/fine-structures/fine.SDK/go2x3"
 )
 
 /*
@@ -61,9 +61,11 @@ func (factors *PrimeFactors) InitFromEncoding(in []byte) error {
 }
 */
 
+// FactorTable is a set of factors each having the same vertex size
 type FactorTable struct {
 	TracesPerFactor uint32
 	FactorTraces    []int64
+	Nv              uint32
 	numFactors      uint32
 }
 
@@ -77,7 +79,8 @@ func (ft *FactorTable) NumFactors() uint32 {
 }
 
 // Subtracts the Fi'th factor from A, storing the result in dst:
-//   dst <- A - Factors[Fi]
+//
+//	dst <- A - Factors[Fi]
 //
 // Returns true if diff is all zeros.
 func (ft *FactorTable) SubtractFactor(dst go2x3.Traces, A go2x3.Traces, Fi uint32) bool {
@@ -123,6 +126,7 @@ func NewFactorCatalog(maxNv int32) *FactorCatalog {
 	}
 	for vi := range fcat.forNv {
 		fcat.forNv[vi] = &FactorTable{
+			Nv:              uint32(vi),
 			TracesPerFactor: uint32(maxNv),
 		}
 	}
@@ -275,14 +279,14 @@ func (s *factorSearch) findFactors(depth, vi_start, Nv_remain int32) bool {
 }
 
 type factorSearch struct {
-	stack       []FactorStep
-	onFactor    chan go2x3.TracesID
-	hitCount    int32
-	maxFactorSz int32
-	Nv          int32
-	fcat        *FactorCatalog
-	primeTest   bool
-	tracesBuf   go2x3.Traces
+	stack       []FactorStep        // stack of factorization -- "dynamic programming"
+	onFactor    chan go2x3.TracesID // factorizations channel
+	hitCount    int32               // number of factorizations found
+	maxFactorSz int32               // maximum factor size to consider
+	Nv          int32               // number of vertices in the target graph
+	fcat        *FactorCatalog      // where prime factors are stored
+	primeTest   bool                // if set, we are testing if a graph is prime
+	tracesBuf   go2x3.Traces        // scrap buffer
 }
 
 func (s *factorSearch) sendFactorization(depth int32) bool {

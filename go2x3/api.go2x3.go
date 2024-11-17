@@ -1,9 +1,10 @@
 package go2x3
 
 import (
+	"errors"
 	"io"
 
-	"github.com/amp-3d/amp-sdk-go/stdlib/generics"
+	"github.com/art-media-platform/amp.SDK/stdlib/generics"
 )
 
 const (
@@ -19,112 +20,37 @@ const (
 	MaxEdgeEnds = 3 * MaxVtxID
 )
 
-type ExportOpts int32
+type MarshalOpts int32
 
 const (
-	ExportAsAscii ExportOpts = 1 << iota
-	ExportGraphState
-	ExportGraphDef
+	AsAscii MarshalOpts = 1 << iota
+	AsState
+	AsValue
 )
 
-type AsciiDigiOrd byte
+const (
+	Flag_IsPrime = byte(0x01)
+	Flag_IsBoson = byte(0x02)
+)
 
-type Octal byte // 0..7
-
-/*
-type Encoding struct {
-	byte     Octal
-	Commands []tag.CanonicOctalDigit
-
-}
-
-*/
-
-type System interface {
-	AssignFromEncoding()
-
-	// From the current graph.Encoding, constructs this graph.GraphState.
-	Recompute() error
-
-	Canonize() error
-}
-
-// func (gb *graphWalker) AssignFromEncoding(enc Encoding) {
-
-// }
-
-// var ordinalMap = [128]byte {
-// 	0,
-// 	1, 2, 3, 4, 5, 6, 7, 8,
-// |
-
-
-// func (gb *graphBuilder) EmitNextEdgeSweep(uptoShapeID uint64, tag.OctalDigit) {
-
-// }
-
-// ShapeID   uint64 // canonic enumeration step of a 2x3 tree instance "walk"
-// VariantID uint64 // canonical "complete" natural 2x3 graph (0 corresponds to all positive edge variant)
-
-/*
-func (gb *graphBuilder) EnumerateStructureShapes(uptoShapeID uint64, ) {
-	sockets := make([]VtxSocket, 3*MaxVtxID)
-
-
-	{
-		si := gb.addVertex()
-
-
-		gb.PushState()
-		gb.sweepPhase = 0
-		for kind := 0; kind < 8; kind++ {
-
-		}
-		gb.sockets[vi].EdgeKind = 0
-		gb.sockets[vi].ConnectsTo =
-	}
-
-
-
-
-
-
-}
-// */
-
-// func (gw *graphWalker) addVertex() byte {
-// 	gw.vertexCount++
-// 	vtxID := gw.vertexCount
-// 	socket := VtxSocket{
-// 		VertexID: vtxID,
-// 	}
-// 	for i := 0; i < 3; i++ {
-// 		gw.sockets = append(gw.sockets, socket)
-// 	}
-// 	return vtxID
-// }
-
-// func (gw *graphWalker) Recompute() error {
-
-// }
-
-type GraphState interface {
+type State interface {
 	TracesProvider
 
 	PermuteEdgeSigns(dst *GraphStream)
+	PermuteVtxSigns(dst *GraphStream)
 
 	Canonize(normalize bool) error
 
-	WriteAsString(out io.Writer, opts PrintOpts)
-	ExportStateEncoding(out []byte, opts ExportOpts) ([]byte, error)
+	WriteCSV(out io.Writer, opts PrintOpts) error
+	MarshalOut(out []byte, opts MarshalOpts) ([]byte, error)
 
 	// Returns a new copy of this instance.
-	MakeCopy() GraphState
+	MakeCopy() State
 
 	// Returns info about this graph
-	GetInfo() GraphInfo
+	GraphInfo() GraphInfo
 
-	// Recycles this GraphState instance into a pool for reuse.
+	// Recycles this State instance into a pool for reuse.
 	// Caller asserts that no more references to this instance will persist.
 	Reclaim()
 }
@@ -143,9 +69,9 @@ type TracesLSM []byte
 // TracesID uniquely identifies a cycle trace series
 type TracesID uint64
 
-// OnGraphHit is a callback proc used to return Graph's meeting a set of selection criteria.
+// OnStateHit  is a callback proc used to return Graph's meeting a set of selection criteria.
 // Ownership of a Graph also travels through the channel.
-type OnGraphHit chan<- GraphState
+type OnStateHit chan<- State
 
 // CatalogContext is a container for open / active Catalog instances.
 type CatalogContext interface {
@@ -175,7 +101,7 @@ type GraphAdder interface {
 
 	// Tries to add the given graph encoding to this catalog.
 	// If true is returned, X did not exist and was added.
-	TryAddGraph(X GraphState) bool
+	TryAddGraph(X State) bool
 }
 
 // Catalog wraps a database of lib2x3 Graph encodings.
@@ -194,7 +120,7 @@ type Catalog interface {
 	NumPrimes(forVtxCount byte) int64
 
 	// Select fires the given callback with each GraphEncoding that meets the selection criteria.
-	Select(sel GraphSelector, onHit OnGraphHit)
+	Select(sel GraphSelector, onHit OnStateHit)
 
 	Close() error
 }
@@ -206,6 +132,7 @@ type GraphInfo struct {
 	PosLoops     byte
 	NegEdges     byte
 	PosEdges     byte
+	IsPrime      Bool
 }
 
 // GraphSelector is an operator that either selects a given Graph or not.
@@ -213,7 +140,8 @@ type GraphSelector struct {
 	Traces       TracesProvider // Implies a Traces to match with or factor
 	Factor       bool           // Perform factorization of sel.Traces
 	UniqueTraces bool           // Only select the first Graph for each unique traces
-	PrimesOnly   bool           // Only select prime traces
+	SelectPrimes bool           // Select only prime graphs
+	SelectBosons bool           // Select only boson graphs
 	Min          GraphInfo      // lower select bounds
 	Max          GraphInfo      // upper select bounds
 }
@@ -255,3 +183,21 @@ type FactorRun struct {
 	ID    TracesID
 	Count uint32
 }
+
+// Errors
+var (
+	ErrUnmarshal          = errors.New("unmarshal failed")
+	ErrBadCatalogParam    = errors.New("bad catalog param")
+	ErrInsufficientTraces = errors.New("insufficient traces")
+	ErrBadEncoding        = errors.New("bad graph encoding")
+	ErrBadVtxID           = errors.New("bad graph vertex ID")
+	ErrMissingVtxID       = errors.New("missing vertex ID")
+	ErrBadEdge            = errors.New("bad graph edge")
+	ErrBadEdgeType        = errors.New("bad graph edge type")
+	ErrBrokenEdges        = errors.New("bad or inconsistent graph edge configuration")
+	ErrViolates2x3        = errors.New("graph is not a valid 2x3")
+	ErrVtxExpected        = errors.New("vertex ID expected")
+	ErrSitesExceeded      = errors.New("number of loops and edges exceeds 3")
+	ErrNilGraph           = errors.New("nil graph")
+	ErrInvalidVtxID       = errors.New("invalid vertex or group ID")
+)

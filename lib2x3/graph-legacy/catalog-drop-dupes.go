@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"hash/maphash"
 
-	"github.com/fine-structures/fst-sdk-go/go2x3"
+	"github.com/fine-structures/fine.SDK/go2x3"
 )
 
 type dropDupes struct {
@@ -27,8 +27,8 @@ func NewDropDupes(opts DropDupeOpts) go2x3.GraphAdder {
 		opts.PoolSz = DefaultPoolSz
 	}
 	return &dropDupes{
-		hashMap:  make(map[uint64]GraphEncoding),
-		opts:     opts,
+		hashMap: make(map[uint64]GraphEncoding),
+		opts:    opts,
 	}
 }
 
@@ -45,18 +45,18 @@ func (cat *dropDupes) Reset() {
 // 	return nil
 // }
 
-func (cat *dropDupes) TryAddGraph(X go2x3.GraphState) bool {
+func (cat *dropDupes) TryAddGraph(X go2x3.State) bool {
 	var keyBuf [512]byte
-	tracesKey := X.Traces(0).AppendTracesLSM(keyBuf[:0])
-	Xkey, _ := X.ExportStateEncoding(tracesKey, go2x3.ExportGraphState)
+	tracesLSM := X.Traces(0).AppendTracesLSM(keyBuf[:0])
+	stateLSM, _ := X.MarshalOut(tracesLSM, go2x3.AsState)
 
 	cat.hasher.Reset()
-	cat.hasher.Write(Xkey)
+	cat.hasher.Write(tracesLSM)
 	hash := cat.hasher.Sum64()
 
 	existing, found := cat.hashMap[hash]
 	for found {
-		if bytes.Equal(existing, Xkey) {
+		if bytes.Equal(existing, stateLSM) {
 			return false
 		}
 		hash++
@@ -67,7 +67,7 @@ func (cat *dropDupes) TryAddGraph(X go2x3.GraphState) bool {
 	// Place a copy of the buf in our backing buf (in the heap).
 	// If we run out of space in our pool, we start a new pool
 	pos := cat.bufPoolSz
-	itemLen := len(Xkey)
+	itemLen := len(stateLSM)
 	if pos+itemLen > cap(cat.bufPool) {
 		allocSz := max(cat.opts.PoolSz, itemLen)
 		cat.bufPool = make([]byte, allocSz)
@@ -76,7 +76,7 @@ func (cat *dropDupes) TryAddGraph(X go2x3.GraphState) bool {
 	}
 
 	// Place the backed copy of the graph ID buf at the open hash spot
-	cat.hashMap[hash] = append(cat.bufPool[pos:pos], Xkey...)
+	cat.hashMap[hash] = append(cat.bufPool[pos:pos], stateLSM...)
 	cat.bufPoolSz += itemLen
 	return true
 }

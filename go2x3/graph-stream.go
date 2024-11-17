@@ -3,23 +3,20 @@ package go2x3
 import (
 	"fmt"
 	"io"
-	"strings"
 )
 
-
-
 type GraphStream struct {
-	Outlet chan GraphState
+	Outlet chan State
 }
 
 func NewGraphStream() *GraphStream {
 	stream := &GraphStream{
-		Outlet: make(chan GraphState),
+		Outlet: make(chan State),
 	}
 	return stream
 }
 
-func StreamGraph(X GraphState) *GraphStream {
+func StreamGraph(X State) *GraphStream {
 	next := NewGraphStream()
 
 	go func() {
@@ -36,11 +33,11 @@ func (stream *GraphStream) Close() {
 	}
 }
 
-func (stream *GraphStream) PushGraph(X GraphState) {
+func (stream *GraphStream) PushGraph(X State) {
 	stream.Outlet <- X.MakeCopy()
 }
 
-func (stream *GraphStream) PullGraph() GraphState {
+func (stream *GraphStream) PullGraph() State {
 	X := <-stream.Outlet
 	return X
 }
@@ -54,31 +51,32 @@ func (stream *GraphStream) PullAll() int {
 	return count
 }
 
+// Marshals each graph in the stream to a CSV-compatible line and writes it to the output stream.
 func (stream *GraphStream) Print(
 	out io.WriteCloser,
 	opts PrintOpts) *GraphStream {
 
 	next := &GraphStream{
-		Outlet: make(chan GraphState, 1),
+		Outlet: make(chan State, 1),
 	}
 
 	go func() {
-		buf := strings.Builder{}
-		buf.Grow(256)
 
 		count := 0
 		for X := range stream.Outlet {
-			if len(opts.Label) > 0 {
-				buf.WriteString(opts.Label)
-			}
-			buf.WriteByte(',')
-
 			count++
-			fmt.Fprintf(&buf, "%06d,", count)
-			X.WriteAsString(&buf, opts)
-			buf.WriteByte('\n')
-			out.Write([]byte(buf.String()))
-			buf.Reset()
+
+			if len(opts.Label) > 0 {
+				fmt.Fprintf(out, "%s,", opts.Label)
+			}
+
+			out.Write([]byte(fmt.Sprintf("%06d,", count)))
+
+			err := X.WriteCSV(out, opts)
+			if err != nil {
+				panic(err)
+			}
+			out.Write([]byte{'\n'})
 			next.Outlet <- X
 		}
 		out.Close()
@@ -90,7 +88,7 @@ func (stream *GraphStream) Print(
 
 func (stream *GraphStream) AddTo(target GraphAdder) *GraphStream {
 	next := &GraphStream{
-		Outlet: make(chan GraphState, 1),
+		Outlet: make(chan State, 1),
 	}
 
 	go func() {
@@ -110,10 +108,10 @@ func (stream *GraphStream) AddTo(target GraphAdder) *GraphStream {
 
 func SelectFromCatalog(cat Catalog, sel GraphSelector) *GraphStream {
 	next := &GraphStream{
-		Outlet: make(chan GraphState, 1),
+		Outlet: make(chan State, 1),
 	}
 
-	onHit := make(chan GraphState, 4)
+	onHit := make(chan State, 4)
 
 	go func() {
 		cat.Select(sel, onHit)
@@ -136,7 +134,7 @@ func SelectFromCatalog(cat Catalog, sel GraphSelector) *GraphStream {
 
 func (stream *GraphStream) SelectFromStream(sel GraphSelector) *GraphStream {
 	next := &GraphStream{
-		Outlet: make(chan GraphState, 1),
+		Outlet: make(chan State, 1),
 	}
 
 	go func() {
@@ -168,7 +166,7 @@ func (stream *GraphStream) SelectFromStream(sel GraphSelector) *GraphStream {
 
 func (stream *GraphStream) Canonize(normalize bool) *GraphStream {
 	next := &GraphStream{
-		Outlet: make(chan GraphState, 1),
+		Outlet: make(chan State, 1),
 	}
 
 	go func() {
@@ -258,10 +256,25 @@ func (ctx *canonizeCtx) goCanonize(X *Graph) error {
 }
 */
 
+func (stream *GraphStream) PermuteVtxSigns() *GraphStream {
+	next := &GraphStream{
+		Outlet: make(chan State, 1),
+	}
+
+	go func() {
+		for Xsrc := range stream.Outlet {
+			Xsrc.PermuteVtxSigns(next)
+			Xsrc.Reclaim()
+		}
+		next.Close()
+	}()
+
+	return next
+}
 
 func (stream *GraphStream) PermuteEdgeSigns() *GraphStream {
 	next := &GraphStream{
-		Outlet: make(chan GraphState, 1),
+		Outlet: make(chan State, 1),
 	}
 
 	go func() {
