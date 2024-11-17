@@ -5,7 +5,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/fine-structures/fine-sdk-go/go2x3"
+	"github.com/fine-structures/fine.SDK/go2x3"
 )
 
 func TestBasics(t *testing.T) {
@@ -77,7 +77,7 @@ func PrintCycles(Xstr string) {
 
 	b := strings.Builder{}
 	b.Grow(192)
-	X.WriteAsString(&b, go2x3.PrintOpts{
+	X.WriteCSV(&b, go2x3.PrintOpts{
 		Graph:     true,
 		Matrix:    true,
 		NumTraces: 10,

@@ -41,6 +41,14 @@ type CatalogState struct {
 	IsPrimeCatalog bool `protobuf:"varint,20,opt,name=IsPrimeCatalog,proto3" json:"IsPrimeCatalog,omitempty"`
 }
 
+type Bool int32
+
+const (
+	Bool_Unspecified Bool = 0
+	Bool_Yes     Bool = 1
+	Bool_No      Bool = 3
+)
+
 func (m *CatalogState) Reset()      { *m = CatalogState{} }
 func (*CatalogState) ProtoMessage() {}
 func (*CatalogState) Descriptor() ([]byte, []int) {

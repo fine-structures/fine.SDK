@@ -5,27 +5,24 @@ from py2x3 import *
 higgs = "1-2-3-4-1-5-6-7-8-5, 2-6, 3-7, 4-8"
 antiH = "1~2~3~4~1~5~6~7~8~5, 2~6, 3~7, 4~8"
     
-print("\n=================   V=1   =================  \n")
+print("\n=================   COMMON   =================  \n")
 ShowGraph(" e- (electron)",      "1")
 ShowGraph("~e+ (positron)",      "1^^^")
-ShowGraph("W+  (charged weak)",  "1^")
-ShowGraph("W-  (charged weak)",  "1^^")
-
-
-print("\n=================   COMMON   =================  \n")
-ShowGraph("e- (electron)",       "1")
-ShowGraph("µ- (muon)    ",       "1-2--3")
+ShowGraph(" ?+ (unknown+)",      "1^")
+ShowGraph(" ?- (unknown-)",      "1^^")
+ShowGraph(" γ (photon)",         "1---2")
+ShowGraph("~γ (photon)",         "1~~~2")
+ShowGraph("~e e (γ scattering",  "1^^^; 1")
 ShowGraph("p+ (proton)",         "1-2-3")
 ShowGraph("n0 (neutron)",        "1-2-3-4-2")
-ShowGraph(" νe (e neutrino)",    "1-2")
+ShowGraph(" νe (e neutrino)",      "1-2")
 ShowGraph("~νe (e anti-neutrino)", "1^^~2^^")
 ShowGraph(" νe  ~νe",              "1-2; 1^^~2^^")
-ShowGraph("e- p+   (hydrogen)",    "1; 1-2-3")
-ShowGraph("e- p+ n0 (hydrogen2 atom)", "1; 1-2-3; 1-2-3-4-2")
-ShowGraph("   p+ n0 (hydrogen2 nucl","1-2-3; 1-2-3-4-2")
-ShowGraph("p+ ~p-",                 "1-2-3; 1^^~2^~3^^")
-ShowGraph("γ  (photon)",         "1---2")
-ShowGraph("~e e",                "1^^^; 1")
+ShowGraph("e- p+    (H  atom)",    "1; 1-2-3")
+ShowGraph("e- p+ n0 (H2 atom)",    "1; 1-2-3; 1-2-3-4-2")
+ShowGraph("   p+ n0 (H2 nucl)",    "1-2-3; 1-2-3-4-2")
+ShowGraph("p+ ~p-",                "1-2-3; 1^^~2^~3^^")
+
 
 
 
@@ -55,10 +52,10 @@ ShowGraph("~ντ (~τ neutrino)",   "1^^~2^~3^~4^~5^~6^^")
 
 
 print("\n=================   BOSONS   =================  \n")
-ShowGraph("Z0 (neutral weak)", "1^-2^")
+ShowGraph("Z neutral weak?",     "1--~2")
+ShowGraph(" γ (photon)",         "1---2")
 ShowGraph(" H (higgs)",          higgs)
 ShowGraph("~H (higgs)",          antiH)
-ShowGraph("γ2 (photon)",       "1---2")
 ShowGraph("γ4", "1-2=3-4=1"        )
 ShowGraph("γ6", "1-2=3-4=5-6=1"    )
 ShowGraph("γ8", "1-2=3-4=5-6=7-8=1")
@@ -82,6 +79,13 @@ ShowGraph("rando2~",             "1^^~2~-3~4~-5")
 ShowGraph("rando3",              "1~2~3-4^-6-2, 3-5~6")
 ShowGraph("rando3~",             "1^^-2-3~4~6~2, 3~5^-6")
 
+ShowGraph("d3", "1-2-3-1")
+ShowGraph("d5", "1-2-3-4-5-1")
+
+ShowGraph("d4", "1-2-3-4-1")
+ShowGraph("d6", "1-2-3-4-5-6-1")
+ShowGraph("d8", "1-2-3-4-5-6-7-8-1")
+
 print("\n===============================================  \n")
 ShowPhases("tetra",             "1-2-3-1-4-2, 4-3")
 ShowPhases("γ  (photon)",       "1---2",            True)
@@ -97,6 +101,7 @@ ShowPhases("E0 <=> C1",         "1^-2-3-4, 3-5-6^"  )
 ShowPhases("K4",                "1-2-3^-4-1, 2-4",  )
 ShowPhases("K8",                "1^-2-3-4-5^-6-7-8-1, 2-8, 4-6")
 ShowPhases("H (higgs)",          higgs)
+ShowPhases("τ-)",               "1-2=3-4=5")
 
 
 print("\n=================   Dn   =================  \n")

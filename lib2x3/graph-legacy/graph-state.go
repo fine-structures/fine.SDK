@@ -8,8 +8,8 @@ import (
 	"sort"
 	"strconv"
 
-	"github.com/fine-structures/fine-sdk-go/go2x3"
-	"github.com/fine-structures/fine-sdk-go/lib2x3/graph"
+	"github.com/fine-structures/fine.SDK/go2x3"
+	"github.com/fine-structures/fine.SDK/lib2x3/graph"
 )
 
 func chopBuf(consume []int64, N int) (alloc []int64, remain []int64) {

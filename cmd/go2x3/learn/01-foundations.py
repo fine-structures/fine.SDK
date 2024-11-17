@@ -84,5 +84,5 @@ print("neutron[c]: ", neutrons["c"])
 
 print('''
 EnumPureParticles() runs an algorithm that generates all possible valid particles having only positive loops and edges.
-Let's generate from v=1 to v=3:''')
+Let's generate from up to v=3:''')
 EnumPureParticles(1,3).Print().Go()

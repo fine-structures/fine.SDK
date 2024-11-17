@@ -3,7 +3,6 @@ package go2x3
 import (
 	"fmt"
 	"io"
-	"strings"
 )
 
 type GraphStream struct {
@@ -52,6 +51,7 @@ func (stream *GraphStream) PullAll() int {
 	return count
 }
 
+// Marshals each graph in the stream to a CSV-compatible line and writes it to the output stream.
 func (stream *GraphStream) Print(
 	out io.WriteCloser,
 	opts PrintOpts) *GraphStream {
@@ -61,22 +61,22 @@ func (stream *GraphStream) Print(
 	}
 
 	go func() {
-		buf := strings.Builder{}
-		buf.Grow(256)
 
 		count := 0
 		for X := range stream.Outlet {
-			if len(opts.Label) > 0 {
-				buf.WriteString(opts.Label)
-			}
-			buf.WriteByte(',')
-
 			count++
-			fmt.Fprintf(&buf, "%06d,", count)
-			X.WriteAsString(&buf, opts)
-			buf.WriteByte('\n')
-			out.Write([]byte(buf.String()))
-			buf.Reset()
+
+			if len(opts.Label) > 0 {
+				fmt.Fprintf(out, "%s,", opts.Label)
+			}
+
+			out.Write([]byte(fmt.Sprintf("%06d,", count)))
+
+			err := X.WriteCSV(out, opts)
+			if err != nil {
+				panic(err)
+			}
+			out.Write([]byte{'\n'})
 			next.Outlet <- X
 		}
 		out.Close()
@@ -255,6 +255,22 @@ func (ctx *canonizeCtx) goCanonize(X *Graph) error {
 	return nil
 }
 */
+
+func (stream *GraphStream) PermuteVtxSigns() *GraphStream {
+	next := &GraphStream{
+		Outlet: make(chan State, 1),
+	}
+
+	go func() {
+		for Xsrc := range stream.Outlet {
+			Xsrc.PermuteVtxSigns(next)
+			Xsrc.Reclaim()
+		}
+		next.Close()
+	}()
+
+	return next
+}
 
 func (stream *GraphStream) PermuteEdgeSigns() *GraphStream {
 	next := &GraphStream{

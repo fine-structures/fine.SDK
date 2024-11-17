@@ -3,15 +3,14 @@ package walker
 import (
 	"fmt"
 	"io"
-	"strings"
 	"sync"
 	"sync/atomic"
 
-	"github.com/art-media-platform/amp-sdk-go/stdlib/symbol"
-	"github.com/art-media-platform/amp-sdk-go/stdlib/symbol/memory_table"
-	"github.com/fine-structures/fine-sdk-go/go2x3"
-	"github.com/fine-structures/fine-sdk-go/lib2x3/graph"
-	//"github.com/fine-structures/fine-sdk-go/lib2x3/catalog"
+	"github.com/art-media-platform/amp.SDK/stdlib/symbol"
+	"github.com/art-media-platform/amp.SDK/stdlib/symbol/memory_table"
+	"github.com/fine-structures/fine.SDK/go2x3"
+	"github.com/fine-structures/fine.SDK/lib2x3/graph"
+	//"github.com/fine-structures/fine.SDK/lib2x3/catalog"
 )
 
 func enumPureParticles(opts EnumOpts) (*go2x3.GraphStream, error) {
@@ -32,7 +31,8 @@ func enumPureParticles(opts EnumOpts) (*go2x3.GraphStream, error) {
 
 	// Enqueue a single vertex particle
 	gw.tryEmitFork(nil, GrowOp{
-		OpCode: graph.OpCode_Sprout,
+		OpCode: OpCode_Sprout,
+		Count:  +1,
 	})
 
 	go func() {
@@ -68,10 +68,8 @@ type Construction struct {
 	ForkID   uint64         // instance ID
 	Ops      []GrowOp       // build steps that yields State
 	Vtx      []graph.Vertex // active vertex state
-	Next     *Construction  // next in linked list
+	Next     *Construction  // forward linked list
 	traces   []int64        // traces storage
-
-	Root graph.Vertex
 }
 
 func (X *Construction) VertexCount() int {
@@ -82,15 +80,79 @@ func (X *Construction) Canonize(normalize bool) error {
 	return nil
 }
 
-var kOpRunes = [4]string{"~ ", "||", "><", "->"}
-
 func (X *Construction) MarshalOut(out []byte, opts go2x3.MarshalOpts) ([]byte, error) {
-	b := strings.Builder{}
-	for _, op := range X.Ops {
-		fmt.Fprintf(&b, "%02d%s ", op.EdgeSlotOrdinal(), kOpRunes[op.OpCode])
-		// TODO: export expr & svg 1xR "tri" visual or "tri-tree diagram" (.3TD)
+	// TODO:
+	panic("not implemented")
+}
+
+func (X *Construction) WriteCSV(out io.Writer, opts go2x3.PrintOpts) error {
+	fmt.Fprintf(out, "p=%d,v=%d,", X.ParticleCount(), X.VertexCount())
+	var buf [128]byte
+	exprStr := X.marshalAsExpr(buf[:0], 1, true)
+	exprStr = append(exprStr, ',')
+	out.Write(exprStr)
+
+	{
+		for _, op := range X.Ops {
+			rune := rune('?')
+			switch {
+			case op.OpCode == OpCode_Sprout && op.Count > 0:
+				rune = '🌱'
+			case op.OpCode == OpCode_Sprout && op.Count < 0:
+				rune = '🌷'
+			case op.OpCode == OpCode_AddEdge && op.Count > 0:
+				rune = '🔵'
+			case op.OpCode == OpCode_AddEdge && op.Count < 0:
+				rune = '🟣'
+			}
+			fmt.Fprintf(out, "%02d%c", op.FromOrdinal(), rune)
+		}
+		fmt.Fprint(out, ",")
 	}
-	return []byte(b.String()), nil
+
+	if opts.NumTraces != 0 {
+		X.WriteTracesAsCSV(out, opts.NumTraces)
+	}
+	return nil
+}
+
+func (X *Construction) marshalAsExpr(out []byte, vtxID graph.VtxID, asAscii bool) []byte {
+	out = append(out, '(')
+
+	vtx := &X.Vtx[vtxID-1]
+	for i, ei := range vtx.Edges {
+		if ei.Path < 0 { // omit backward edges
+			continue
+		}
+
+		asPos := byte('o')
+		asNeg := byte('@')
+		isAddEdge := false
+		if ei.To != 0 {
+			for j := 0; j < i; j++ {
+				ej := vtx.Edges[j]
+				if ej.Path > 0 && ej.To == ei.To {
+					isAddEdge = true
+					asPos = '+'
+					asNeg = '-'
+					break
+				}
+			}
+		}
+
+		if ei.To == 0 || isAddEdge {
+			glyph := byte('?')
+			if ei.Sign > 0 {
+				glyph = asPos
+			} else if ei.Sign < 0 {
+				glyph = asNeg
+			}
+			out = append(out, glyph)
+		} else {
+			out = X.marshalAsExpr(out, ei.To, asAscii)
+		}
+	}
+	return append(out, ')')
 }
 
 func (X *Construction) GraphInfo() go2x3.GraphInfo {
@@ -148,6 +210,10 @@ func (X *Construction) ParticleCount() int64 {
 
 	return count
 
+}
+
+func (X *Construction) PermuteVtxSigns(dst *go2x3.GraphStream) {
+	panic("legacy: will not implement")
 }
 
 // PermuteEdgeSigns emits a Graph for every possible edge sign permutation of the given Graph.
@@ -267,7 +333,7 @@ func (X *Construction) Traces(numTraces int) go2x3.Traces {
 						v_src = vj.ID // inward edge
 					}
 					edgeFlow := Ci0_vi[v_src-1]
-					if vj_e.Flow < 0 {
+					if vj_e.Sign < 0 {
 						edgeFlow = -edgeFlow
 					}
 					totalFlow += edgeFlow
@@ -290,24 +356,6 @@ func (X *Construction) Traces(numTraces int) go2x3.Traces {
 
 func (X *Construction) MakeCopy() go2x3.State {
 	return NewState(X)
-}
-
-func (X *Construction) WriteAsString(out io.Writer, opts go2x3.PrintOpts) {
-	var scrap [512]byte
-	encFull, _ := X.MarshalOut(scrap[:0], go2x3.AsAscii)
-	fmt.Fprintf(out, "p=%d,v=%d,%q,%q,", X.ParticleCount(), X.VertexCount(), encFull, "")
-
-	if opts.Graph {
-		//X.WriteAsGraphExprStr(out)
-	}
-	if opts.Matrix {
-		// X.WriteAsMatrixStr(out)
-	}
-	if opts.NumTraces != 0 {
-		X.WriteTracesAsCSV(out, opts.NumTraces)
-	}
-	//out.Write(newline)
-
 }
 
 // func (X *Construction) WriteAsGraphExprStr(out io.Writer) {
@@ -481,66 +529,58 @@ func (X *Construction) findOpenSlot(vi graph.VtxID) (vi_slot byte) {
 func (X *Construction) applyOp(op GrowOp) bool {
 
 	// base case: sprout a new vertex
-	if op.OpCode == graph.OpCode_Sprout && len(X.Vtx) == 0 {
+	if len(X.Vtx) == 0 {
 		X.addNewVertex()
 		return true
 	}
 
-	vtxA := op.VtxA
+	vtxA := op.FromVtx
 	vtxB := graph.VtxID(0)
-	slotA_ID := byte(op.SlotA)
-	slotB_ID := byte(0)
-	newVtxID := graph.VtxID(0)
-	if vtxA <= 0 || slotA_ID == 0 || slotA_ID > graph.EdgesPerVertex {
+	slotA := byte(op.FromSlot)
+	slotB := byte(0)
+	if vtxA <= 0 || slotA == 0 || slotA > graph.EdgesPerVertex {
 		return false
 	}
 
 	switch op.OpCode {
-	case graph.OpCode_Sprout:
-		newVtxID = X.addNewVertex()
+	case OpCode_AddEdge:
+		vtxB, _, slotB = X.findEdge(vtxA, slotA)
+		slotA = X.findOpenSlot(vtxA)
+	case OpCode_Sprout:
+		newVtxID := X.addNewVertex()
+		vtxB, slotB, _ = X.findEdge(vtxA, slotA)
+
+		newVtx := &X.Vtx[newVtxID-1]
+		if vtxB > 0 {
+			newVtx.Edges[1] = graph.Edge{ // re-attach vtxB to new vtx
+				To:   vtxB,
+				Sign: +1,
+				Path: +1,
+			}
+			X.Vtx[vtxB-1].Edges[slotB-1] = graph.Edge{ // re-attach vtxB to new vtx
+				To:   newVtxID,
+				Sign: +1,
+				Path: -1,
+			}
+		}
+
 		vtxB = newVtxID
-		slotB_ID = 1
-	case graph.OpCode_EdgeDuplicate:
-		vtxB, _, slotB_ID = X.findEdge(vtxA, slotA_ID)
-		slotA_ID = X.findOpenSlot(vtxA)
-		if vtxB == 0 || slotA_ID == 0 {
-			return false // no open slots
-		}
-	case graph.OpCode_EdgeSplit, graph.OpCode_NegateEdge:
-		vtxB, slotB_ID, _ = X.findEdge(vtxA, slotA_ID)
+		slotB = 1
 	}
 
-	slotA := &X.Vtx[vtxA-1].Edges[slotA_ID-1]
-
-	flow := int8(1)
-	switch op.OpCode {
-	case graph.OpCode_NegateEdge:
-		flow = -slotA.Flow
-		slotA.Flow = flow
-		if vtxB != 0 {
-			return true
-		}
-	}
-
-	if vtxB == 0 || slotB_ID == 0 {
+	if vtxA == 0 || slotA == 0 || vtxB == 0 || slotB == 0 {
 		return false
 	}
-	slotB := &X.Vtx[vtxB-1].Edges[slotB_ID-1]
 
-	switch op.OpCode {
-	case graph.OpCode_NegateEdge:
-		slotB.Flow = flow
-	case graph.OpCode_EdgeSplit:
-		newVtxID = X.addNewVertex()
-		slotA.To = newVtxID
-		slotB.To = newVtxID
-		newSlots := &X.Vtx[newVtxID-1].Edges
-		newSlots[0].To = vtxA
-		newSlots[1].To = vtxB
-	case graph.OpCode_EdgeDuplicate,
-		graph.OpCode_Sprout:
-		slotA.To = vtxB
-		slotB.To = vtxA
+	X.Vtx[vtxA-1].Edges[slotA-1] = graph.Edge{
+		To:   vtxB,
+		Sign: +1,
+		Path: +1,
+	}
+	X.Vtx[vtxB-1].Edges[slotB-1] = graph.Edge{
+		To:   vtxA,
+		Sign: +1,
+		Path: -1,
 	}
 
 	return true
@@ -642,33 +682,34 @@ func (X *Construction) popStep() bool {
 }
 */
 
-func (gw *graphWalker) duplicateEdges(X *Construction) {
+func (gw *graphWalker) doubleEdges(X *Construction) {
 	op := GrowOp{
-		OpCode: graph.OpCode_EdgeDuplicate,
+		OpCode: OpCode_AddEdge,
+		Count:  1,
 	}
 
 	for i := range X.Vtx {
 		va := &X.Vtx[i]
 
-		op.VtxA = 0
+		op.FromVtx = 0
 		freeSlot := int8(0)
 
 		for j, ej := range va.Edges {
+
 			if ej.To == 0 { // look for free slot on local vertex
 				if freeSlot == 0 {
 					freeSlot = int8(j + 1)
 				}
-			} else if ej.To > va.ID { // skip reverse direction (equivalent)
+			} else if ej.Path < 0 { // skip reverse direction (equivalent)
 				continue
-			} else if op.VtxA == 0 {
-				op.VtxA = va.ID
-				op.SlotA = uint8(j + 1)
-
+			} else if op.FromVtx == 0 {
+				op.FromVtx = va.ID
+				op.FromSlot = uint8(j + 1)
 			}
 		}
 
 		// this vertex has no free slots or no edges to duplicate
-		if op.VtxA == 0 || freeSlot == 0 {
+		if op.FromVtx == 0 || freeSlot == 0 {
 			continue
 		}
 
@@ -678,13 +719,17 @@ func (gw *graphWalker) duplicateEdges(X *Construction) {
 
 func (X *Construction) addNewVertex() (newVtxID graph.VtxID) {
 	newVtxID = graph.VtxID(len(X.Vtx) + 1)
-	X.Vtx = append(X.Vtx, graph.Vertex{
+	v := graph.Vertex{
 		ID: newVtxID,
-	})
+	}
+	for ei := range v.Edges {
+		v.Edges[ei].Sign = +1
+	}
+	X.Vtx = append(X.Vtx, v)
 	return newVtxID
 }
 
-func (gw *graphWalker) splitEdges(X *Construction) {
+func (gw *graphWalker) sproutEdges(X *Construction) {
 	if X.VertexCount() >= gw.opts.VertexMax {
 		return
 	}
@@ -693,37 +738,16 @@ func (gw *graphWalker) splitEdges(X *Construction) {
 		va := &vtx[i]
 
 		for j, ej := range va.Edges {
-			if ej.To == 0 { // skip open slots
-				continue
-			} else if ej.To > va.ID { // skip reverse direction (equivalent)
+			if ej.Path < 0 { // no need to split "backward" edges
 				continue
 			}
 
 			gw.tryEmitFork(X, GrowOp{
-				OpCode: graph.OpCode_EdgeSplit,
-				VtxA:   va.ID,
-				SlotA:  uint8(j + 1),
+				OpCode:   OpCode_Sprout,
+				Count:    1,
+				FromVtx:  va.ID,
+				FromSlot: uint8(j + 1),
 			})
-		}
-	}
-}
-
-func (gw *graphWalker) sproutEdges(X *Construction) {
-	if X.VertexCount() >= gw.opts.VertexMax {
-		return
-	}
-	for i := range X.Vtx {
-		vi := &X.Vtx[i]
-		for j, sj := range vi.Edges {
-			if sj.To == 0 { // sprout from open slot
-				op := GrowOp{
-					OpCode: graph.OpCode_Sprout,
-					VtxA:   vi.ID,
-					SlotA:  uint8(j + 1),
-				}
-				gw.tryEmitFork(X, op)
-				break // only sprout one edge per vertex needed
-			}
 		}
 	}
 }
@@ -733,15 +757,12 @@ func (gw *graphWalker) emitSubParticles() {
 	for X = gw.dequeueNext(); X != nil; X = gw.dequeueNext() {
 
 		// fork 1: iF we can duplicate an edge, then do so.
-		gw.duplicateEdges(X)
+		gw.doubleEdges(X)
 
-		// fork 2: split an existing edge
-		gw.splitEdges(X)
-
-		// fork 3 -- choose an open slot that "sprouts" the new vertex from an open edge slot
+		// fork 2 -- "sprout" a new vertex from an edge slot
 		gw.sproutEdges(X)
 
-		// after emitting all possible forks, emit for archival
+		// after emitting all possible forks, emit outward
 		gw.EnumStream.Outlet <- X
 	}
 

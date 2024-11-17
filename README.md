@@ -1,4 +1,4 @@
-# Fine Structures SDK for Go
+# Fine Structures SDK
 ### Official SDK for _[Fine Structures](https://github.com/fine-strucutures/prime-materials)_, _a [Standard Model](https://en.wikipedia.org/wiki/Standard_Model) unifying theory_
 
 ------------------------------
@@ -26,11 +26,11 @@ Explore or run any of the tutorial scripts:
 % ./go2x3 learn/08-catalog-inspect.py
 ```
 
-Or skip the above and go directly to the [learn](https://github.com/fine-structures/fine-sdk-go/tree/main/cmd/go2x3/learn) scripts and their "[gold](https://github.com/fine-structures/fine-sdk-go/tree/main/cmd/go2x3/learn/gold)" output.
+Or skip the above and go directly to the [learn](https://github.com/fine-structures/fine.SDK/tree/main/cmd/go2x3/learn) scripts and their "[gold](https://github.com/fine-structures/fine.SDK/tree/main/cmd/go2x3/learn/gold)" output.
 
 ## Getting Started
 
-This project is a library & demonstration toolkit for [Fine Structures](https://github.com/fine-strucutures/prime-materials).  Although [lib2x3](http://https://github.com/fine-structures/fine-sdk-go/tree/main/lib2x3) is a pure Go library, [`gpython`](http://github.com/go-python/gpython) is used to embed and expose it.  This means scripting is easy  — see for yourself in the [first tutorial](https://github.com/fine-structures/fine-sdk-go/blob/main/cmd/go2x3/learn/01-foundations.py) as you follow along in its [output](https://github.com/fine-structures/fine-sdk-go/blob/main/cmd/go2x3/learn/gold/01-foundations.txt).
+This project is a library & demonstration toolkit for [Fine Structures](https://github.com/fine-strucutures/prime-materials).  Although [lib2x3](http://https://github.com/fine-structures/fine.SDK/tree/main/lib2x3) is a pure Go library, [`gpython`](http://github.com/go-python/gpython) is used to embed and expose it.  This means scripting is easy  — see for yourself in the [first tutorial](https://github.com/fine-structures/fine.SDK/blob/main/cmd/go2x3/learn/01-foundations.py) as you follow along in its [output](https://github.com/fine-structures/fine.SDK/blob/main/cmd/go2x3/learn/gold/01-foundations.txt).
 
 
 ## Releases

@@ -1,7 +1,7 @@
 syntax = "proto3";
 package catalog;
 
-//option go_package = "github.com/fine-structures/fine-sdk-go/lib2x3/graph";
+//option go_package = "github.com/fine-structures/fine.SDK/lib2x3/graph";
 
 
 message CatalogState {
@@ -24,4 +24,11 @@ message CatalogState {
     
     // Set if this catalog is to auto-determine if a newly added Graph / Traces are primes.
     bool                IsPrimeCatalog              = 20;
+}
+
+
+enum Bool {
+    Bool_Unspecified = 0;
+    Bool_Yes         = 1;
+    Bool_No          = 3;
 }

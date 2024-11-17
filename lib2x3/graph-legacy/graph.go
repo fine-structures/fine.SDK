@@ -7,9 +7,9 @@ import (
 	"sort"
 	"sync"
 
-	"github.com/fine-structures/fine-sdk-go/go2x3"
-	"github.com/fine-structures/fine-sdk-go/lib2x3/graph"
-	walker "github.com/fine-structures/fine-sdk-go/lib2x3/graph-walker"
+	"github.com/fine-structures/fine.SDK/go2x3"
+	"github.com/fine-structures/fine.SDK/lib2x3/graph"
+	walker "github.com/fine-structures/fine.SDK/lib2x3/graph-walker"
 )
 
 func NewGraph(Xsrc *Graph) *Graph {
@@ -341,11 +341,11 @@ func (X *Graph) Canonize(normalize bool) error {
 	return nil
 }
 
-func (X *Graph) WriteAsString(out io.Writer, opts go2x3.PrintOpts) {
+func (X *Graph) WriteCSV(out io.Writer, opts go2x3.PrintOpts) error {
 	X.Canonize(false) // TODO: remove this when we can print output for any case: 1) un-canonized, 2) canonized, 3) canonized+normalized
 
 	var scrap [512]byte
-	encFull, _ := X.MarshalOut(scrap[:0], go2x3.AsAscii)
+	encFull, err := X.MarshalOut(scrap[:0], go2x3.AsAscii)
 	fmt.Fprintf(out, "p=%d,v=%d,%q,%q,", X.NumParticles(), X.VertexCount(), encFull, "")
 
 	if opts.Graph {
@@ -358,14 +358,13 @@ func (X *Graph) WriteAsString(out io.Writer, opts go2x3.PrintOpts) {
 		X.WriteTracesAsCSV(out, opts.NumTraces)
 	}
 
-	//out.Write(newline)
-
 	if opts.CycleSpec {
 		out.Write(newline)
 		X.vm.Canonize()
 		X.vm.PrintCycleSpectrum(12, out)
 	}
 
+	return err
 }
 
 func (X *Graph) WriteTracesAsCSV(out io.Writer, numTraces int) {
@@ -625,16 +624,19 @@ func (X *Graph) onGraphChanged() {
 }
 
 func (X *Graph) MarshalOut(out []byte, opts go2x3.MarshalOpts) ([]byte, error) {
-	if opts&go2x3.AsGraphDef != 0 {
+	switch {
+	case opts&go2x3.AsValue != 0:
 		X.Def.GraphEncoding = X.appendGraphEncodingTo(X.Def.GraphEncoding[:0])
 		buf, err := X.Def.Marshal()
 		if err != nil {
 			return nil, err
 		}
 		return append(out, buf...), nil
-	} else {
+		
+	case opts&(go2x3.AsState | go2x3.AsAscii) != 0:
 		return X.xstate.MarshalOut(out, opts)
 	}
+	return nil, go2x3.ErrBadCatalogParam
 }
 
 func ExportGraph(Xsrc *Graph, X *graph.VtxGraphVM) error {
@@ -828,7 +830,7 @@ func EnumPureParticles(opts walker.EnumOpts) *go2x3.GraphStream {
 	}
 
 	go func() {
-		gw.EnumPureParticles(opts.VertexMax)
+		gw.EnumPureParticles(opts.VertexMin, opts.VertexMax)
 	}()
 
 	return gw.EnumStream
@@ -856,9 +858,9 @@ func NewGraphWalker() (*GraphWalker, error) {
 	return gw, nil
 }
 
-func (gw *GraphWalker) EnumPureParticles(Nv_hi int) {
+func (gw *GraphWalker) EnumPureParticles(Nv_lo, Nv_hi int) {
 
-	for i := 1; i <= Nv_hi; i++ {
+	for i := Nv_lo; i <= Nv_hi; i++ {
 		gw.targetVtxCount = VtxID(i)
 		if i == 1 {
 			// Enum base case: Add the only 1x1 (positive) particle

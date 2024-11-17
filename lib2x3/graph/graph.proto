@@ -1,13 +1,8 @@
 syntax = "proto3";
 package graph;
 
-//option go_package = "github.com/fine-structures/fine-sdk-go/lib2x3/graph";
+//option go_package = "github.com/fine-structures/fine.SDK/lib2x3/graph";
 
-enum Bool {
-    Bool_Unknown = 0;
-    Bool_No      = 1;
-    Bool_Yes     = 2;
-}
 
 // GraphDef is a particular vertex+edge assignment with bound names.
 // Has similarities to a "Contributing structure" in quantum|chemistry lingo. https://en.wikipedia.org/wiki/Resonance_(chemistry)
@@ -122,10 +117,7 @@ message GraphTerm {
 	
     // IsPrime specifies if a graph system has constituent factors or not.
     // If a graph is prime, then it cannot be formed by combining any other particles.
-	Bool IsPrime = 6;
-	
-	// IsCanonic specifies if this VariantID is canonic (i.e. first appearing) 
-	Bool IsCanonic = 7;
+	//Bool IsPrime = 6;
 	
     // C1 and C2 can be regarded as the instance count (or amplitude) of the odd and even traces terms.
     //

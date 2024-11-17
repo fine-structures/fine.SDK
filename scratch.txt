@@ -28,10 +28,11 @@ Next steps:
 - remove "extended" generation (graph constructions don't matter)
 - explore even/odd particle cycles behqavior (even and odd cycles are orthogonal) ==> only two "characteristic traces" needed
    - odd and even are orthogonal
+   - rethink factorization:  vertex count does not need te preserved, only traces => p+ <=> n0 + pi+
 
+   - what if we maintain a manual json db of particles defined by graphs or explicit traces (e.g. quarks(
 
-
-
+   - add ability to easily express atomic elements.  Li, He, C, Fe, Pb nuclei, etc.
 
 ## Next Steps
 

@@ -1,9 +1,5 @@
 package graph
 
-import (
-	"github.com/fine-structures/fine-sdk-go/lib2x3/mesh"
-)
-
 const (
 	EdgesPerVertex = 3
 )
@@ -15,10 +11,9 @@ type EnumOpts struct {
 }
 
 type Edge struct {
-	To     VtxID       // 1, 2, 3, .. ; 0 denotes nil
-	SlotID int8        // cardinal direction; 1, 2, or 3; 0 denotes nil / unassigned
-	Flow   int8        // cardinal amplitude
-	Op     mesh.OpCode // edge type / mode
+	To   VtxID // 1, 2, 3, .. ; 0 denotes nil
+	Sign int8  // edge flow scale
+	Path int8  // +1: forward, -1: backward
 }
 
 // Vertex is a node of a graph, with a fixed number of edges per vertex

@@ -128,7 +128,8 @@ class GraphSelector:
     def Init(self):
         self.traces = None
         self.factor = False
-        self.primes = False
+        self.select_primes = False
+        self.select_bosons = False
         self.unique_traces = False
 
         self.min.parts = 1
@@ -269,8 +270,8 @@ class Catalog:
             if self.NumPrimes(vi) == 0:
              
                 count = EnumPureParticles(vi, vi)       \
-                    .PermuteEdgeSigns()                 \
-                    .AddTo(self).Go()
+                    .DropDupes().PermuteEdgeSigns()     \
+                    .DropDupes().AddTo(self).Go()
         
                 print("##  v=%2d:%13d graphs %11d traces %11d primes   ##" % 
                             (vi, count, self.NumTraces(vi), self.NumPrimes(vi)))

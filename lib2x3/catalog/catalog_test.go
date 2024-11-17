@@ -7,15 +7,18 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/fine-structures/fine-sdk-go/go2x3"
-	"github.com/fine-structures/fine-sdk-go/lib2x3/catalog"
-	lib2x3 "github.com/fine-structures/fine-sdk-go/lib2x3/graph-legacy"
+	"github.com/fine-structures/fine.SDK/go2x3"
+	"github.com/fine-structures/fine.SDK/lib2x3/catalog"
+	lib2x3 "github.com/fine-structures/fine.SDK/lib2x3/graph-legacy"
 )
 
 var primes = []string{
 	"1", "1^", "1^^", "1^^^", // v1
 	"1=2^", "1^^-2^", "1-2^", // v2
+}
 
+var dupes = []string{
+	"1^=2", "1^^-2^", "1-2^", "1^-2",
 }
 
 var (
@@ -52,6 +55,13 @@ func TestBasics(t *testing.T) {
 		}
 		if added := cat.TryAddGraph(X); added {
 			t.Fatal("nope")
+		}
+	}
+
+	for _, Xstr := range dupes {
+		X.InitFromString(Xstr)
+		if added := cat.TryAddGraph(X); added {
+			t.Fatal("dupe fail")
 		}
 	}
 
@@ -112,12 +122,10 @@ func TestBasics(t *testing.T) {
 	}
 }
 
-
-
 func PrintGraph(prefix string, X go2x3.State) {
 	b := strings.Builder{}
 	b.Grow(192)
 	b.WriteString(prefix)
-	X.WriteAsString(&b, go2x3.PrintOpts{})
+	X.WriteCSV(&b, go2x3.PrintOpts{})
 	fmt.Println(b.String())
 }

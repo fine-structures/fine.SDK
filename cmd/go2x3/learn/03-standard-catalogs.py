@@ -8,16 +8,14 @@ dst = "Standard Catalogs/"
 sel = NewSelector()
 sel.max.verts = 6
 sel.unique_traces = False
-sel.primes = False
-catalog.Select(sel).Print("Extended",   traces=8, file=dst+"Extended Catalog.csv"   ).Go()
+catalog.Select(sel).Print("Extended",   traces=12, file=dst+"Extended Catalog.csv"   ).Go()
     
 sel.unique_traces = True
-sel.primes = False
-catalog.Select(sel).Print("Complete",   traces=8, file=dst+"Complete Catalog.csv"   ).Go()
+catalog.Select(sel).Print("Complete",   traces=12, file=dst+"Complete Catalog.csv"   ).Go()
     
 sel.unique_traces = True
-sel.primes = True
-catalog.Select(sel).Print("Primes",     traces=8, file=dst+"Prime Catalog.csv"      ).Go()
+sel.select_primes = True
+catalog.Select(sel).Print("Primes",     traces=12, file=dst+"Prime Catalog.csv"      ).Go()
     
 
 sel = NewSelector()
@@ -25,10 +23,11 @@ sel.max.verts = 8
 sel.max.neg_loops = 0
 sel.max.neg_edges = 0
 sel.unique_traces = False
-sel.primes = False
-catalog.Select(sel).Print("Pure",       traces=8, file=dst+"Pure Catalog.csv"       ).Go()
-    
+catalog.Select(sel).Print("Pure",       traces=12, file=dst+"Pure Catalog.csv"       ).Go()
 
-sel.max.pos_loops = 0
-catalog.Select(sel).Print("Boson",      traces=8, file=dst+"Boson Catalog.csv"      ).Go()
+sel = NewSelector()
+sel.max.verts = 8
+sel.unique_traces = True
+sel.select_bosons = True
+catalog.Select(sel).Print("Boson",      traces=12, file=dst+"Boson Catalog.csv"      ).Go()
 

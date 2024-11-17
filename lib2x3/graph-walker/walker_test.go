@@ -5,12 +5,12 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/fine-structures/fine-sdk-go/go2x3"
+	"github.com/fine-structures/fine.SDK/go2x3"
 )
 
 func TestEnum(t *testing.T) {
 	stream, err := EnumPureParticles(EnumOpts{
-		VertexMax: 6,
+		VertexMax: 8,
 	})
 	if err != nil {
 		t.Fatal(err)
@@ -27,7 +27,7 @@ func TestEnum(t *testing.T) {
 	for X := range stream.Outlet {
 		count++
 		fmt.Fprintf(&buf, "%06d,", count)
-		X.WriteAsString(&buf, printOpts)
+		X.WriteCSV(&buf, printOpts)
 
 		buf.WriteByte('\n')
 		fmt.Printf("%s", buf.String())

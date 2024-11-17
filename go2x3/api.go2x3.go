@@ -4,7 +4,7 @@ import (
 	"errors"
 	"io"
 
-	"github.com/art-media-platform/amp-sdk-go/stdlib/generics"
+	"github.com/art-media-platform/amp.SDK/stdlib/generics"
 )
 
 const (
@@ -24,98 +24,24 @@ type MarshalOpts int32
 
 const (
 	AsAscii MarshalOpts = 1 << iota
-	AsLSM
-	AsGraphDef
+	AsState
+	AsValue
 )
 
-type AsciiDigiOrd byte
-
-type Octal byte // 0..7
-
-/*
-type Encoding struct {
-	byte     Octal
-	Commands []tag.CanonicOctalDigit
-
-}
-
-*/
-
-type System interface {
-	AssignFromEncoding()
-
-	// From the current graph.Encoding, constructs this graph.State.
-	Recompute() error
-
-	Canonize() error
-}
-
-// func (gb *graphWalker) AssignFromEncoding(enc Encoding) {
-
-// }
-
-// var ordinalMap = [128]byte {
-// 	0,
-// 	1, 2, 3, 4, 5, 6, 7, 8,
-// |
-
-// func (gb *graphBuilder) EmitNextEdgeSweep(uptoShapeID uint64, tag.OctalDigit) {
-
-// }
-
-// ShapeID   uint64 // canonic enumeration step of a 2x3 tree instance "walk"
-// VariantID uint64 // canonical "complete" natural 2x3 graph (0 corresponds to all positive edge variant)
-
-/*
-func (gb *graphBuilder) EnumerateStructureShapes(uptoShapeID uint64, ) {
-	sockets := make([]VtxSocket, 3*MaxVtxID)
-
-
-	{
-		si := gb.addVertex()
-
-
-		gb.PushState()
-		gb.sweepPhase = 0
-		for kind := 0; kind < 8; kind++ {
-
-		}
-		gb.sockets[vi].EdgeKind = 0
-		gb.sockets[vi].ConnectsTo =
-	}
-
-
-
-
-
-
-}
-// */
-
-// func (gw *graphWalker) addVertex() byte {
-// 	gw.vertexCount++
-// 	vtxID := gw.vertexCount
-// 	socket := VtxSocket{
-// 		VertexID: vtxID,
-// 	}
-// 	for i := 0; i < 3; i++ {
-// 		gw.sockets = append(gw.sockets, socket)
-// 	}
-// 	return vtxID
-// }
-
-// func (gw *graphWalker) Recompute() error {
-
-// }
+const (
+	Flag_IsPrime = byte(0x01)
+	Flag_IsBoson = byte(0x02)
+)
 
 type State interface {
 	TracesProvider
 
 	PermuteEdgeSigns(dst *GraphStream)
+	PermuteVtxSigns(dst *GraphStream)
 
 	Canonize(normalize bool) error
 
-	WriteAsString(out io.Writer, opts PrintOpts)
+	WriteCSV(out io.Writer, opts PrintOpts) error
 	MarshalOut(out []byte, opts MarshalOpts) ([]byte, error)
 
 	// Returns a new copy of this instance.
@@ -206,6 +132,7 @@ type GraphInfo struct {
 	PosLoops     byte
 	NegEdges     byte
 	PosEdges     byte
+	IsPrime      Bool
 }
 
 // GraphSelector is an operator that either selects a given Graph or not.
@@ -213,7 +140,8 @@ type GraphSelector struct {
 	Traces       TracesProvider // Implies a Traces to match with or factor
 	Factor       bool           // Perform factorization of sel.Traces
 	UniqueTraces bool           // Only select the first Graph for each unique traces
-	PrimesOnly   bool           // Only select prime traces
+	SelectPrimes bool           // Select only prime graphs
+	SelectBosons bool           // Select only boson graphs
 	Min          GraphInfo      // lower select bounds
 	Max          GraphInfo      // upper select bounds
 }
