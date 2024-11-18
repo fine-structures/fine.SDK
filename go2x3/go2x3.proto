@@ -1,5 +1,5 @@
 syntax = "proto3";
-package catalog;
+package go2x3;
 
 //option go_package = "github.com/fine-structures/fine.SDK/lib2x3/graph";
 

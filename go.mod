@@ -11,7 +11,7 @@ go 1.22
 require (
 	github.com/alecthomas/participle/v2 v2.1.1
 	github.com/art-media-platform/amp.SDK v0.8.5
-	github.com/dgraph-io/badger/v4 v4.3.1
+	github.com/dgraph-io/badger/v4 v4.4.0
 	github.com/emirpasic/gods v1.18.1
 	github.com/go-python/gpython v0.2.0
 	github.com/gogo/protobuf v1.3.2
@@ -22,6 +22,7 @@ require (
 require (
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
 	github.com/dgraph-io/ristretto v1.0.0 // indirect
+	github.com/dgraph-io/ristretto/v2 v2.0.0 // indirect
 	github.com/dustin/go-humanize v1.0.1 // indirect
 	github.com/go-logr/logr v1.4.2 // indirect
 	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da // indirect
@@ -33,7 +34,7 @@ require (
 	github.com/peterh/liner v1.2.2 // indirect
 	github.com/rivo/uniseg v0.4.7 // indirect
 	go.opencensus.io v0.24.0 // indirect
-	golang.org/x/net v0.30.0 // indirect
-	golang.org/x/sys v0.26.0 // indirect
-	google.golang.org/protobuf v1.35.1 // indirect
+	golang.org/x/net v0.31.0 // indirect
+	golang.org/x/sys v0.27.0 // indirect
+	google.golang.org/protobuf v1.35.2 // indirect
 )

@@ -24,11 +24,11 @@ for examples, for C4, C1*C3 or C2*C2
 
 
 Next steps:
-- add traces dupe dropper in graph walker *before* a particle is emitted
-- remove "extended" generation (graph constructions don't matter)
-- explore even/odd particle cycles behqavior (even and odd cycles are orthogonal) ==> only two "characteristic traces" needed
-   - odd and even are orthogonal
-   - rethink factorization:  vertex count does not need te preserved, only traces => p+ <=> n0 + pi+
+[] remove "extended" generation (graph constructions don't matter)
+[] explore even/odd particle cycles behavior (even and odd cycles are orthogonal) ==> only two "characteristic traces" needed
+[] what is the traces of after Z > 95, stability is longer than half the solar system's age?
+[] maybe odd and even are orthogonal?
+[] rethink factorization:  vertex count does not need te preserved, only traces => p+ <=> n0 + pi+
 
    - what if we maintain a manual json db of particles defined by graphs or explicit traces (e.g. quarks(
 

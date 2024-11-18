@@ -632,8 +632,8 @@ func (X *Graph) MarshalOut(out []byte, opts go2x3.MarshalOpts) ([]byte, error) {
 			return nil, err
 		}
 		return append(out, buf...), nil
-		
-	case opts&(go2x3.AsState | go2x3.AsAscii) != 0:
+
+	case opts&(go2x3.AsState|go2x3.AsAscii) != 0:
 		return X.xstate.MarshalOut(out, opts)
 	}
 	return nil, go2x3.ErrBadCatalogParam
@@ -982,11 +982,5 @@ func (gw *GraphWalker) onParticleCompleted(cmds []EncoderCmd) {
 	X := NewGraph(nil)
 	X.AssignFromCmds(cmds)
 
-	// Since the particle enumeration process only makes positive edges, a Traces vector uniquely identifies
-	//     a graph and we are thus spared from doing a full canonicalization in order to detect duplicate enumerations.
-	//
-	// However, for testing, we emit all particles.
-	if true { //|| gw.emitted.TryAdd(X.Traces(0)) {
-		gw.EnumStream.Outlet <- X
-	}
+	gw.EnumStream.Outlet <- X
 }

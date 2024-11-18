@@ -1,7 +1,42 @@
 syntax = "proto3";
 package graph;
 
+
 //option go_package = "github.com/fine-structures/fine.SDK/lib2x3/graph";
+
+
+message OpNode {
+    OpCode              OpCode                      = 1;
+    int64               VtxID                       = 2;
+    int64               Repeat                      = 3;
+    repeated OpNode     Components                  = 4;
+}
+// OpCode represents various operations that can be performed on components.
+enum OpCode {
+    // OpCode_Nil represents a no-operation.
+    OpCode_Nil           = 0; // ~
+
+    // OpCode_Sum adds all components together (commutative).
+    OpCode_Sum           = 1; 
+
+    // OpCode_Power modulates or rotates its components the given number of times or degrees (commutative).
+    OpCode_Power         = 2; 
+
+    // OpCode_Mirror creates a "mirror" vertex edge for every vertex able to add an edge, connecting each to its new corresponding vertices.
+    OpCode_Mirror        = 3; 
+
+    // OpCode_Replace replaces a vertex having N edges into a circle or ring of N connected vertices, each connected to the now-removed vertex's original edges.
+    OpCode_Replace       = 4; 
+}
+
+
+
+enum Bool {
+    Bool_Unspecified = 0;
+    Bool_Yes         = 1;
+    Bool_No          = 3;
+}
+
 
 
 // GraphDef is a particular vertex+edge assignment with bound names.
@@ -26,6 +61,7 @@ message GraphDef {
     repeated string     GraphExprs                  = 12;
     
 }
+
 
 
 // GroupID is a vertex group ID containing one or more Vtx.

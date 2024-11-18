@@ -403,28 +403,6 @@ func (X *Construction) Reclaim() {
 func (gw *graphWalker) isUnique(X *Construction) bool {
 	TX := X.Traces(0)
 
-	/*
-		{
-			tmp := gw.tmp
-			tmp.ResetGraph()
-			for _, vi := range X.Vtx {
-				for _, ei := range vi.Edges {
-					vj := ei
-					if ei == 0 {
-						vj = vi.ID
-					}
-					if vi.ID <= vj { // only add each edge once
-						tmp.AddEdge(0, 1, uint32(vi.ID), uint32(vj))
-					}
-				}
-			}
-			tmp.Validate()
-			if !tmp.Traces(0).IsEqual(TX) {
-				panic("trace mismatch")
-			}
-		}
-	*/
-
 	var scrap [128]byte
 	sym := TX.AppendTracesLSM(scrap[:0])
 	_, newlyIssued := gw.emitted.GetSymbolID([]byte(sym), true)
