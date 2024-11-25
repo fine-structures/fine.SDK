@@ -10,7 +10,7 @@ go 1.22
 
 require (
 	github.com/alecthomas/participle/v2 v2.1.1
-	github.com/art-media-platform/amp.SDK v0.8.5
+	github.com/art-media-platform/amp.SDK v0.8.6
 	github.com/dgraph-io/badger/v4 v4.4.0
 	github.com/emirpasic/gods v1.18.1
 	github.com/go-python/gpython v0.2.0
@@ -21,7 +21,6 @@ require (
 
 require (
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
-	github.com/dgraph-io/ristretto v1.0.0 // indirect
 	github.com/dgraph-io/ristretto/v2 v2.0.0 // indirect
 	github.com/dustin/go-humanize v1.0.1 // indirect
 	github.com/go-logr/logr v1.4.2 // indirect
