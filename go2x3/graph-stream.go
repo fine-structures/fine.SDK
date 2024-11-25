@@ -62,15 +62,15 @@ func (stream *GraphStream) Print(
 
 	go func() {
 
-		count := 0
+		total := 0
 		for X := range stream.Outlet {
-			count++
+			total++
 
 			if len(opts.Label) > 0 {
 				fmt.Fprintf(out, "%s,", opts.Label)
 			}
 
-			out.Write([]byte(fmt.Sprintf("%06d,", count)))
+			out.Write([]byte(fmt.Sprintf("%06d,", total)))
 
 			err := X.WriteCSV(out, opts)
 			if err != nil {

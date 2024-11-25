@@ -45,7 +45,10 @@ func py_EnumPureParticles(module py.Object, args py.Tuple) (py.Object, error) {
 		VertexMax: int(v_max.(py.Int)),
 		Params:    "-d BackConnect.1",
 	}
-	stream := lib2x3.EnumPureParticles(opts)
+	stream, err := walker.EnumPureParticles(opts)
+	if err != nil {
+		return nil, err
+	}
 	return wrapGraphSteam(stream), nil
 }
 
@@ -64,7 +67,7 @@ func getGraphFromGraphObj(obj py.Object) (X pyGraph, err error) {
 }
 
 type pyGraph struct {
-	*lib2x3.Graph
+	go2x3.State
 }
 
 func (X pyGraph) Type() *py.Type {
@@ -125,14 +128,14 @@ func py_Graph_Concat(self py.Object, args py.Tuple) (py.Object, error) {
 			if err != nil {
 				return nil, py.ExceptionNewf(py.TypeError, "error reading part %d: %v", i, err)
 			}
-			X.Concatenate(&Xi)
+			X.Absorb(&Xi)
 
 		} else {
 			Xsrc, err := getGraphFromGraphObj(arg)
 			if err != nil {
 				return nil, err
 			}
-			X.Concatenate(Xsrc.Graph)
+			X.Absorb(Xsrc)
 		}
 	}
 
@@ -419,9 +422,22 @@ func py_GraphStream_AddTo(self py.Object, args py.Tuple) (py.Object, error) {
 func py_GraphStream_DropDupes(self py.Object, args py.Tuple) (py.Object, error) {
 	stream := self.(graphStream)
 
-	// Create a memory resident catalog that get auto-closed when the stream closes
-	cat := lib2x3.NewDropDupes(lib2x3.DropDupeOpts{})
-	next := stream.AddTo(cat)
+
+func py_GraphStream_Select(self py.Object, args py.Tuple) (py.Object, error) {
+	outbound := self.(graphStream)
+	if len(args) == 0 {
+		cat := lib2x3.NewSelect(lib2x3.DropDupeOpts{})
+		next := outbound.AddTo(cat)
+		return wrapGraphSteam(next), nil
+	}
+	
+	sel := go2x3.DefaultGraphSelector
+	err := getGraphSelector(args[0], &sel)
+	if err != nil {
+		return nil, err
+	}
+
+	next := outbound.SelectFromStream(sel)
 	return wrapGraphSteam(next), nil
 }
 
@@ -436,21 +452,10 @@ func py_GraphStream_Canonize(self py.Object, args py.Tuple) (py.Object, error) {
 	return wrapGraphSteam(next), nil
 }
 
-func py_GraphStream_Select(self py.Object, args py.Tuple) (py.Object, error) {
-	sel := go2x3.DefaultGraphSelector
-	err := getGraphSelector(args[0], &sel)
-	if err != nil {
-		return nil, err
-	}
-	stream := self.(graphStream)
-	next := stream.SelectFromStream(sel)
-	return wrapGraphSteam(next), nil
-}
-
 func py_GraphStream_PermuteEdgeSigns(self py.Object, args py.Tuple) (py.Object, error) {
 	ch00 := self.(graphStream)
 	ch01 := ch00.PermuteVtxSigns()
-	cat := lib2x3.NewDropDupes(lib2x3.DropDupeOpts{})
+	cat := lib2x3.NewSelect(lib2x3.DropDupeOpts{})
 	ch02 := ch01.AddTo(cat)
 	ch03 := ch02.PermuteEdgeSigns()
 	return wrapGraphSteam(ch03), nil
@@ -493,7 +498,6 @@ func init() {
 		// pyGraphStreamType.Dict["PushGraph"] = py.MustNewMethod("PushGraph", py_GraphStream_PushGraph, 0, "")
 		pyGraphStreamType.Dict["AddTo"] = py.MustNewMethod("AddTo", py_GraphStream_AddTo, 0, "")
 		pyGraphStreamType.Dict["Canonize"] = py.MustNewMethod("Canonize", py_GraphStream_Canonize, 0, "")
-		pyGraphStreamType.Dict["DropDupes"] = py.MustNewMethod("DropDupes", py_GraphStream_DropDupes, 0, "")
 		pyGraphStreamType.Dict["Select"] = py.MustNewMethod("Select", py_GraphStream_Select, 0, "")
 		pyGraphStreamType.Dict["PermuteEdgeSigns"] = py.MustNewMethod("PermuteEdgeSigns", py_GraphStream_PermuteEdgeSigns, 0, "")
 

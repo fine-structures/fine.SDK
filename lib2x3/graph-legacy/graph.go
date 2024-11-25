@@ -115,7 +115,7 @@ func (cmd EncoderCmd) IsAddEdgeCmd() (isAddEdge bool, Va, Vb VtxID) {
 }
 
 type Graph struct {
-	partCount int               // number of particles (i.e. matrix partitions).  Zero if not yet calculated
+	partCount int64             // number of particles (i.e. matrix partitions).  Zero if not yet calculated
 	vtxCount  int               // number of assigned Vtx in []vtx
 	edgeCount int               // number of assigned EdgeIDs in []edges
 	vtx       [MaxVtxID]VtxType // poles assignment
@@ -150,9 +150,9 @@ func (X *Graph) Swap(i, j int) {
 }
 
 // Returns the number of particles (partitions) in this graph
-func (X *Graph) NumParticles() byte {
+func (X *Graph) NumParticles() int64 {
 	if X.partCount > 0 {
-		return byte(X.partCount)
+		return int64(X.partCount)
 	}
 
 	// We find number of total partitions.  Start by assuming each vertex its own partition.
@@ -181,13 +181,13 @@ func (X *Graph) NumParticles() byte {
 	}
 
 	// The number of unique values in the vtx list is the number of partitions
-	pcount := 0
+	pcount := int64(0)
 	if Nv > 0 {
 		pcount++
 	}
 	for _, vi := range vtx {
 		newPart := true
-		for j := 0; j < pcount; j++ {
+		for j := int64(0); j < pcount; j++ {
 			if vtx[j] == vi {
 				newPart = false
 			}
@@ -199,7 +199,7 @@ func (X *Graph) NumParticles() byte {
 	}
 
 	X.partCount = pcount
-	return byte(X.partCount)
+	return X.partCount
 }
 
 func (X *Graph) VertexCount() int {
@@ -228,7 +228,7 @@ func (X *Graph) GraphInfo() go2x3.GraphInfo {
 	posEdges, negEdges := X.CountEdges()
 
 	return go2x3.GraphInfo{
-		NumParticles: X.NumParticles(),
+		NumParticles: byte(X.NumParticles()),
 		NumVertex:    byte(X.VertexCount()),
 		NegEdges:     negEdges,
 		PosEdges:     posEdges,
@@ -598,17 +598,18 @@ func (X *Graph) appendGraphEncodingTo(buf []byte) []byte {
 	return buf
 }
 
-// Concatenates Xsrc to the "end" of X
-func (X *Graph) Concatenate(Xsrc *Graph) {
+// Absorbs input state to the "end" of X
+func (X *Graph) Absorb(in go2x3.State) {
+	Xin := in.(*Graph)
 	v0 := VtxID(X.vtxCount)
-	X.vtxCount += Xsrc.vtxCount
-	for i, vtx := range Xsrc.Vtx() {
+	X.vtxCount += Xin.vtxCount
+	for i, vtx := range Xin.Vtx() {
 		X.vtx[v0+VtxID(i)] = vtx
 	}
 
 	e0 := X.edgeCount
-	X.edgeCount += Xsrc.edgeCount
-	for i, edge := range Xsrc.Edges() {
+	X.edgeCount += Xin.edgeCount
+	for i, edge := range Xin.Edges() {
 		a, b := edge.VtxAB()
 		X.edges[e0+i] = edge.EdgeType().FormEdge(a+v0, b+v0)
 	}

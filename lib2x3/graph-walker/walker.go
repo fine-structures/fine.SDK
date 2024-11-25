@@ -44,7 +44,7 @@ func enumPureParticles(opts EnumOpts) (*go2x3.GraphStream, error) {
 
 type graphWalker struct {
 	EnumStream *go2x3.GraphStream
-	forkCount  atomic.Uint64
+	prevForkID atomic.Uint64
 	opts       EnumOpts
 	emitted    symbol.Table
 
@@ -69,7 +69,7 @@ type Construction struct {
 	Ops      []GrowOp       // build steps that yields State
 	Vtx      []graph.Vertex // active vertex state
 	Next     *Construction  // forward linked list
-	traces   []int64        // traces storage
+	traces   []int64        // traces storage; len() == 0 denotes not computed
 }
 
 func (X *Construction) VertexCount() int {
@@ -86,7 +86,7 @@ func (X *Construction) MarshalOut(out []byte, opts go2x3.MarshalOpts) ([]byte, e
 }
 
 func (X *Construction) WriteCSV(out io.Writer, opts go2x3.PrintOpts) error {
-	fmt.Fprintf(out, "p=%d,v=%d,", X.ParticleCount(), X.VertexCount())
+	fmt.Fprintf(out, "p=%d,v=%d,", X.NumParticles(), X.VertexCount())
 	var buf [128]byte
 	exprStr := X.marshalAsExpr(buf[:0], 1, true)
 	exprStr = append(exprStr, ',')
@@ -157,13 +157,13 @@ func (X *Construction) marshalAsExpr(out []byte, vtxID graph.VtxID, asAscii bool
 
 func (X *Construction) GraphInfo() go2x3.GraphInfo {
 	return go2x3.GraphInfo{
-		NumParticles: byte(X.ParticleCount()),
+		NumParticles: byte(X.NumParticles()),
 		NumVertex:    byte(X.VertexCount()),
 	}
 }
 
 // Returns the number of particles (partitions) in this graph
-func (X *Construction) ParticleCount() int64 {
+func (X *Construction) NumParticles() int64 {
 
 	// We find number of total partitions.  Start by assuming each vertex its own partition.
 	// Each time we connect two vertices with an edge, propagate their connectedness.
@@ -218,91 +218,58 @@ func (X *Construction) PermuteVtxSigns(dst *go2x3.GraphStream) {
 
 // PermuteEdgeSigns emits a Graph for every possible edge sign permutation of the given Graph.
 //
-// The callback handler should not make any changes to Xperm (with the exception of calling Traces())
+// The callback handler should not make any changes to X (with the exception of calling Traces())
 func (X *Construction) PermuteEdgeSigns(dst *go2x3.GraphStream) {
 
-	dst.Outlet <- X.MakeCopy() // TODO
+	// Permute the signs of each edge in the graph
+	Ne := len(X.Ops)
+	permutationCount := 1 << Ne
+	for Pi := 0; Pi < permutationCount; Pi++ {
+		// Xi := X.MakeCopy() //copy the original graph 2^Ne times
+		// xi := Xi.(*Construction)
 
-	/*
-		// If there's no edges to permute over, export only the given graph (which is just 0 or more single vertex particles).
-		// Note that X.edgeCount is vertex pair count, so 2 or 3 edges of matching type will only show up as *one* element.
-		Ne := X.edgeCount
-		if Ne == 0 {
-			dst.Outlet <- X.MakeCopy()
-			return
-		}
+		// // TODO: study legacy walker to get edge permuations right.  remember, empty slots count as "edges" since they are half edges
+		// // apply sign permutation to newly minted copy of X
+		// for ei, op := range xi.Ops {
 
-		Xi := NewGraph(X)
-		defer Xi.Reclaim()
+		// 	if Pi&(1<<ei) != 0 { // permutation bit denotes sign
+		// 		opRepeat := op.Count
+		// 		for j := 0; j < opRepeat; j++ {
+		// 			for sign := +1; sign >= -1; sign -= 2 {
+		// 				xi.Ops[ei].Count = m
+		// 				dst.Outlet <- xi
+		// 				xi.Ops[ei].Count = -m
 
-		// Build the permutation we will traverse
-		permCount := int64(1)
-		var span [MaxEdges][4]EdgeID
-		for ei, edgeID := range Xi.Edges() {
-			edgePerm := edgeID.EdgePerm()
-			span[ei] = edgePerm.Edges
-			permCount *= int64(edgePerm.Num)
-			Xi.edges[ei] = span[ei][0]
-		}
-
-		for {
-			dst.Outlet <- Xi.MakeCopy()
-			permCount--
-
-			// "Increment" to the next permutation
-			carry := true
-			for ei := 0; ei < Ne && carry; ei++ {
-				e := Xi.edges[ei]
-
-				switch e {
-				case span[ei][0]:
-					e = span[ei][1]
-				case span[ei][1]:
-					e = span[ei][2]
-				case span[ei][2]:
-					e = span[ei][3]
-				default:
-					e = 0
-				}
-
-				// Is there a carry?
-				if e == 0 {
-					e = span[ei][0]
-				} else {
-					carry = false
-				}
-
-				// Write the edge change
-				Xi.edges[ei] = e
-			}
-
-			Xi.onGraphChanged()
-
-			if carry {
-				if permCount != 0 {
-					panic("calculated number of VtxType permutations did not equal number of enumerations")
-				}
-				break
-			}
-		}
-	*/
+		// 		for k := opCount; k >= -opCount; k-- {
+		// 			xi.Ops[ei].Count = k
+		// 		}
+		// 	}
+		// }
+		// dst.Outlet <- xi
+	}
 }
 
-func (X *Construction) Traces(numTraces int) go2x3.Traces {
+
+func (X *Construction) Traces(wantTraces int) go2x3.Traces {
 	Nv := X.VertexCount()
-	Nt := numTraces
-	if Nt <= 0 {
-		Nt = Nv
+	if wantTraces <= 0 {
+		wantTraces = Nv
+	}
+	if wantTraces <= len(X.traces) { // traces already computed?
+		return X.traces[:wantTraces]
 	}
 
-	if cap(X.traces) < Nt {
-		X.traces = make([]int64, (Nt+3)&^3)
+	// reset traces storage
+	if cap(X.traces) < wantTraces {
+		X.traces = make([]int64, 0, (wantTraces+7)&^7)
+	} else {
+		X.traces = X.traces[:wantTraces]
 	}
-	TX := X.traces[:Nt]
+	TX := X.traces[:wantTraces]
 
 	// init scrap
 	NvNv := Nv * Nv
-	scrap := make([]int64, NvNv*2)
+	scrap := make([]int64, NvNv*2) // pooling not needed since this does not escape
 	Ci0 := scrap[:NvNv]
 	Ci1 := scrap[NvNv:]
 
@@ -315,7 +282,7 @@ func (X *Construction) Traces(numTraces int) go2x3.Traces {
 		Ci0_vi[vi] = 1 // or any k[vj]
 	}
 
-	for ti := range Nt {
+	for ti := range wantTraces {
 		TX_ci := int64(0)
 
 		for vi := range Nv {
@@ -355,7 +322,7 @@ func (X *Construction) Traces(numTraces int) go2x3.Traces {
 }
 
 func (X *Construction) MakeCopy() go2x3.State {
-	return NewState(X)
+	return NewConstruction(X)
 }
 
 // func (X *Construction) WriteAsGraphExprStr(out io.Writer) {
@@ -447,7 +414,7 @@ func (X *Construction) recountSiblings(vi VtxID) {
 }
 */
 
-func NewState(Xsrc *Construction) *Construction {
+func NewConstruction(Xsrc *Construction) *Construction {
 	X := graphPool.Get().(*Construction)
 	X.Next = nil
 	X.traces = X.traces[:0]
@@ -502,6 +469,25 @@ func (X *Construction) findOpenSlot(vi graph.VtxID) (vi_slot byte) {
 		}
 	}
 	return 0
+}
+
+// Absorbs Xsrc to the "end" of X
+func (X *Construction) Absorb(Xsrc go2x3.State) {
+	// TODO
+	// v0 := VtxID(X.vtxCount)
+	// X.vtxCount += Xsrc.vtxCount
+	// for i, vtx := range Xsrc.Vtx() {
+	// 	X.vtx[v0+VtxID(i)] = vtx
+	// }
+
+	// e0 := X.edgeCount
+	// X.edgeCount += Xsrc.edgeCount
+	// for i, edge := range Xsrc.Edges() {
+	// 	a, b := edge.VtxAB()
+	// 	X.edges[e0+i] = edge.EdgeType().FormEdge(a+v0, b+v0)
+	// }
+
+	// X.onGraphChanged()
 }
 
 func (X *Construction) applyOp(op GrowOp) bool {
@@ -565,7 +551,7 @@ func (X *Construction) applyOp(op GrowOp) bool {
 }
 
 func (gw *graphWalker) tryEmitFork(X0 *Construction, op GrowOp) {
-	X := NewState(X0)
+	X := NewConstruction(X0)
 	ok := X.applyOp(op)
 
 	Nv := X.VertexCount()
@@ -573,7 +559,7 @@ func (gw *graphWalker) tryEmitFork(X0 *Construction, op GrowOp) {
 		X.Reclaim()
 		return
 	}
-	X.ForkID = gw.forkCount.Add(1)
+	X.ForkID = gw.prevForkID.Add(1)
 	X.Ops = append(X.Ops, op)
 
 	if Nv <= gw.walkingVertex {

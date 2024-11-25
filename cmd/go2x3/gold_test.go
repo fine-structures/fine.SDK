@@ -11,7 +11,7 @@ import (
 	"github.com/go-python/gpython/py"
 )
 
-func TestGolden(t *testing.T) {
+func TestGold(t *testing.T) {
 	err := os.Chdir("./")
 	if err != nil {
 		log.Fatal(err)

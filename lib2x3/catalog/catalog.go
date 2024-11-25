@@ -1034,7 +1034,7 @@ func (cat *catalog) formGraphFromFactors(
 		})
 		if err == nil {
 			for fi := uint32(0); fi < Pi.Count; fi++ {
-				X.Concatenate(Xi)
+				X.Absorb(Xi)
 			}
 		} else {
 			panic(err)

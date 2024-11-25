@@ -1,6 +1,10 @@
 package go2x3
 
-import "sync"
+import (
+	"sync"
+
+	"github.com/art-media-platform/amp.SDK/stdlib/symbol/memory_table"
+)
 
 func (factors *FactorSet) Insert(toAdd TracesID) {
 	insertAt := len(*factors)
@@ -144,6 +148,7 @@ func (info *GraphInfo) NumEdges() byte {
 
 // DefaultGraphSelector selects all valid lib2x3 graphs.
 var DefaultGraphSelector = GraphSelector{
+	UniqueTraces: false,
 	Min: GraphInfo{
 		NumParticles: 1,
 		NumVertex:    1,
@@ -167,5 +172,26 @@ func (sel *GraphSelector) SelectsGraph(X State) bool {
 	if info.NumParticles > sel.Max.NumParticles || info.NumVertex > sel.Max.NumVertex || info.PosLoops > sel.Max.PosLoops || info.NegLoops > sel.Max.NegLoops || info.PosEdges > sel.Max.PosEdges || info.NegEdges > sel.Max.NegEdges {
 		return false
 	}
+	if uniques := sel.uniqueTraces; uniques != nil {
+		var scrap [128]byte
+		sym := X.Traces(0).AppendTracesLSM(scrap[:0])
+		_, unique := uniques.GetSymbolID([]byte(sym), true)
+		if !unique {
+			return false
+		}
+	}
+
 	return true
+}
+
+func (sel *GraphSelector) ResetUniqueTraces(enabled bool) {
+	if sel.uniqueTraces != nil {
+		sel.uniqueTraces.Close()
+		sel.uniqueTraces = nil
+	}
+	sel.UniqueTraces = enabled
+	if enabled {
+		tableOpts := memory_table.DefaultOpts()
+		sel.uniqueTraces, _ = tableOpts.CreateTable()
+	}
 }

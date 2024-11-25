@@ -5,6 +5,7 @@ import (
 	"io"
 
 	"github.com/art-media-platform/amp.SDK/stdlib/generics"
+	"github.com/art-media-platform/amp.SDK/stdlib/symbol"
 )
 
 const (
@@ -37,8 +38,11 @@ type State interface {
 	TracesProvider
 
 	PermuteEdgeSigns(dst *GraphStream)
-	PermuteVtxSigns(dst *GraphStream)
+	PermuteVtxSigns(dst *GraphStream) // TODO: remove
+	Absorb(suffix State)
 
+	NumParticles() int64
+	
 	Canonize(normalize bool) error
 
 	WriteCSV(out io.Writer, opts PrintOpts) error
@@ -139,11 +143,12 @@ type GraphInfo struct {
 type GraphSelector struct {
 	Traces       TracesProvider // Implies a Traces to match with or factor
 	Factor       bool           // Perform factorization of sel.Traces
-	UniqueTraces bool           // Only select the first Graph for each unique traces
 	SelectPrimes bool           // Select only prime graphs
 	SelectBosons bool           // Select only boson graphs
 	Min          GraphInfo      // lower select bounds
 	Max          GraphInfo      // upper select bounds
+	UniqueTraces bool           // only unique traces are selected
+	uniqueTraces symbol.Table   // table of unique traces -- TODO: close!?
 }
 
 // PrintOpts specifies what is printing when printing a graph
