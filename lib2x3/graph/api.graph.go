@@ -19,8 +19,36 @@ type Edge struct {
 // Vertex is a node of a graph, with a fixed number of edges per vertex
 type Vertex struct {
 	ID    VtxID // 1, 2, 3, ..
-	Edges [EdgesPerVertex]Edge
+	Edges []Edge
 }
+
+type VertexGroup struct {
+	CycleIndex  int64      // 0, 1, 2, .. -- cycle number when this vertex "cycle" group is traversed
+	Occurrences int64      // number of times to repeat this group
+	GroupRadius int64      // aka cycle index aka edge distance from the root vertex.
+	Edges       []EdgePort // edges flowing into and out of this group
+	OpenSlots   []int      // indicies into []EdgesOut of open slots in the group
+}
+
+type EdgePort struct {
+	WeightPositive int64 // positive weight of this edge
+	WeightNegative int64 // negative weight of this edge
+
+	// FromID names which vertex in the previous group this vertex originates from.
+	//
+	//  -1: SproutsNewEdge
+	//   0: SELF_EDGE aka "open slot"
+	FromID  int64 // relative index of the inlet from the previous group
+	IndexID int64 // 1, 2, 3, ... {positive integer label, 0 denotes nil}
+}
+
+const (
+	SproutsNewEdge = int64(-1)
+	SelfEdge       = int64(0)
+	VertexID_1     = int64(1)
+	VertexID_2     = int64(2)
+	VertexID_3     = int64(3) // etc.
+)
 
 // VtxID is one-based index that identifies a vertex in a given graph (1..VtxMax)
 type VtxID byte

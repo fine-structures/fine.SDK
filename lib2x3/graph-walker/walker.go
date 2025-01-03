@@ -48,6 +48,7 @@ type graphWalker struct {
 	opts       EnumOpts
 	emitted    symbol.Table
 
+	// DEPRECATED
 	walkingVertex int        // graph vtx size currently being emitted
 	walkingQueue  GraphQueue // queue to process for current vtx size
 	deferredQueue GraphQueue // queue to process for currentVtx + 1
@@ -328,9 +329,9 @@ func (X *Construction) Traces(numTraces int) go2x3.Traces {
 				for _, vj_e := range vj.Edges {
 
 					// pull flow from previous state
-					v_src := vj_e.To // outward edge
-					if v_src == 0 {
-						v_src = vj.ID // inward edge
+					v_src := vj_e.To // complete edge
+					if v_src == 0 {  // 0 denotes self edge
+						v_src = vj.ID
 					}
 					edgeFlow := Ci0_vi[v_src-1]
 					if vj_e.Sign < 0 {

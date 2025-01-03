@@ -23,15 +23,16 @@ build: $(GOFILES)
 	CGO_ENABLED=0 \
 	go build -trimpath
 
-## generate "gold" output for py2x3 scripts
+## generate "gold" output from input .py scripts execued through by gpython.
+## also uses grep to output where mentions occur: file path and line number of every occurence of "TODO"
 gold: clean $(GOFILES)
 	cd ${BIN_PATH} && \
-	go test -timeout 1h -run Golden
+	go test -timeout 1h ./...
 	
 ## same as gold but 2x3 catalog dbs not wiped
 silver: ## Z, I love you from and to the ends of space and time
 	cd ${BIN_PATH} && \
-	go test -timeout 1h -run Golden
+	go test -timeout 1h -run Gold
 # ----------------------------------------
 # tooling
 
@@ -54,17 +55,16 @@ tools:
 #	go get -d  github.com/gogo/protobuf/jsonpb
 #	go get -d  github.com/gogo/protobuf/gogoproto
 
-## generate code from .proto files
-generate: 
+## generate code from .proto files and auto-generates TODO.txt
+ready: 
+	grep -wHrni --include=*.{go,md} "todo" . > _TODO.txt
+	
 	protoc \
 		-I='${GOPATH}/src' \
 		--gogoslick_opt=paths=source_relative   \
 		--gogoslick_out=plugins=grpc:.          \
 		--proto_path=.  \
 		go2x3/go2x3.proto
-		
-			
-		
 		
 	protoc \
 		-I='${GOPATH}/src' \
