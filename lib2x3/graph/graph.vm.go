@@ -85,26 +85,20 @@ func (pid PrimeID) PrimeCatalogID() uint64 {
 
 type ComputeVtx struct {
 	VtxGroup
-
-	// Initially assigned label: 1, 2, 3, ..  (one-based index)
-	VtxID uint32
-
-	Ci0 []int64 // trace in place
-	Ci1 []int64 // trace in place
+	VtxID uint32  // Initially assigned label: 1, 2, 3, ..  (one-based index)
+	Ci    []int64 // current cycle state
 }
 
 type VtxGraphVM struct {
 	Status GraphStatus
 
-	edgeCount int        // allocated edges: edgePool[:edgeCount]
-	edgePool  []*VtxEdge // used and non-used edges
-	traces    []int64
-	calcBuf   []int64
+	edgeCount int           // allocated edges: edgePool[:edgeCount]
+	edgePool  []*VtxEdge    // used and non-used edges
+	traces    []int64       // length denotees what is calculated
+	calcBuf   []int64       // backing buffer
 	vtx       []*ComputeVtx // Vtx by VtxID (zero-based indexing)
 	vtxMap    []uint32      // original VtxID to consolidated VtxID (zero-based indexing)
 }
-
-const maxNv = 18
 
 // func (X *Graph) Reclaim() {
 // 	if X != nil {
@@ -651,41 +645,40 @@ func (X *VtxGraphVM) calcTracesTo(Nc int) {
 	// Init edge (VM) state
 	for i, vi := range Xv {
 		for j := 0; j < Nv; j++ {
-			vi.Ci0[j] = 0
+			vi.Ci[j] = 0
 		}
-		vi.Ci0[i] = 1
+		vi.Ci[i] = 1
 		X.vtxMap[i] = uint32(i + 1)
 	}
 
+	C1 := make([]int64, Nv)
+
 	// Oh Lord, our Adonai and God, you alone are the Lord. You have made the heavens, the heaven of heavens, with all their host, the earth and all that is on it, the seas and all that is in them; and you preserve all of them; and the host of heaven worships you. You are the Lord, the God, who chose Abram and brought him out of Ur of the Chaldeans and gave him the name Abraham; you found his heart faithful before you, and made with him the covenant to give the land of the Canaanites, the Hittites, the Amorites, the Perizzites, the Jebusites, and the Girgashites—to give it to his offspring. You have kept your promise, for you are righteous. And you saw the affliction of our fathers in Egypt and heard their cry at the Red Sea; and you performed signs and wonders against Pharaoh and all his servants and all the people of his land, for you knew that they acted arrogantly against them. And you made a name for yourself, as it is this day, and you divided the sea before them, so that they went through the midst of the sea on dry land, and you cast their pursuers into the depths, as a stone into mighty waters. Moreover in a pillar of cloud you led them by day, and in a pillar of fire by night, to light for them the way in which they should go. You came down also upon Mount Sinai, and spoke with them from heaven, and gave them right ordinances and true laws, good statutes and commandments; and you made known to them your holy sabbath, and commanded them commandments and statutes, a law for ever. And you gave them bread from heaven for their hunger, and brought forth water for them out of the rock for their thirst, and you told them to go in to possess the land that you had sworn to give them. But they and our fathers acted presumptuously and stiffened their neck, and did not obey your commandments. They refused to obey, neither were mindful of the wonders that you performed among them, but hardened their necks, and in their rebellion appointed a leader to return to their bondage. But you are a God ready to pardon, gracious and merciful, slow to anger, and abounding in steadfast love, and did not forsake them. Even when they had made for themselves a calf of molten metal, and~.
 	// Yashua is His name, Emmanuel, God with us!
-	for ci := 0; ci < Nc; ci++ {
-		odd := (ci & 1) == 0 // in zero-based indexing so odd indexes are even cycle indices.
+	for ti := 0; ti < Nc; ti++ {
 
+		traces_ti := int64(0)
 		for _, vi := range Xv {
 
-			// Alternate which is the prev / next state store
-			Ci0, Ci1 := vi.Ci0, vi.Ci1
-			if !odd {
-				Ci0, Ci1 = Ci1, Ci0
-			}
-
 			for j, vj := range Xv {
-				Ci1[j] = 0
+				C1[j] = 0
 
 				for _, e := range vj.Edges {
 					assert(int(e.DstVtxID) == j+1, "edge DstVtxID mismatch")
 
-					Ci_src := Ci0[e.SrcVtxID-1]
+					Ci_src := vi.Ci[e.SrcVtxID-1]
 					netCount := e.Count
-					Ci1[j] += netCount * Ci_src
+					C1[j] += netCount * Ci_src
 				}
 			}
 
-			vi_cycles_ci := Ci1[vi.VtxID-1]
-			X.traces[ci] += vi_cycles_ci
-			vi.Cycles[ci] = vi_cycles_ci
+			copy(vi.Ci, C1) // update cycle state
+			vi_cycles := C1[vi.VtxID-1]
+			vi.Cycles[ti] = vi_cycles
+			traces_ti += vi_cycles
 		}
+
+		X.traces[ti] = traces_ti
 	}
 }
 
@@ -1066,7 +1059,7 @@ func (X *VtxGraphVM) setupBufs(Nc int) {
 		Nc = Nv
 	}
 
-	need := Nc + Nv*(Nc+Nc+Nc)
+	need := Nc + Nv*(Nv+Nc)
 	if len(X.calcBuf) < need {
 		X.calcBuf = make([]int64, (need+15)&^15)
 	}
@@ -1078,13 +1071,12 @@ func (X *VtxGraphVM) setupBufs(Nc int) {
 
 	// Place bufs on each vtx
 	for _, v := range Xv {
-		v.Ci0, buf = chopBuf(buf, Nc)
-		v.Ci1, buf = chopBuf(buf, Nc)
+		v.Ci, buf = chopBuf(buf, Nv)
 		v.Cycles, buf = chopBuf(buf, Nc)
 	}
 
 	if cap(X.vtxMap) < Nv {
-		X.vtxMap = make([]uint32, Nv, maxNv)
+		X.vtxMap = make([]uint32, Nv)
 	} else {
 		X.vtxMap = X.vtxMap[:Nv]
 	}
