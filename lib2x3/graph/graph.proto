@@ -3,6 +3,47 @@ package graph;
 
 //option go_package = "github.com/fine-structures/fine.SDK/lib2x3/graph";
 
+/*
+message Node {
+    OpCode           OpCode     = 1;
+    int64            VtxID      = 2; // any UTF8 character by convention
+    int64            Count      = 3; // Number of times to repeat this operation
+    repeated Node  Components = 4;
+}
+*/
+
+// OpCode represents various operations that can be performed on components.
+enum OpCode {
+
+    // OpCode_None represents a no-operation, which is common to express an inline value.
+    OpCode_None          = 0;
+
+    // OpCode_Sum expresses the sum all sub components together (commutative).
+    // The "sprout" operation is a special case of this operation where a tuple of (3) +1/3  that 'sprouts'  from an existing "edge slot" 
+    OpCode_Sum           = 1; 
+
+    // OpCode_Exp expresses the exponent of the components tuple the given degrees or steps of iteration (unordered).
+    // This originated from the "edge duplicate" operation where the a chosen edge is "doubled" when really its exponent in incremented by 1. 
+    OpCode_Exp           = 2; 
+
+    // OpCode_Mirror creates a "mirror" vertex edge for every vertex able to add an edge, connecting each to its new corresponding vertices.
+    // For example, this makes a cube graph topology arise from a square. 
+    OpCode_Mirror        = 3; 
+
+    // OpCode_Replace replaces a vertex having N edges into a circle or ring of N connected vertices, each connected to the now-removed vertex's original edges.
+    // For example, this tetrahedron graph topology possible, but it is also possible this operation is not needed.
+    OpCode_Replace       = 4; 
+}
+
+
+
+enum Bool {
+    Bool_Unspecified = 0;
+    Bool_Yes         = 1;
+    Bool_No          = 3;
+}
+
+
 
 // GraphDef is a particular vertex+edge assignment with bound names.
 // Has similarities to a "Contributing structure" in quantum|chemistry lingo. https://en.wikipedia.org/wiki/Resonance_(chemistry)

@@ -303,7 +303,7 @@ func (X *Construction) Traces(numTraces int) go2x3.Traces {
 
 	// init scrap
 	NvNv := Nv * Nv
-	scrap := make([]int64, NvNv*2)
+	scrap := make([]int64, NvNv*2) // (prev, next state)
 	Ci0 := scrap[:NvNv]
 	Ci1 := scrap[NvNv:]
 
@@ -317,8 +317,8 @@ func (X *Construction) Traces(numTraces int) go2x3.Traces {
 	}
 
 	for ti := range Nt {
-		TX_ci := int64(0)
 
+		TX_ci := int64(0)
 		for vi := range Nv {
 			Ci0_vi := Ci0[Nv*vi : Nv*(vi+1)]
 			Ci1_vi := Ci1[Nv*vi : Nv*(vi+1)]

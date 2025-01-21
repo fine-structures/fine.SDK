@@ -585,6 +585,7 @@ func tryConsolidate(vtx []*ComputeVtx) int {
 		}
 	}
 
+	// STEP 1 -- compute the sum of candidates for consolidation into C[k]
 	for k := 0; k < Nc; k++ {
 		Ck := int64(0)
 		for _, vi := range vtx {
@@ -594,13 +595,13 @@ func tryConsolidate(vtx []*ComputeVtx) int {
 			}
 			Ck += n * vi.Cycles[k]
 		}
-		if Ck%combined != 0 {
-			return 0 // if cycles sum not divisible by the combined count, we cannot consolidate
+		if Ck%combined != 0 { // a cycle sum not divisible by the combined count means we cannot consolidate
+			return 0 // none consolidated
 		}
 		C[k] = Ck
 	}
 
-	// At this point, the traces sum is perfectly divisible by the combined count for each even and ofd
+	// At this point, the traces sum is divisible by the combined count for each even and odd
 	vtx[0].OddSign = OddSign_Natural
 	vtx[0].Count = combined
 	for k := 0; k < Nc; k++ {

@@ -195,8 +195,8 @@ func (fcat *FactorCatalog) FindFactorizations(TX go2x3.Traces) <-chan go2x3.Fact
 				}
 
 				// If the given (canonical) factor set is not yet added, do so
-				_, found := factorizations.Get(curSet)
-				if !found {
+				_, exists := factorizations.Get(curSet)
+				if !exists {
 					newSet := append(go2x3.FactorSet{}, curSet...)
 					factorizations.Put(newSet, nil)
 				}
@@ -255,7 +255,7 @@ func (s *factorSearch) findFactors(depth, vi_start, Nv_remain int32) bool {
 
 	depth++
 	R1 := s.stack[depth].Remainder
-	F1 := &s.stack[depth].FactorIdx
+	F1 := &s.stack[depth].FactorID
 
 	more := true
 	for vi := vi_start; vi <= Nv_remain && more; vi++ {
@@ -296,9 +296,8 @@ func (s *factorSearch) sendFactorization(depth int32) bool {
 	}
 
 	for i := int32(1); i <= depth; i++ {
-		Nv := s.stack[i].Nv
-		Fi := s.stack[i].FactorIdx
-		s.onFactor <- go2x3.FormTracesID(uint32(Nv), uint64(Fi))
+		step := &s.stack[i]
+		s.onFactor <- go2x3.FormTracesID(uint32(step.Nv), uint64(step.FactorID))
 	}
 	s.onFactor <- 0 // factorization termination signal
 	return true
@@ -349,7 +348,7 @@ func (s *factorSearch) Reclaim() {
 
 type FactorStep struct {
 	Nv        int32
-	FactorIdx uint32
+	FactorID  uint32
 	Remainder go2x3.Traces
 }
 
