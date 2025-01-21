@@ -101,7 +101,10 @@ ShowPhases("E0 <=> C1",         "1^-2-3-4, 3-5-6^"  )
 ShowPhases("K4",                "1-2-3^-4-1, 2-4",  )
 ShowPhases("K8",                "1^-2-3-4-5^-6-7-8-1, 2-8, 4-6")
 ShowPhases("H (higgs)",          higgs)
-ShowPhases("τ-)",               "1-2=3-4=5")
+ShowPhases(" µ-",               "1-2=5")
+ShowPhases(" τ-",               "1-2=3-4=5")
+ShowPhases(" νµ ",              "1-2-3-4")
+ShowPhases("~νµ ",              "1^^~2^~3^~4^^")
 
 
 print("\n=================   Dn   =================  \n")
