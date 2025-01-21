@@ -21,7 +21,7 @@ import (
 )
 
 var (
-	LIB_VERSION = "v1.2024.1"
+	LIB_VERSION = "v1.2025.0"
 )
 
 var (
@@ -46,6 +46,11 @@ func py_EnumPureParticles(module py.Object, args py.Tuple) (py.Object, error) {
 		Params:    "-d BackConnect.1",
 	}
 	stream := lib2x3.EnumPureParticles(opts)
+
+	// stream, err := walker.EnumPureParticles(opts)
+	// if err != nil {
+	// 	return nil, err
+	// }
 	return wrapGraphSteam(stream), nil
 }
 

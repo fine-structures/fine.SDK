@@ -10,10 +10,9 @@ MAX_VTX = _py2x3.MAX_VTX
 '''
 print('''
 =================================================================
-|                       go2x3 (%s)                       |
-|                      https://2x3.systems                      |
-|                                                               |
 |       "OH LET ME BEHOLD YOUR PRESENCE”  EXODUS 33:2x3x3       |
+|                                                               |
+|                    fine.structures.%s                  |
 =================================================================
 ''' % (_py2x3.LIB_VERSION))
 
