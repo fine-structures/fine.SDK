@@ -10,7 +10,7 @@ MAX_VTX = _py2x3.MAX_VTX
 '''
 print('''
 =================================================================
-|       "OH LET ME BEHOLD YOUR PRESENCE”  EXODUS 33:2x3x3       |
+|       "OH, LET ME BEHOLD YOUR PRESENCE”  EXODUS 33:2x3x3      |
 |                                                               |
 |                    fine.structures.%s                  |
 =================================================================

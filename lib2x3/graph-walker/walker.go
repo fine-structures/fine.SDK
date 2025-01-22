@@ -10,7 +10,6 @@ import (
 	"github.com/art-media-platform/amp.SDK/stdlib/symbol/memory_table"
 	"github.com/fine-structures/fine.SDK/go2x3"
 	"github.com/fine-structures/fine.SDK/lib2x3/graph"
-	//"github.com/fine-structures/fine.SDK/lib2x3/catalog"
 )
 
 func enumPureParticles(opts EnumOpts) (*go2x3.GraphStream, error) {
@@ -20,7 +19,7 @@ func enumPureParticles(opts EnumOpts) (*go2x3.GraphStream, error) {
 	if err != nil {
 		return nil, err
 	}
-	gw := &graphWalker{
+	gw := &walker{
 		opts:          opts,
 		walkingVertex: 1,
 		emitted:       emitted,
@@ -42,7 +41,7 @@ func enumPureParticles(opts EnumOpts) (*go2x3.GraphStream, error) {
 	return gw.EnumStream, nil
 }
 
-type graphWalker struct {
+type walker struct {
 	EnumStream *go2x3.GraphStream
 	forkCount  atomic.Uint64
 	opts       EnumOpts
@@ -56,37 +55,37 @@ type graphWalker struct {
 
 var graphPool = sync.Pool{
 	New: func() any {
-		return &Construction{
-			Vtx:    make([]graph.Vertex, 0, 32),
+		return &state{
+			Vtx:    make([]Vertex, 0, 32),
 			Ops:    make([]GrowOp, 0, 64),
 			traces: make([]int64, 0, 12),
 		}
 	},
 }
 
-type Construction struct {
-	ParentID uint64         // instance ID
-	ForkID   uint64         // instance ID
-	Ops      []GrowOp       // build steps that yields State
-	Vtx      []graph.Vertex // active vertex state
-	Next     *Construction  // forward linked list
-	traces   []int64        // traces storage
+type state struct {
+	ParentID uint64   // instance ID
+	ForkID   uint64   // instance ID
+	Ops      []GrowOp // build steps that yields State
+	Vtx      []Vertex // active vertex state
+	Next     *state   // forward linked list
+	traces   []int64  // traces storage
 }
 
-func (X *Construction) VertexCount() int {
+func (X *state) VertexCount() int {
 	return len(X.Vtx)
 }
 
-func (X *Construction) Canonize(normalize bool) error {
+func (X *state) Canonize(normalize bool) error {
 	return nil
 }
 
-func (X *Construction) MarshalOut(out []byte, opts go2x3.MarshalOpts) ([]byte, error) {
+func (X *state) MarshalOut(out []byte, opts go2x3.MarshalOpts) ([]byte, error) {
 	// TODO:
 	panic("not implemented")
 }
 
-func (X *Construction) WriteCSV(out io.Writer, opts go2x3.PrintOpts) error {
+func (X *state) WriteCSV(out io.Writer, opts go2x3.PrintOpts) error {
 	fmt.Fprintf(out, "p=%d,v=%d,", X.ParticleCount(), X.VertexCount())
 	var buf [128]byte
 	exprStr := X.marshalAsExpr(buf[:0], 1, true)
@@ -117,7 +116,7 @@ func (X *Construction) WriteCSV(out io.Writer, opts go2x3.PrintOpts) error {
 	return nil
 }
 
-func (X *Construction) marshalAsExpr(out []byte, vtxID graph.VtxID, asAscii bool) []byte {
+func (X *state) marshalAsExpr(out []byte, vtxID VtxID, asAscii bool) []byte {
 	out = append(out, '(')
 
 	vtx := &X.Vtx[vtxID-1]
@@ -156,7 +155,7 @@ func (X *Construction) marshalAsExpr(out []byte, vtxID graph.VtxID, asAscii bool
 	return append(out, ')')
 }
 
-func (X *Construction) GraphInfo() go2x3.GraphInfo {
+func (X *state) GraphInfo() go2x3.GraphInfo {
 	return go2x3.GraphInfo{
 		NumParticles: byte(X.ParticleCount()),
 		NumVertex:    byte(X.VertexCount()),
@@ -164,14 +163,14 @@ func (X *Construction) GraphInfo() go2x3.GraphInfo {
 }
 
 // Returns the number of particles (partitions) in this graph
-func (X *Construction) ParticleCount() int64 {
+func (X *state) ParticleCount() int64 {
 
 	// We find number of total partitions.  Start by assuming each vertex its own partition.
 	// Each time we connect two vertices with an edge, propagate their connectedness.
-	var vtxBuf [go2x3.MaxVtxID]graph.VtxID
-	Nv := graph.VtxID(len(X.Vtx))
+	var vtxBuf [go2x3.MaxVtxID]VtxID
+	Nv := VtxID(len(X.Vtx))
 	vtx := vtxBuf[:Nv]
-	for i := graph.VtxID(0); i < Nv; i++ {
+	for i := VtxID(0); i < Nv; i++ {
 		vtx[i] = i + 1
 	}
 	// for _, edge := range X.Edges() {  FIX ME
@@ -213,14 +212,14 @@ func (X *Construction) ParticleCount() int64 {
 
 }
 
-func (X *Construction) PermuteVtxSigns(dst *go2x3.GraphStream) {
+func (X *state) PermuteVtxSigns(dst *go2x3.GraphStream) {
 	panic("legacy: will not implement")
 }
 
 // PermuteEdgeSigns emits a Graph for every possible edge sign permutation of the given Graph.
 //
 // The callback handler should not make any changes to Xperm (with the exception of calling Traces())
-func (X *Construction) PermuteEdgeSigns(dst *go2x3.GraphStream) {
+func (X *state) PermuteEdgeSigns(dst *go2x3.GraphStream) {
 
 	dst.Outlet <- X.MakeCopy() // TODO
 
@@ -289,7 +288,7 @@ func (X *Construction) PermuteEdgeSigns(dst *go2x3.GraphStream) {
 	*/
 }
 
-func (X *Construction) Traces(numTraces int) go2x3.Traces {
+func (X *state) Traces(numTraces int) go2x3.Traces {
 	Nv := X.VertexCount()
 	Nt := numTraces
 	if Nt <= 0 {
@@ -355,11 +354,11 @@ func (X *Construction) Traces(numTraces int) go2x3.Traces {
 	return TX
 }
 
-func (X *Construction) MakeCopy() go2x3.State {
+func (X *state) MakeCopy() go2x3.State {
 	return NewState(X)
 }
 
-// func (X *Construction) WriteAsGraphExprStr(out io.Writer) {
+// func (X *state) WriteAsGraphExprStr(out io.Writer) {
 // 	for _, vi := range X.Vtx {
 // 		fmt.Fprintf(out, "%d:", vi.ID)
 // 		for _, ej := range vi.Edges {
@@ -378,7 +377,7 @@ func (X *Construction) MakeCopy() go2x3.State {
 // 	}
 // }
 
-func (X *Construction) WriteTracesAsCSV(out io.Writer, numTraces int) {
+func (X *state) WriteTracesAsCSV(out io.Writer, numTraces int) {
 	TX := X.Traces(numTraces)
 
 	var buf [24]byte
@@ -391,7 +390,7 @@ func (X *Construction) WriteTracesAsCSV(out io.Writer, numTraces int) {
 
 // Recycles this State instance into a pool for reuse.
 // Caller asserts that no more references to this instance will persist.
-func (X *Construction) Reclaim() {
+func (X *state) Reclaim() {
 	for X != nil {
 		next := X.Next
 		X.Next = nil
@@ -401,7 +400,7 @@ func (X *Construction) Reclaim() {
 }
 
 // Returns true if the given graph is unique
-func (gw *graphWalker) isUnique(X *Construction) bool {
+func (gw *walker) isUnique(X *state) bool {
 	TX := X.Traces(0)
 
 	/*
@@ -433,7 +432,7 @@ func (gw *graphWalker) isUnique(X *Construction) bool {
 }
 
 /*
-func (X *Construction) traces(tmp *graph.VtxGraphVM) go2x3.Traces {
+func (X *state) traces(tmp *graph.VtxGraphVM) go2x3.Traces {
 	tmp.ResetGraph()
 	for _, vi := range X.Vtx {
 		for _, ei := range vi.Edges {
@@ -452,7 +451,7 @@ func (X *Construction) traces(tmp *graph.VtxGraphVM) go2x3.Traces {
 */
 
 /*
-func (X *Construction) recountSiblings(vi VtxID) {
+func (X *state) recountSiblings(vi VtxID) {
 	slots := &X.Vtx[vi-1].Edges
 
 	// pass 1: (re)count siblings
@@ -470,8 +469,8 @@ func (X *Construction) recountSiblings(vi VtxID) {
 }
 */
 
-func NewState(Xsrc *Construction) *Construction {
-	X := graphPool.Get().(*Construction)
+func NewState(Xsrc *state) *state {
+	X := graphPool.Get().(*state)
 	X.Next = nil
 	X.traces = X.traces[:0]
 	if Xsrc != nil {
@@ -488,15 +487,15 @@ func NewState(Xsrc *Construction) *Construction {
 	return X
 }
 
-func (X *Construction) NegateEdge(vi graph.VtxID, vi_slot int32) {
-	if vi <= 0 || vi > graph.VtxID(len(X.Vtx)) || vi_slot > graph.EdgesPerVertex {
+func (X *state) NegateEdge(vi VtxID, vi_slot int32) {
+	if vi <= 0 || vi > VtxID(len(X.Vtx)) || vi_slot > graph.EdgesPerVertex {
 		panic("NegateEdge: invalid edge")
 	}
 
 }
 
 // findEdge returns the vertex and slot of the edge that connects to the given vertex and slot
-func (X *Construction) findEdge(vi graph.VtxID, vi_slot byte) (vj graph.VtxID, vj_slot_edge, vj_slot_free byte) {
+func (X *state) findEdge(vi VtxID, vi_slot byte) (vj VtxID, vj_slot_edge, vj_slot_free byte) {
 	if vi <= 0 || int(vi) > len(X.Vtx) || vi_slot == 0 || vi_slot > graph.EdgesPerVertex {
 		return // invalid input
 	}
@@ -518,7 +517,7 @@ func (X *Construction) findEdge(vi graph.VtxID, vi_slot byte) (vj graph.VtxID, v
 	return
 }
 
-func (X *Construction) findOpenSlot(vi graph.VtxID) (vi_slot byte) {
+func (X *state) findOpenSlot(vi VtxID) (vi_slot byte) {
 	for i, ej := range X.Vtx[vi-1].Edges {
 		if ej.To == 0 {
 			return byte(i + 1)
@@ -527,7 +526,7 @@ func (X *Construction) findOpenSlot(vi graph.VtxID) (vi_slot byte) {
 	return 0
 }
 
-func (X *Construction) applyOp(op GrowOp) bool {
+func (X *state) applyOp(op GrowOp) bool {
 
 	// base case: sprout a new vertex
 	if len(X.Vtx) == 0 {
@@ -536,7 +535,7 @@ func (X *Construction) applyOp(op GrowOp) bool {
 	}
 
 	vtxA := op.FromVtx
-	vtxB := graph.VtxID(0)
+	vtxB := VtxID(0)
 	slotA := byte(op.FromSlot)
 	slotB := byte(0)
 	if vtxA <= 0 || slotA == 0 || slotA > graph.EdgesPerVertex {
@@ -553,12 +552,12 @@ func (X *Construction) applyOp(op GrowOp) bool {
 
 		newVtx := &X.Vtx[newVtxID-1]
 		if vtxB > 0 {
-			newVtx.Edges[1] = graph.Edge{ // re-attach vtxB to new vtx
+			newVtx.Edges[1] = Edge{ // re-attach vtxB to new vtx
 				To:   vtxB,
 				Sign: +1,
 				Path: +1,
 			}
-			X.Vtx[vtxB-1].Edges[slotB-1] = graph.Edge{ // re-attach vtxB to new vtx
+			X.Vtx[vtxB-1].Edges[slotB-1] = Edge{ // re-attach vtxB to new vtx
 				To:   newVtxID,
 				Sign: +1,
 				Path: -1,
@@ -573,12 +572,12 @@ func (X *Construction) applyOp(op GrowOp) bool {
 		return false
 	}
 
-	X.Vtx[vtxA-1].Edges[slotA-1] = graph.Edge{
+	X.Vtx[vtxA-1].Edges[slotA-1] = Edge{
 		To:   vtxB,
 		Sign: +1,
 		Path: +1,
 	}
-	X.Vtx[vtxB-1].Edges[slotB-1] = graph.Edge{
+	X.Vtx[vtxB-1].Edges[slotB-1] = Edge{
 		To:   vtxA,
 		Sign: +1,
 		Path: -1,
@@ -587,7 +586,7 @@ func (X *Construction) applyOp(op GrowOp) bool {
 	return true
 }
 
-func (gw *graphWalker) tryEmitFork(X0 *Construction, op GrowOp) {
+func (gw *walker) tryEmitFork(X0 *state, op GrowOp) {
 	X := NewState(X0)
 	ok := X.applyOp(op)
 
@@ -607,12 +606,12 @@ func (gw *graphWalker) tryEmitFork(X0 *Construction, op GrowOp) {
 }
 
 type GraphQueue struct {
-	Head  *Construction
-	Tail  *Construction
+	Head  *state
+	Tail  *state
 	Count int
 }
 
-func (queue *GraphQueue) Enqueue(X *Construction) {
+func (queue *GraphQueue) Enqueue(X *state) {
 	X.Next = nil
 	if queue.Tail != nil {
 		queue.Tail.Next = X
@@ -624,7 +623,7 @@ func (queue *GraphQueue) Enqueue(X *Construction) {
 	queue.Count++
 }
 
-func (queue *GraphQueue) Dequeue() *Construction {
+func (queue *GraphQueue) Dequeue() *state {
 	X := queue.Head
 	if X == nil {
 		return nil
@@ -639,7 +638,7 @@ func (queue *GraphQueue) Dequeue() *Construction {
 }
 
 /*
-func (X *Construction) popStep() bool {
+func (X *state) popStep() bool {
 
 	// pop the most recent grow step
 	N := len(X.Ops)
@@ -683,7 +682,7 @@ func (X *Construction) popStep() bool {
 }
 */
 
-func (gw *graphWalker) doubleEdges(X *Construction) {
+func (gw *walker) doubleEdges(X *state) {
 	op := GrowOp{
 		OpCode: OpCode_AddEdge,
 		Count:  1,
@@ -718,9 +717,9 @@ func (gw *graphWalker) doubleEdges(X *Construction) {
 	}
 }
 
-func (X *Construction) addNewVertex() (newVtxID graph.VtxID) {
-	newVtxID = graph.VtxID(len(X.Vtx) + 1)
-	v := graph.Vertex{
+func (X *state) addNewVertex() (newVtxID VtxID) {
+	newVtxID = VtxID(len(X.Vtx) + 1)
+	v := Vertex{
 		ID: newVtxID,
 	}
 	for ei := range v.Edges {
@@ -730,7 +729,7 @@ func (X *Construction) addNewVertex() (newVtxID graph.VtxID) {
 	return newVtxID
 }
 
-func (gw *graphWalker) sproutEdges(X *Construction) {
+func (gw *walker) sproutEdges(X *state) {
 	if X.VertexCount() >= gw.opts.VertexMax {
 		return
 	}
@@ -753,8 +752,8 @@ func (gw *graphWalker) sproutEdges(X *Construction) {
 	}
 }
 
-func (gw *graphWalker) emitSubParticles() {
-	var X *Construction
+func (gw *walker) emitSubParticles() {
+	var X *state
 	for X = gw.dequeueNext(); X != nil; X = gw.dequeueNext() {
 
 		// fork 1: iF we can duplicate an edge, then do so.
@@ -770,7 +769,7 @@ func (gw *graphWalker) emitSubParticles() {
 	gw.EnumStream.Close()
 }
 
-func (gw *graphWalker) dequeueNext() *Construction {
+func (gw *walker) dequeueNext() *state {
 	if gw.walkingQueue.Count == 0 && gw.deferredQueue.Count > 0 {
 		gw.walkingVertex++
 		gw.deferredQueue, gw.walkingQueue = gw.walkingQueue, gw.deferredQueue

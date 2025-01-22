@@ -1,57 +1,71 @@
 package graph
 
+import "github.com/fine-structures/fine.SDK/go2x3"
+
 const (
 	EdgesPerVertex = 3
 )
 
+type EdgeOp struct {
+	Weight    Weight   // scales flow of this edge each cycle
+	Direction EdgeFlow // direction of the flow of this edge, needed??
+
+	// vertex index offset from which vertex to pull state from each cycle.
+	//
+	//   .. 3, 2, 1, (existing)
+	//      0 (self),
+	//     -1 (sprout),
+	//     -2 (sprout),
+	//     -3 (sprout), ..
+	FromVertexOffset int32
+}
+
+func (edge EdgeOp) IsNoOp() bool {
+	return edge.Weight.Positive == 0 && edge.Weight.Negative == 0
+}
+
 type EnumOpts struct {
 	VertexMax int
 	Params    string
-	//Context go2x3.CatalogContext
-}
-
-type Edge struct {
-	To   VtxID // 1, 2, 3, .. ; 0 denotes nil
-	Sign int8  // edge flow scale
-	Path int8  // +1: forward, -1: backward
-}
-
-// Vertex is a node of a graph, with a fixed number of edges per vertex
-type Vertex struct {
-	ID    VtxID // 1, 2, 3, ..
-	Edges []Edge
+	Context   go2x3.CatalogContext
 }
 
 type VertexGroup struct {
-	CycleIndex  int64      // 0, 1, 2, .. -- cycle number when this vertex "cycle" group is traversed
-	Occurrences int64      // number of times to repeat this group
-	GroupRadius int64      // aka cycle index aka edge distance from the root vertex.
-	Edges       []EdgePort // edges flowing into and out of this group
-	OpenSlots   []int      // indicies into []EdgesOut of open slots in the group
+	VertexID    int32    // 1, 2, 3, ..   positive integer label; 0 == nil
+	GroupID     int32    // 1, 2, 3, ..   positive integer label; 0 == nil
+	CycleRadius int64    // 0, 1, 2, ..   traces index; corresponds to iteration distance from the root vertex
+	VertexCount int64    // number of instances this group
+	Edges       []EdgeOp // edges flowing inward from previous cycle group, laterally from this cycle group, and outward =
+	Cycles      []Weight // cycles as a function of cycle radius (1, 2, 3, ...)
+	Ci          []Weight // current cycle state
 }
 
-type EdgePort struct {
-	WeightPositive int64 // positive weight of this edge
-	WeightNegative int64 // negative weight of this edge
-
-	// FromID names which vertex in the previous group this vertex originates from.
-	//
-	//  -1: SproutsNewEdge
-	//   0: SELF_EDGE aka "open slot"
-	FromID  int64 // relative index of the inlet from the previous group
-	IndexID int64 // 1, 2, 3, ... {positive integer label, 0 denotes nil}
-}
+type EdgeFlow int
 
 const (
-	SproutsNewEdge = int64(-1)
-	SelfEdge       = int64(0)
-	VertexID_1     = int64(1)
-	VertexID_2     = int64(2)
-	VertexID_3     = int64(3) // etc.
+	EdgeFlow_Intake  EdgeFlow = -1 // input edge (from previous cycle)
+	EdgeFlow_Lateral EdgeFlow = 0  // intra-cycle edge
+	EdgeFlow_Outward EdgeFlow = +1 // outward edge (new vertex)
 )
 
-// VtxID is one-based index that identifies a vertex in a given graph (1..VtxMax)
-type VtxID byte
+type Weight struct {
+	Positive int64
+	Negative int64
+}
+
+func (w Weight) IsZero() bool {
+	return w.Positive == 0 && w.Negative == 0
+}
+
+func (w *Weight) Add(other Weight) {
+	w.Positive += other.Positive
+	w.Negative += other.Negative
+}
+
+func (w *Weight) AddWeighted(other Weight, weight Weight) {
+	w.Positive += other.Positive * weight.Positive
+	w.Negative += other.Negative * weight.Negative
+}
 
 // CatalogID is a unique identifier for any valid "2x3" graph.
 //

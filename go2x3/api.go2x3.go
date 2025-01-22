@@ -36,22 +36,21 @@ const (
 type State interface {
 	TracesProvider
 
-	PermuteEdgeSigns(dst *GraphStream)
-	PermuteVtxSigns(dst *GraphStream)
-
-	Canonize(normalize bool) error
+	PermuteEdgeSigns(dst *GraphStream) // LEGACY
+	PermuteVtxSigns(dst *GraphStream)  // LEGACY
+	Canonize(normalize bool) error     // LEGACY
 
 	WriteCSV(out io.Writer, opts PrintOpts) error
 	MarshalOut(out []byte, opts MarshalOpts) ([]byte, error)
 
-	// Returns a new copy of this instance.
+	// Duplicates receiver
 	MakeCopy() State
 
-	// Returns info about this graph
+	// Returns handy info about this graph
 	GraphInfo() GraphInfo
 
-	// Recycles this State instance into a pool for reuse.
-	// Caller asserts that no more references to this instance will persist.
+	// Recycles receiver into a pool for reuse.
+	// Caller drop all references to receiver.
 	Reclaim()
 }
 
@@ -149,7 +148,7 @@ type GraphSelector struct {
 // PrintOpts specifies what is printing when printing a graph
 type PrintOpts struct {
 	Label     string // Prefix label
-	Graph     bool   // If set, prints graph construction expr
+	Graph     bool   // If set, prints graph state expr
 	Matrix    bool   // if set, prints matrix representation of graph
 	NumTraces int    // Num of Traces to print (-1 denotes natural length, 0 denotes no traces)
 	CycleSpec bool   // If set, the cycles spectrum is printed -- i.e. a canonic column of "cycles" vectors

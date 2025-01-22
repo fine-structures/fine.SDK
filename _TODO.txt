@@ -1,16 +1,19 @@
-./py2x3/py2x3.go:327:	// TODO: move this to the Workspace obj so output counter is within the workspace (vs global)
-./py2x3/py2x3.go:339:	// See TODO on also allowing output object instead of filename
-./py2x3/py2x3.go:360:	// TODO: add mechanism to close all open GraphStreams when a script finishes
+./py2x3/py2x3.go:329:	// TODO: move this to the Workspace obj so output counter is within the workspace (vs global)
+./py2x3/py2x3.go:341:	// See TODO on also allowing output object instead of filename
+./py2x3/py2x3.go:362:	// TODO: add mechanism to close all open GraphStreams when a script finishes
 ./lib2x3/catalog/catalog.go:772:// TODO: move to factor.go, i.e. factorCatalog.SelectFactorizations(cat, sel, onHit)
-./lib2x3/graph/graph.vm.go:437:	// TODO model this
-./lib2x3/graph/graph.vm.go:494:	// TODO model this
-./lib2x3/graph/graph.vm.go:586:	// TODO model this
-./lib2x3/graph/graph.vm.go:823:			// TODO: explore Codd being a modulus of 3^Ci (aka the particle integer "characteristic")
-./lib2x3/graph/graph.construction.go:186:	dst.Outlet <- X.MakeCopy() // TODO
-./lib2x3/graph/graph.construction.go:369:	Rn := len(edges) // TODO check me
-./lib2x3/graph/graph.construction.go:489:		fmt.Appendf(out, "%d * ", vg.Instances) // TODO count @ deltaVertex ?
-./lib2x3/graph-walker/walker.go:85:	// TODO:
-./lib2x3/graph-walker/walker.go:225:	dst.Outlet <- X.MakeCopy() // TODO
+./lib2x3/graph/graph.walker.go:24:	//ctx := go2x3.NewCatalogContext() TODO?
+./lib2x3/graph/graph.vm.go:431:	// TODO model this
+./lib2x3/graph/graph.vm.go:488:	// TODO model this
+./lib2x3/graph/graph.vm.go:580:	// TODO model this
+./lib2x3/graph/graph.vm.go:817:			// TODO: explore Codd being a modulus of 3^Ci (aka the particle integer "characteristic")
+./lib2x3/graph/graph.state.go:134:	return 1 // TODO
+./lib2x3/graph/graph.state.go:146:	dst.Outlet <- X.MakeCopy() // TODO
+./lib2x3/graph/graph.state.go:314:		// TODO: normalize?
+./lib2x3/graph/graph.state.go:484:	return 1 // TODO
+./lib2x3/graph/graph.state.go:492:		fmt.Appendf(out, "%d * ", v.VertexCount) // TODO count @ deltaVertex ?
+./lib2x3/graph-walker/walker.go:84:	// TODO:
+./lib2x3/graph-walker/walker.go:224:	dst.Outlet <- X.MakeCopy() // TODO
 ./lib2x3/graph-legacy/graph-grammar.go:133:		// TODO: validate that what was added was a single contiguous graph
 ./lib2x3/graph-legacy/graph.go:345:	X.Canonize(false) // TODO: remove this when we can print output for any case: 1) un-canonized, 2) canonized, 3) canonized+normalized
 ./lib2x3/graph-legacy/graph.go:900:		// TODO push encoding state and resume on v+1

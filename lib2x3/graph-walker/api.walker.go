@@ -21,12 +21,27 @@ const (
 
 )
 
+type Edge struct {
+	To   VtxID // 1, 2, 3, .. ; 0 denotes nil
+	Sign int8  // edge flow scale
+	Path int8  // +1: forward, -1: backward
+}
+
+// Vertex is a node of a graph, with a fixed number of edges per vertex
+type Vertex struct {
+	ID    VtxID // 1, 2, 3, ..
+	Edges []Edge
+}
+
+// VtxID is one-based index that identifies a vertex in a given graph (1..VtxMax)
+type VtxID byte
+
 // GrowOp is a graph building step, specifying exactly where and how to form a new edge.
 type GrowOp struct {
-	OpCode   OpCode      // operation to perform
-	Count    int8        // number of times to perform the operation (typically +1 or -1)
-	FromVtx  graph.VtxID // 1, 2, 3, .. ; 0 denotes nil
-	FromSlot uint8       // 0, 1, 2
+	OpCode   OpCode // operation to perform
+	Count    int8   // number of times to perform the operation (typically +1 or -1)
+	FromVtx  VtxID  // 1, 2, 3, .. ; 0 denotes nil
+	FromSlot uint8  // 0, 1, 2
 }
 
 func (op *GrowOp) FromOrdinal() int {
